@@ -6,9 +6,13 @@ These are command line tools. Each of them is both a Python library and an execu
 A more detailed description of each tool can be found in each of the directories, but here you can read a summary:
 
 ### Installation
-This tools are installed as python packages.
+If you are in the directory root directory of this repository, you can install all the cli tools with the following command.  
+If it's a clean installation in ubuntu/debian, you need to install some packages first:
 ```bash
-cd ~/robocomp/tools/cli/
+apt update && apt install python3 python3-pip
+```
+Then, install the tools:
+```bash
 pip install .
 ```
  
