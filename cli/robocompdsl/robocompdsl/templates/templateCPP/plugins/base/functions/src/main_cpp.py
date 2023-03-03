@@ -249,7 +249,7 @@ class src_main_cpp(TemplateDict):
                     result += "mprx[\"" + pb + "Pub\"] = (::IceProxy::Ice::Object*)(&" + pb.lower() + "_pubproxy);\n"
                 else:
                     result += "auto " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
-                    result += "" + pb.lower() + "_pubproxy = Ice::uncheckedCast<" + pb + "Prx>(" + pb.lower() + "_pub);\n"
+                    result += "" + pb.lower() + "_pubproxy = Ice::uncheckedCast<RoboComp"+pb+"::" + pb + "Prx>(" + pb.lower() + "_pub);\n"
         return result
 
     def subscribes_to(self):

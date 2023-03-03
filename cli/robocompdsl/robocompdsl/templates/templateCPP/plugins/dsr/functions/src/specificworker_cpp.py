@@ -74,8 +74,6 @@ The add_custom_widget_to_dock method receives a name for the widget and a refere
 ***/
 //graph_viewer->add_custom_widget_to_dock("CustomWidget", &custom_widget);
 
-this->Period = period;
-timer.start(Period);
 """
 
 class specificworker_cpp(TemplateDict):

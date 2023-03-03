@@ -76,9 +76,9 @@ void SpecificWorker::initialize(int period)
 	}
 	else
 	{
-		timer.start(Period);
 		${statemachine_initialize_to_compute}
 		${dsr_initialize}
+		timer.start(Period);
 	}
 
 }
