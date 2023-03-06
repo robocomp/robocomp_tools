@@ -92,7 +92,7 @@ def idsl_robocomp_path(idsl_name, include_directories=None):
         idsl_name += '.idsl'
     path_list = []
     if include_directories is not None:
-        path_list += [x for x in include_directories]
+        path_list += [str(x) for x in include_directories]
     path_list += IDSLPool.get_common_interface_dirs()
 
     for p in path_list:
