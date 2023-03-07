@@ -1,4 +1,4 @@
-import robocompdsl.common.rcExceptions
+from robocompdsl.common import rcExceptions
 from robocompdsl.dsl_parsers.parsing_utils import IDSLPool
 from dataclasses import dataclass
 from abc import ABC
@@ -231,6 +231,7 @@ class ComponentFacade:
                              self.publishes
             for interface_required in interface_list:
                 if not idsl_pool.module_providing_interface(interface_required.name):
+                    print(interface_required.name, idsl_pool.interfaces())
                     raise rcExceptions.InterfaceNotFound(interface_required.name, idsl_pool.interfaces())
             self.__idsl_pool = idsl_pool
             return idsl_pool
