@@ -95,11 +95,15 @@ def idsl_robocomp_path(idsl_name, include_directories=None):
         path_list += [str(x) for x in include_directories]
     path_list += IDSLPool.get_common_interface_dirs()
 
+    checked_paths = []
     for p in path_list:
         path = os.path.join(p, idsl_name)
+        checked_paths.append(path)
         if os.path.isfile(path):
             return path
-    console.log(f"Couldn\'t locate {idsl_name} in {path_list}", style="yellow")
+    console.log(f"Couldn\'t locate {idsl_name}", style="yellow")
+    for path in checked_paths:
+        console.log(f"Not found in {path}", style="red")
     return None
 
 

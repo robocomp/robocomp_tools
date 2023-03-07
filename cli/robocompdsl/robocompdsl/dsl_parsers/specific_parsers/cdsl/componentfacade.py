@@ -208,10 +208,11 @@ CLASS_TYPE_MAP = {
 
 
 class ComponentFacade:
-    def __init__(self, nested_dict=None):
+    def __init__(self, nested_dict=None, include_directories=None):
         if nested_dict is not None:
             for key, value in nested_dict.items():
                 setattr(self, key, value)
+        self.include_directories = include_directories
 
     def __setattr__(self, key, value):
         if isinstance(value, (list, tuple, dict)):
@@ -225,7 +226,7 @@ class ComponentFacade:
         if hasattr(self, '__idsl_pool'):
             return self.__idsl_pool
         else:
-            idsl_pool = IDSLPool(self.imports, [])
+            idsl_pool = IDSLPool(self.imports, include_directories=self.include_directories)
             interface_list = self.requires + self.implements + self.subscribesTo + \
                              self.publishes
             for interface_required in interface_list:

@@ -95,10 +95,12 @@ class CDSLParser(DSLParserTemplate):
 
     def string_to_struct(self, string: str, **kwargs) -> componentfacade.ComponentFacade:
         parsing_result = self.parse_string(string)
-        component = componentfacade.ComponentFacade()
+
         # print 'parseCDSL.component', includeDirectories
         if "include_directories" in kwargs:
             self.include_directories = kwargs["include_directories"]
+
+        component = componentfacade.ComponentFacade(include_directories=self.include_directories)
         # Set options
         component.options = []
 
@@ -122,7 +124,7 @@ class CDSLParser(DSLParserTemplate):
         component.dsr = 'dsr' in [x.lower() for x in component.options]
         if component.is_agm_agent():
             imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
-        component.imports.extend(list(map(os.path.basename, sorted(imprts))))
+        # component.imports.extend(list(map(os.path.basename, sorted(imprts))))
         component.recursiveImports = generate_recursive_imports(list(component.imports), self._include_directories)
         # Language
         component.language = parsing_result['component']['content']['language']
