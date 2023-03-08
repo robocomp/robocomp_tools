@@ -117,7 +117,7 @@ class FilesGenerator:
                         break
                     except Exception as e:
                         console.log("Exception trying to execute %s" % diff_tool)
-                        console.log(e.message)
+                        console.log(e)
 
                 else:
                     console.log("Binary equal files %s and %s" % (o_file, n_file))

@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import pyparsing
 from collections import Counter, OrderedDict
 from rich.console import Console
@@ -25,7 +27,7 @@ def generate_recursive_imports(initial_idsls, include_directories=None):
     new_idsls = []
     for idsl_path in initial_idsls:
         idsl_basename = os.path.basename(idsl_path)
-        include_directories = include_directories + IDSLPool.get_common_interface_dirs()
+        include_directories = list(set(include_directories + IDSLPool.get_common_interface_dirs()))
         # TODO: Replace by idsl_robocomp_path
         new_idsl_path = idsl_robocomp_path(idsl_basename, include_directories)
         logger.debug(f"\tTrying {idsl_basename} in {new_idsl_path}")
@@ -110,16 +112,16 @@ def idsl_robocomp_path(idsl_name, include_directories=None):
         "include_directories must be a list of Paths not %s" % str(type(include_directories))
     if not idsl_name.endswith('.idsl'):
         idsl_name += '.idsl'
-    path_list = []
+    path_list = IDSLPool.get_common_interface_dirs()
     if include_directories is not None:
-        path_list += [str(x) for x in include_directories]
-    path_list += IDSLPool.get_common_interface_dirs()
+        path_list += include_directories
+
 
     checked_paths = []
     for p in path_list:
-        path = os.path.join(p, idsl_name)
+        path = p / idsl_name
         checked_paths.append(path)
-        if os.path.isfile(path):
+        if path.is_file():
             return path
     console.log(f"Couldn\'t locate {idsl_name}", style="yellow")
     for path in checked_paths:
@@ -232,7 +234,7 @@ def get_type_from_module(vtype, module):
 
 
 FILE_PATH_DIR = os.path.dirname(os.path.realpath(__file__))
-ALT_INTERFACES_DIR = os.path.join(FILE_PATH_DIR, "../../../../../interfaces/IDSLs/", )
+ALT_INTERFACES_DIR = Path(FILE_PATH_DIR) / "../../../../../interfaces/IDSLs/"
 
 
 class IDSLPool(OrderedDict):
@@ -244,14 +246,14 @@ class IDSLPool(OrderedDict):
     """
     mandatory_idsls = ["CommonBehavior.idsl"]
 
-    common_interface_dirs = ['/opt/robocomp/interfaces/IDSLs/',
-                             os.path.expanduser('~/robocomp/interfaces/IDSLs/'),
+    common_interface_dirs = [Path('/opt/robocomp/interfaces/IDSLs/'),
+                             Path('~/robocomp/interfaces/IDSLs/').expanduser(),
                              ALT_INTERFACES_DIR]
 
     def __init__(self, files, include_directories):
         super(IDSLPool, self).__init__()
         assert isinstance(files, list), "Files must be a list of strings"
-        include_directories = include_directories + self.common_interface_dirs
+        include_directories = list(set(include_directories + self.common_interface_dirs))
         self.includeInPool(files, self, include_directories)
         self.includeInPool(self.mandatory_idsls, self, include_directories)
         self.module_inteface_check()
@@ -265,7 +267,8 @@ class IDSLPool(OrderedDict):
         Recursively add the loaded modules to the pool.
 
         """
-
+        if len(files) == 0:
+            return
         # look for the files in the includeDirectories
         logger.debug(f"Looking for {files} in {include_directories}")
         for f in files:
@@ -273,12 +276,12 @@ class IDSLPool(OrderedDict):
             if filename not in module_pool:
                 for p in include_directories:
                     try:
-                        path = os.path.join(p, f)
+                        path = p / f
                         logger.debug(f"Trying with {path}")
                         # if found, load the module from the file
                         # WARN: import is here to avoid problem with recursive import on startup
                         from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
-                        module = DSLFactory().from_file(path)
+                        module = DSLFactory().from_file(str(path))
                         # store the module
                         module_pool[filename] = module
                         # try to add the modules that this one imports
