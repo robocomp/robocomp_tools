@@ -4,30 +4,49 @@ from collections import Counter, OrderedDict
 from rich.console import Console
 from rich.text import Text
 
+import logging
+from rich.logging import RichHandler
+
+FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+logging.basicConfig(
+    level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+)
+
+logger = logging.getLogger(__name__)
 
 console = Console()
+
 def generate_recursive_imports(initial_idsls, include_directories=None):
     assert isinstance(initial_idsls, list), "initial_idsl, parameter must be a list, not %s" % str(type(initial_idsls))
     if include_directories is None:
         include_directories = []
+
+    logger.debug(f"Generating recursive imports for {initial_idsls} with include directories {include_directories}")
     new_idsls = []
     for idsl_path in initial_idsls:
         idsl_basename = os.path.basename(idsl_path)
         include_directories = include_directories + IDSLPool.get_common_interface_dirs()
         # TODO: Replace by idsl_robocomp_path
         new_idsl_path = idsl_robocomp_path(idsl_basename, include_directories)
+        logger.debug(f"\tTrying {idsl_basename} in {new_idsl_path}")
         from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
         try:
-            imported_module = DSLFactory().from_file(new_idsl_path, include_directories = include_directories)  # IDSLParsing.gimmeIDSL(attempt)
+            imported_module = DSLFactory().from_file(new_idsl_path, include_directories=include_directories)  # IDSLParsing.gimmeIDSL(attempt)
         except pyparsing.ParseException as e:
-            console.log(f"Parsing error in file {Text(new_idsl_path, style='red')} while generating recursive imports.")
-            console.log(f"Exception info: {Text(e.args[2], style='red')} in line {e.lineno} of:\n{Text(e.args[0].rstrip(), styled='magenta')}")
+            logger.error(f"Parsing error in file {Text(new_idsl_path, style='red')} while generating recursive imports.")
+            logger.error(f"Exception info: {Text(e.args[2], style='red')} in line {e.lineno} of:\n{Text(e.args[0].rstrip(), styled='magenta')}")
             raise
+        except FileNotFoundError as e:
+            logger.debug(f"File {Text(new_idsl_path, style='red')} not found while generating recursive imports.")
+            continue
+        logger.debug(f"\tFound {idsl_basename} in {new_idsl_path}")
         if imported_module is None:
+            logger.warning(f"Couldn\'t locate {idsl_basename} in {new_idsl_path}")
             raise FileNotFoundError(f'generate_recursive_imports: Couldn\'t locate {idsl_basename} in {new_idsl_path}')
 
         # if importedModule['imports'] have a # at the end an emtpy '' is generated
         idsl_imports = imported_module['imports']
+        logger.debug(f"\tImports found {idsl_imports}")
         # we remove all the '' ocurrences and existing imports
         aux_imports = []
         for i_import in idsl_imports:
@@ -35,9 +54,10 @@ def generate_recursive_imports(initial_idsls, include_directories=None):
                 if communication_is_ice(i_import):
                     aux_imports.append(i_import)
         idsl_imports = aux_imports
+        logger.debug(f"\tImports after clean up {idsl_imports}")
         if len(idsl_imports) > 0 and idsl_imports[0] != '':
             new_idsls += idsl_imports + generate_recursive_imports(idsl_imports, include_directories)
-
+    logger.debug(f"Recursive imports found {new_idsls}")
     return list(set(new_idsls))
 
 
@@ -87,7 +107,7 @@ def is_agm_agent(component):
 def idsl_robocomp_path(idsl_name, include_directories=None):
     assert isinstance(idsl_name, str), "idsl_name parameter must be a string"
     assert include_directories is None or isinstance(include_directories, list), \
-        "include_directories must be a list of strings not %s" % str(type(include_directories))
+        "include_directories must be a list of Paths not %s" % str(type(include_directories))
     if not idsl_name.endswith('.idsl'):
         idsl_name += '.idsl'
     path_list = []
@@ -181,15 +201,15 @@ def decorator_and_type_to_const_ampersand(decorator, vtype, module_pool, cpp11=F
 
 
 def get_kind_from_pool(vtype, module_pool, debug=False):
-    if debug: console.log(vtype)
+    logger.debug(vtype)
     split = vtype.split("::")
-    if debug: print(split)
+    logger.debug(split)
     if len(split) > 1:
         vtype = split[1]
         mname = split[0]
-        if debug: console.log(('SPLIT (' + vtype+'), (' + mname + ')'))
+        logger.debug('SPLIT (' + vtype+'), (' + mname + ')')
         if mname in module_pool:
-            if debug: console.log(('dentro SPLIT (' + vtype+'), (' + mname + ')'))
+            logger.debug('dentro SPLIT (' + vtype+'), (' + mname + ')')
             r = get_type_from_module(vtype, module_pool[mname])
             if r is not None: return r
         if mname.startswith("RoboComp"):
@@ -197,9 +217,9 @@ def get_kind_from_pool(vtype, module_pool, debug=False):
                 r = get_type_from_module(vtype, module_pool[mname[8:]])
                 if r is not None: return r
     else:
-        if debug: console.log('no split')
+        logger.debug('no split')
         for module in module_pool:
-            if debug: console.log(('  '+str(module)))
+            logger.debug('  '+str(module))
             r = get_type_from_module(vtype, module_pool[module])
             if r is not None: return r
 
@@ -247,12 +267,14 @@ class IDSLPool(OrderedDict):
         """
 
         # look for the files in the includeDirectories
+        logger.debug(f"Looking for {files} in {include_directories}")
         for f in files:
             filename = f.split('.')[0]
             if filename not in module_pool:
                 for p in include_directories:
                     try:
                         path = os.path.join(p, f)
+                        logger.debug(f"Trying with {path}")
                         # if found, load the module from the file
                         # WARN: import is here to avoid problem with recursive import on startup
                         from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
@@ -260,9 +282,11 @@ class IDSLPool(OrderedDict):
                         # store the module
                         module_pool[filename] = module
                         # try to add the modules that this one imports
+                        logger.debug(f"Calling includeInPool with {module['imports'] + module['recursive_imports']}")
                         self.includeInPool(module['imports'] + module['recursive_imports'], module_pool, include_directories)
                         break
-                    except IOError:
+                    except IOError as e:
+                        logger.debug(f"File {path} not found in {p} or {e}")
                         pass
                 if filename not in self:
                     raise ValueError('Couldn\'t locate %s ' % f)
@@ -318,5 +342,5 @@ class IDSLPool(OrderedDict):
 
 if __name__ == '__main__':
     pool = IDSLPool("AGMCommonBehavior.idsl", [])
-    print(pool["AGMCommonBehavior"]["imports"])
+    logger.debug(pool["AGMCommonBehavior"]["imports"])
     pool = IDSLPool("AprilTags.idsl", [])
