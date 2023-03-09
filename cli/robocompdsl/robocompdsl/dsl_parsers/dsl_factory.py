@@ -62,7 +62,9 @@ class DSLFactory(Singleton):
         if not os.path.isfile(file_path):
             # local import to avoid problem with mutual imports
             from robocompdsl.dsl_parsers.parsing_utils import idsl_robocomp_path
-            new_file_path = idsl_robocomp_path(file_path)
+            filename = os.path.basename(file_path)
+            logger.debug(f"Getting idsl file path for {filename}")
+            new_file_path = idsl_robocomp_path(filename)
             if new_file_path is None or not os.path.isfile(new_file_path):
                 print("DSLFactory. %s could not be found in Robocomp" % file_path)
                 raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), file_path)

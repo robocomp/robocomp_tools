@@ -106,6 +106,7 @@ def idsl_robocomp_path(idsl_name, include_directories=None):
     path_list = IDSLPool.get_common_interface_dirs()
     if include_directories is not None:
         path_list += include_directories
+    path_list = list(set(path_list))
 
 
     checked_paths = []
