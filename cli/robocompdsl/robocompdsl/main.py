@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
+import logging
 # TODO
 #
 # Read ports from component-ports.txt for the files in etc.
 #
 #
+import logging
 from typing import Optional, List
 from pathlib import Path
 import typer
@@ -15,6 +16,9 @@ import rich
 from rich.console import Console
 
 from robocompdsl.common.filesgenerator import FilesGenerator
+from robocompdsl.logger import logger
+
+
 
 DESCRIPTION_STR = """\
 This application create components files from cdsl files or .ice from idsl
@@ -115,8 +119,15 @@ def generate(
         output_path: Optional[str] = typer.Argument(None, help="The path to put the generated files"),
         include_dirs: List[Path] = typer.Option([],  "--include_dirs", "-I", help="List of directories to find includes."),
         diff: bool = typer.Option(False, "--diff", "-d", help="Show the diff of the old and new files"),
-        test: bool = typer.Option(False, "--test", "-t",  help="Testing option")
+        test: bool = typer.Option(False, "--test", "-t",  help="Testing option"),
+        debug: bool = typer.Option(False, "--debug", help="Debug option in the output"),
+        quiet: bool = typer.Option(False, "--quiet", "-q", help="Quiet option in the output"),
 ):
+
+    if debug:
+        logger.setLevel(level=logging.DEBUG)
+    if quiet:
+        logger.setLevel(level=logging.INFO)
     if output_path is None:
         if input_file.endswith(".cdsl"):
             generate_dummy_CDSL(input_file)

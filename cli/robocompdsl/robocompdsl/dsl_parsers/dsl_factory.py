@@ -9,6 +9,7 @@ from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_parser import CDSLParser
 # from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_ply_parser import CDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.idsl_parser import IDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.smdsl_parser import SMDSLParser
+from robocompdsl.logger import logger
 
 
 class Singleton(object):

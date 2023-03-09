@@ -5,16 +5,7 @@ import pyparsing
 from collections import Counter, OrderedDict
 from rich.console import Console
 from rich.text import Text
-
-import logging
-from rich.logging import RichHandler
-
-FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-logging.basicConfig(
-    level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logger = logging.getLogger(__name__)
+from robocompdsl.logger import logger
 
 console = Console()
 
@@ -28,7 +19,7 @@ def generate_recursive_imports(initial_idsls, include_directories=None):
     for idsl_path in initial_idsls:
         idsl_basename = os.path.basename(idsl_path)
         include_directories = list(set(include_directories + IDSLPool.get_common_interface_dirs()))
-        # TODO: Replace by idsl_robocomp_path
+        logger.debug(f"Getting idsl file path for {idsl_basename} in {include_directories}")
         new_idsl_path = idsl_robocomp_path(idsl_basename, include_directories)
         logger.debug(f"\tTrying {idsl_basename} in {new_idsl_path}")
         from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
@@ -123,9 +114,7 @@ def idsl_robocomp_path(idsl_name, include_directories=None):
         checked_paths.append(path)
         if path.is_file():
             return path
-    console.log(f"Couldn\'t locate {idsl_name}", style="yellow")
-    for path in checked_paths:
-        console.log(f"Not found in {path}", style="red")
+    logger.error(f"Couldn\'t locate {idsl_name} in any of the following paths: {checked_paths}")
     return None
 
 

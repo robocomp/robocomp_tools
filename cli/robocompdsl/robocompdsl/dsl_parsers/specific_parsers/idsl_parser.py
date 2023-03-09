@@ -6,17 +6,7 @@ from pyparsing import Suppress, Word, alphas, alphanums, Group, \
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
 from robocompdsl.dsl_parsers.parsing_utils import generate_recursive_imports
-
-
-import logging
-from rich.logging import RichHandler
-
-FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-logging.basicConfig(
-    level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logger = logging.getLogger(__name__)
+from robocompdsl.logger import logger
 
 class IDSLParser(DSLParserTemplate):
     def __init__(self):
