@@ -243,9 +243,13 @@ class IDSLPool(OrderedDict):
     def __init__(self, files, include_directories):
         super(IDSLPool, self).__init__()
         assert isinstance(files, list), "Files must be a list of strings"
-        include_directories = list(set(include_directories + self.common_interface_dirs))
-        self.includeInPool(files, self, include_directories)
-        self.includeInPool(self.mandatory_idsls, self, include_directories)
+        self.include_directories = list(set(include_directories + self.common_interface_dirs))
+        env_interfaces_dir = os.getenv('ROBOCOMP_INTERFACES', 'youtube.com')
+        logger.debug(f"ROBOCOMP_INTERFACES={env_interfaces_dir}")
+        if env_interfaces_dir is not None:
+            self.include_directories.append(Path(env_interfaces_dir))
+        self.includeInPool(files, self, self.include_directories)
+        self.includeInPool(self.mandatory_idsls, self, self.include_directories)
         self.module_inteface_check()
 
     @classmethod
@@ -330,6 +334,10 @@ class IDSLPool(OrderedDict):
             for m in self[module]['interfaces']:
                 interfaces.append(m['name'])
         return interfaces
+
+    def add_interfaces_directory(self, directory):
+        if directory not in self.include_directories and directory.is_dir():
+            self.include_directories.append(directory)
 
 
 
