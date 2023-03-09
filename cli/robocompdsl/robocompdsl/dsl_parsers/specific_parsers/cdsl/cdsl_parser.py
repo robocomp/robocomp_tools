@@ -5,8 +5,9 @@ from pyparsing import Suppress, Word, CaselessKeyword, alphas, alphanums, CharsN
     delimitedList, cppStyleComment
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, generate_recursive_imports
+from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice
 from . import componentfacade
+from ...idslpool import idsl_pool
 
 
 class CDSLParser(DSLParserTemplate):
@@ -125,7 +126,7 @@ class CDSLParser(DSLParserTemplate):
         if component.is_agm_agent():
             imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
         # component.imports.extend(list(map(os.path.basename, sorted(imprts))))
-        component.recursiveImports = generate_recursive_imports(list(component.imports), self._include_directories)
+        component.recursiveImports = idsl_pool.generate_recursive_imports(list(component.imports), self._include_directories)
         # Language
         component.language = parsing_result['component']['content']['language']
         # Statemachine

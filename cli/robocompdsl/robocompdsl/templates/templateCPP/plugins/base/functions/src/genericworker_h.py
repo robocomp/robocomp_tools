@@ -1,8 +1,6 @@
 import datetime
-from string import Template
 
-from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
-from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, IDSLPool, get_name_number
+from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
 from robocompdsl.templates.templateCPP.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 

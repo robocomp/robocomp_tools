@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 # TODO
 #
 # Read ports from component-ports.txt for the files in etc.
@@ -17,8 +16,7 @@ from rich.console import Console
 
 from robocompdsl.common.filesgenerator import FilesGenerator
 from robocompdsl.logger import logger
-
-
+from robocompdsl.dsl_parsers.idslpool import idsl_pool
 
 DESCRIPTION_STR = """\
 This application create components files from cdsl files or .ice from idsl
@@ -92,7 +90,6 @@ name_machine{
 
 ------------------------------------------------------------------ */\n"""
 
-
 def generate_dummy_CDSL(path):
     if os.path.exists(path):
         console.print(f"File {path} already exists.\nNot overwritting.", style='yellow')
@@ -146,6 +143,7 @@ def generate(
     if input_file.endswith(".cdsl") or input_file.endswith(".jcdsl") or input_file.endswith(".idsl"):
         try:
             # print("To generate", input_file, output_path, include_dirs, diff, test)
+            idsl_pool.update_directories(map(Path, include_dirs))
             FilesGenerator().generate(input_file, output_path, include_dirs, diff, test)
         except pyparsing.ParseException as pe:
             console.log(f"Error generating files for {rich.Text(input_file, style='red')}")

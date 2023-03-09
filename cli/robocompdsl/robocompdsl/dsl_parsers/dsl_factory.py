@@ -9,7 +9,7 @@ from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_parser import CDSLParser
 # from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_ply_parser import CDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.idsl_parser import IDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.smdsl_parser import SMDSLParser
-from robocompdsl.dsl_parsers.parsing_utils import IDSLPool
+from robocompdsl.dsl_parsers.idslpool import idsl_pool
 from robocompdsl.logger import logger
 
 
@@ -64,9 +64,8 @@ class DSLFactory(Singleton):
             # local import to avoid problem with mutual imports
             from robocompdsl.dsl_parsers.parsing_utils import idsl_robocomp_path
             filename = os.path.basename(file_path)
-            include_directories = list(set(kwargs.get('include_directories', []) + IDSLPool.get_common_interface_dirs()))
-            logger.debug(f"Getting idsl file path for {filename} within {include_directories}")
-            new_file_path = idsl_robocomp_path(filename, include_directories)
+            logger.debug(f"Getting idsl file path for {filename}")
+            new_file_path = idsl_pool.idsl_path(filename)
             if new_file_path is None or not os.path.isfile(new_file_path):
                 print("DSLFactory. %s could not be found in Robocomp" % file_path)
                 raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), file_path)
@@ -102,6 +101,7 @@ class DSLFactory(Singleton):
                 raise
 
             else:
+                # store the filename in the result
                 result['filename'] = file_path
                 # store the parser with the result in the cache fo the factory
                 self._cache[file_path] = result

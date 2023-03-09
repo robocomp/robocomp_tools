@@ -5,7 +5,7 @@ from pyparsing import Suppress, Word, alphas, alphanums, Group, \
     OneOrMore, ZeroOrMore, Optional, cppStyleComment, Literal, CharsNotIn
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.parsing_utils import generate_recursive_imports
+from robocompdsl.dsl_parsers.idslpool import idsl_pool
 from robocompdsl.logger import logger
 
 class IDSLParser(DSLParserTemplate):
@@ -89,7 +89,7 @@ class IDSLParser(DSLParserTemplate):
             # print result_dict['name'], parsing_result['imports']
             result_dict['imports'] = parsing_result['imports'].asList()
             logger.debug(f"\twith imports: {result_dict['imports']}")
-            result_dict['recursive_imports'] = generate_recursive_imports(list(parsing_result['imports']), self.include_directories)
+            result_dict['recursive_imports'] = idsl_pool.generate_recursive_imports(list(parsing_result['imports']), self.include_directories)
             logger.debug(f"\twith recursive_imports: {result_dict['recursive_imports']}")
         # INTERFACES DEFINED IN THE MODULE
         result_dict['interfaces'] = []

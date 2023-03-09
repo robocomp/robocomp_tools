@@ -1,5 +1,5 @@
 from robocompdsl.common import rcExceptions
-from robocompdsl.dsl_parsers.parsing_utils import IDSLPool
+from robocompdsl.dsl_parsers.idsldsl import IDSLPool
 from dataclasses import dataclass
 from abc import ABC
 
@@ -105,14 +105,6 @@ from abc import ABC
 #                 names.append(item)
 #         return names
 #
-#     @property
-#     def idsl_pool(self):
-#         if 'idsl_pool' in self:
-#             return self.idsl_pool
-#         else:
-#             the_idsls = ''.join([imp + '#' for imp in self.imports])
-#             idsl_pool = IDSLPool(the_idsls, [])
-#             self.idsl_pool = idsl_pool
 
 
 # @dataclass
@@ -226,7 +218,6 @@ class ComponentFacade:
         if hasattr(self, '__idsl_pool'):
             return self.__idsl_pool
         else:
-            idsl_pool = IDSLPool(self.imports, include_directories=self.include_directories)
             interface_list = self.requires + self.implements + self.subscribesTo + \
                              self.publishes
             for interface_required in interface_list:

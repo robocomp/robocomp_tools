@@ -26,7 +26,6 @@ class FilesGenerator:
     def __init__(self):
         self.__dsl_file = None
         self.__output_path = None
-        self.__include_dirs = None
         self.diff = None
         self.ast = None
 
@@ -49,19 +48,9 @@ class FilesGenerator:
         assert isinstance(value, str), "output_path must be a string not %s" % str(type(value))
         self.__output_path = value
 
-    @property
-    def include_dirs(self):
-        return self.__include_dirs
-
-    @include_dirs.setter
-    def include_dirs(self, value):
-        assert isinstance(value, list), "include_dirs must be a string not %s" % str(type(value))
-        self.__include_dirs = value
-
-    def generate(self, input_file, output_path, include_dirs, diff=None, test=False):
+    def generate(self, input_file, output_path, diff=None, test=False):
         self.dsl_file = input_file
         self.output_path = output_path
-        self.include_dirs = include_dirs
         self.diff = diff
         self.__load_ast()
         new_existing_files = self.__create_files(test)
@@ -69,7 +58,7 @@ class FilesGenerator:
 
     def __load_ast(self):
         try:
-            self.ast = dsl_factory.DSLFactory().from_file(self.dsl_file, include_directories=self.include_dirs)
+            self.ast = dsl_factory.DSLFactory().from_file(self.dsl_file)
         except ValueError as e:
             console.log(f"Parsing error in file {text.Text(self.dsl_file, style='red')} while generating AST.")
             console.log(f"Exception info: {text.Text(e.args[0], style='red')} in line {e.args[1]} of:\n{text.Text(e.args[2].rstrip(), style='magenta')}")
