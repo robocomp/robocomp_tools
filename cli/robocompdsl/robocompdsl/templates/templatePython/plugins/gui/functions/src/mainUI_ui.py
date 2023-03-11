@@ -1,4 +1,3 @@
-from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice
 from robocompdsl.templates.common.templatedict import TemplateDict
 
 

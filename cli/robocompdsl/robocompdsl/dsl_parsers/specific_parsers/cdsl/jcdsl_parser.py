@@ -2,7 +2,6 @@ import json
 import os
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.idslpool import idsl_pool
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.componentinspections import ComponentInspections
 from . import componentfacade
 
@@ -40,8 +39,8 @@ class CDSLJsonParser(DSLParserTemplate):
                                    os.path.expanduser('~/robocomp/interfaces/IDSLs/')]
 
         component.imports = list(map(os.path.basename, imprts))
-
-        component.recursiveImports = idsl_pool.generate_recursive_imports(list(component.imports), self._include_directories)
+        from robocompdsl.dsl_parsers.idslpool import idsl_pool
+        component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports), self._include_directories)
 
         component.statemachine_visual = False
         if isinstance(component.statemachine, list):

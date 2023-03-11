@@ -6,8 +6,8 @@ from pyparsing import Suppress, Word, CaselessKeyword, alphas, alphanums, CharsN
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice
+from robocompdsl.logger import logger
 from . import componentfacade
-from ...idslpool import idsl_pool
 
 
 class CDSLParser(DSLParserTemplate):
@@ -96,12 +96,12 @@ class CDSLParser(DSLParserTemplate):
 
     def string_to_struct(self, string: str, **kwargs) -> componentfacade.ComponentFacade:
         parsing_result = self.parse_string(string)
-
+        logger.debug(f"Creating component from string. Parsing result: {list(parsing_result.keys())}")
         # print 'parseCDSL.component', includeDirectories
         if "include_directories" in kwargs:
             self.include_directories = kwargs["include_directories"]
 
-        component = componentfacade.ComponentFacade(include_directories=self.include_directories)
+        component = componentfacade.ComponentFacade()
         # Set options
         component.options = []
 
@@ -120,13 +120,14 @@ class CDSLParser(DSLParserTemplate):
         except KeyError:
             parsing_result['imports'] = []
             imprts = []
-
+        logger.debug(f"Imports in cdsl: {imprts}")
         component.dsr = False
         component.dsr = 'dsr' in [x.lower() for x in component.options]
         if component.is_agm_agent():
             imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
-        # component.imports.extend(list(map(os.path.basename, sorted(imprts))))
-        component.recursiveImports = idsl_pool.generate_recursive_imports(list(component.imports), self._include_directories)
+        component.imports.extend(list(map(os.path.basename, sorted(imprts))))
+        from robocompdsl.dsl_parsers.idslpool import idsl_pool
+        component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports))
         # Language
         component.language = parsing_result['component']['content']['language']
         # Statemachine
@@ -190,6 +191,7 @@ class CDSLParser(DSLParserTemplate):
             if 'AGMExecutiveTopic' not in component.subscribesTo:
                 component.subscribesTo = [['AGMExecutiveTopic', 'ice']] + component.subscribesTo
         self.struct = component
+        logger.debug(f"Component created: {component.name}")
         return component
 
     def __str__(self):

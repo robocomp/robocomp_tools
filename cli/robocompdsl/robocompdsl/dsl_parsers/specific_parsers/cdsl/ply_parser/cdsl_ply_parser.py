@@ -1,7 +1,6 @@
 import os
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.idslpool import idsl_pool
 from robocompdsl.dsl_parsers.parsing_utils import is_agm2_agent_ROS, communication_is_ice, is_agm_agent
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.componentinspections import ComponentInspections
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.ply_parser.ply_parser_yacc import CCDSLPlyParser
@@ -41,8 +40,8 @@ class CDSLParser(DSLParserTemplate):
                                           os.path.expanduser('~/robocomp/interfaces/IDSLs/')]
 
         component.imports = list(map(os.path.basename, imprts))
-
-        component.recursiveImports = idsl_pool.generate_recursive_imports(list(component.imports),
+        from robocompdsl.dsl_parsers.idslpool import idsl_pool
+        component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports),
                                                                    self._include_directories)
 
         component.statemachine_visual = False

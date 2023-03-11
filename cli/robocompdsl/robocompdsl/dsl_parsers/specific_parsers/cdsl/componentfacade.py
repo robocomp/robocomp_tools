@@ -1,7 +1,9 @@
 from robocompdsl.common import rcExceptions
-from robocompdsl.dsl_parsers.idsldsl import IDSLPool
 from dataclasses import dataclass
 from abc import ABC
+
+from robocompdsl.logger import logger
+
 
 # class ComponentFacade(dict):
 #     """
@@ -200,11 +202,10 @@ CLASS_TYPE_MAP = {
 
 
 class ComponentFacade:
-    def __init__(self, nested_dict=None, include_directories=None):
+    def __init__(self, nested_dict=None):
         if nested_dict is not None:
             for key, value in nested_dict.items():
                 setattr(self, key, value)
-        self.include_directories = include_directories
 
     def __setattr__(self, key, value):
         if isinstance(value, (list, tuple, dict)):
@@ -213,6 +214,7 @@ class ComponentFacade:
                 value = new_class(value)
         super(ComponentFacade, self).__setattr__(key, value)
 
+    # TODO: bad idea to import and make the check each time we access the property
     @property
     def idsl_pool(self):
         if hasattr(self, '__idsl_pool'):
@@ -220,9 +222,11 @@ class ComponentFacade:
         else:
             interface_list = self.requires + self.implements + self.subscribesTo + \
                              self.publishes
+            from robocompdsl.dsl_parsers.idslpool import idsl_pool
+            logger.debug(f"IDSL POOL includes {idsl_pool.include_directories}")
             for interface_required in interface_list:
                 if not idsl_pool.module_providing_interface(interface_required.name):
-                    print(interface_required.name, idsl_pool.interfaces())
+                    logger.error(f"Interface {interface_required.name} not found in any module in the IDSL pool {idsl_pool.interfaces()} {list(idsl_pool.keys())}")
                     raise rcExceptions.InterfaceNotFound(interface_required.name, idsl_pool.interfaces())
             self.__idsl_pool = idsl_pool
             return idsl_pool

@@ -2,6 +2,8 @@ import filecmp
 import os
 import subprocess
 import sys
+from pathlib import Path
+
 from rich import text
 from rich.console import Console
 import pyparsing
@@ -35,8 +37,8 @@ class FilesGenerator:
 
     @dsl_file.setter
     def dsl_file(self, value):
-        assert isinstance(value, str), "dsl_file must be a string not %s" % str(type(value))
-        assert os.path.exists(value), "%s dsl file not found." % value
+        assert isinstance(value, Path), "dsl_file must be a string not %s" % str(type(value))
+        assert value.is_file(), "%s dsl file not found." % value
         self.__dsl_file = value
 
     @property
@@ -48,6 +50,7 @@ class FilesGenerator:
         assert isinstance(value, str), "output_path must be a string not %s" % str(type(value))
         self.__output_path = value
 
+    # TODO: diff and test should not be responsability of this class
     def generate(self, input_file, output_path, diff=None, test=False):
         self.dsl_file = input_file
         self.output_path = output_path
@@ -77,14 +80,14 @@ class FilesGenerator:
 
     def __create_files(self, test=False):
         new_existing_files = {}
-        if self.dsl_file.endswith(".cdsl") or self.dsl_file.endswith(".jcdsl"):
+        if self.dsl_file.suffix in [".cdsl", ".jcdsl"]:
             # Check output directory
             self.__create_component_directories(test)
 
             # Generate specific_component
             new_existing_files = self.__generate_component(test)
 
-        elif self.dsl_file.endswith(".idsl"):
+        elif self.dsl_file.suffix == ".idsl":
             new_existing_files = self.__generate_interface()
         return new_existing_files
 

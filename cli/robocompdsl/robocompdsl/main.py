@@ -16,7 +16,6 @@ from rich.console import Console
 
 from robocompdsl.common.filesgenerator import FilesGenerator
 from robocompdsl.logger import logger
-from robocompdsl.dsl_parsers.idslpool import idsl_pool
 
 DESCRIPTION_STR = """\
 This application create components files from cdsl files or .ice from idsl
@@ -142,9 +141,11 @@ def generate(
             return -1
     if input_file.endswith(".cdsl") or input_file.endswith(".jcdsl") or input_file.endswith(".idsl"):
         try:
-            # print("To generate", input_file, output_path, include_dirs, diff, test)
-            idsl_pool.update_directories(map(Path, include_dirs))
-            FilesGenerator().generate(input_file, output_path, include_dirs, diff, test)
+            from robocompdsl.dsl_parsers.idslpool import idsl_pool
+            if len(include_dirs) > 0:
+                idsl_pool.update_directories(list(map(Path, include_dirs)))
+                logger.debug(f"Idsl pool: {idsl_pool}")
+            FilesGenerator().generate(Path(input_file), output_path, diff, test)
         except pyparsing.ParseException as pe:
             console.log(f"Error generating files for {rich.Text(input_file, style='red')}")
             console.log(pe.line)

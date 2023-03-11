@@ -2,7 +2,6 @@ import datetime
 import sys
 from string import Template
 
-from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number, IDSLPool
 from robocompdsl.templates.common.templatedict import TemplateDict
 
 
