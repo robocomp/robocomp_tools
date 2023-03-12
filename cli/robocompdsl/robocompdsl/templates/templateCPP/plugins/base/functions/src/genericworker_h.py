@@ -58,7 +58,7 @@ class genericworker_h(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(iface.name)
                 proxy_type = iface.name
                 if module is not None:
-                    proxy_type = f"{module['name']}::{iface.name}"
+                    proxy_type = f"{module.name}::{iface.name}"
                 if self.component.language.lower() == "cpp":
                     result += f"{proxy_type}Prx {iface.name.lower()}{num}_proxy;\n"
                 else:
@@ -69,7 +69,7 @@ class genericworker_h(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(iface.name)
                 proxy_type = iface.name
                 if module is not None:
-                    proxy_type = f"{module['name']}::{iface.name}"
+                    proxy_type = f"{module.name}::{iface.name}"
                 if self.component.language.lower() == "cpp":
                     result += f"{proxy_type}Prx {iface.name.lower()}{num}_pubproxy;\n"
                 else:
@@ -82,15 +82,15 @@ class genericworker_h(TemplateDict):
         for iface in self.component.implements:
             pool = self.component.idsl_pool
             module = pool.module_providing_interface(iface.name)
-            for interface in module['interfaces']:
-                if interface['name'] == iface.name:
-                    for mname in interface['methods']:
-                        method = interface['methods'][mname]
+            for interface in module.interfaces:
+                if interface.name == iface.name:
+                    for mname in interface.methods:
+                        method = interface.methods[mname]
                         param_str_a = ''
                         if communication_is_ice(iface):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
-                            return_type = utils.get_type_string(method['return'], module['name'])
-                            result += f"virtual {return_type} {interface['name']}_{method['name']}({param_str_a}) = 0;\n"
+                            param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
+                            return_type = utils.get_type_string(method.ret, module.name)
+                            result += f"virtual {return_type} {interface.name}_{method.name}({param_str_a}) = 0;\n"
                         else:
                             pass
         return result
@@ -102,15 +102,15 @@ class genericworker_h(TemplateDict):
             module = pool.module_providing_interface(iface.name)
             if module is None:
                 raise ValueError('\nCan\'t find module providing %s \n' % iface.name)
-            for interface in module['interfaces']:
-                if interface['name'] == iface.name:
-                    for mname in interface['methods']:
-                        method = interface['methods'][mname]
+            for interface in module.interfaces:
+                if interface.name == iface.name:
+                    for mname in interface.methods:
+                        method = interface.methods[mname]
                         param_str_a = ''
                         if communication_is_ice(iface):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
-                            return_type = utils.get_type_string(method['return'], module['name'])
-                            result += f"virtual {return_type} {interface['name']}_{method['name']} ({param_str_a}) = 0;\n"
+                            param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
+                            return_type = utils.get_type_string(method.ret, module.name)
+                            result += f"virtual {return_type} {interface.name}_{method.name} ({param_str_a}) = 0;\n"
                         else:
                             pass
         return result

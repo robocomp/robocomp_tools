@@ -22,7 +22,7 @@ class SERVANT_PY(TemplateDict):
         self['year'] = str(datetime.date.today().year)
         self['slice_loading'] = self.slice_loading(interface_name)
         self['interface_methods'] = self.interface_methods(module, interface_name)
-        self['module_name'] = module['name']
+        self['module_name'] = module.name
         self['iface_name'] = interface_name
 
     @staticmethod
@@ -33,25 +33,25 @@ class SERVANT_PY(TemplateDict):
     @staticmethod
     def interface_methods(module, interface_name):
         result = ""
-        for interface in module['interfaces']:
-            if interface['name'] == interface_name:
-                for mname in interface['methods']:
-                    method = interface['methods'][mname]
+        for interface in module.interfaces:
+            if interface.name == interface_name:
+                for mname in interface.methods:
+                    method = interface.methods[mname]
 
-                    name = method['name']
+                    name = method.name
 
                     param_str_a = ''
-                    for p in method['params']:
-                        if p['decorator'] != 'out':
-                            param_str_a += p['name'] + ', '
+                    for p in method.params:
+                        if p.decorator != 'out':
+                            param_str_a += p.name + ', '
                     param_str_b = ''
-                    for p in method['params']:
-                        if p['decorator'] != 'out':
+                    for p in method.params:
+                        if p.decorator != 'out':
                             if param_str_b == '':
                                 delim = ''
                             else:
                                 delim = ', '
-                            param_str_b += delim + p['name']
+                            param_str_b += delim + p.name
 
                     result += Template(INTERFACE_METHOD_STR).substitute(method_name=name,
                                                                         params_str_a=param_str_a,

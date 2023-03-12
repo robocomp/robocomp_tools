@@ -4,7 +4,7 @@ PYTHON_TYPES = ['bool', 'float', 'int', 'long', 'str', 'double', 'byte']
 
 def get_parameters_string(method, module_name, language):
     param_str = ""
-    for p in method['params']:
+    for p in method.params:
         # delim
         if param_str == '':
             delim = ''
@@ -12,7 +12,7 @@ def get_parameters_string(method, module_name, language):
             delim = ', '
         # decorator
         ampersand = '&'
-        if p['decorator'] == 'out':
+        if p.decorator == 'out':
             const = ''
         else:
             if language == "cpp":
@@ -20,11 +20,11 @@ def get_parameters_string(method, module_name, language):
             else:
                 const = ''
                 ampersand = ''
-            if p['type'].lower() in ['int', '::ice::int', 'float', '::ice::float']:
+            if p.type.lower() in ['int', '::ice::int', 'float', '::ice::float']:
                 ampersand = ''
         # str
-        param_type = get_type_string(p['type'], module_name)
-        param_str += delim + const + param_type + ' ' + ampersand + p['name']
+        param_type = get_type_string(p.type, module_name)
+        param_str += delim + const + param_type + ' ' + ampersand + p.name
     return param_str
 
 def get_type_string(initial_type, module_name):

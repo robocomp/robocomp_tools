@@ -19,22 +19,22 @@ class SERVANT_H(TemplateDict):
         self['year'] = str(datetime.date.today().year)
         self['interface_name'] = interface_name
         self['interface_name_upper'] = interface_name.upper()
-        self['filename_without_extension'] = module['filename'].split('/')[-1].split('.')[0]
-        self['module_name'] = module['name']
+        self['filename_without_extension'] = module.filename.split('/')[-1].split('.')[0]
+        self['module_name'] = module.name
         self['interface_methods_definition'] = self.interface_methods_definition(module,
                                                                                  interface_name)
 
     def interface_methods_definition(self, module, interface_name):
         result = ""
-        for interface in module['interfaces']:
-            if interface['name'] == interface_name:
-                for mname in interface['methods']:
-                    method = interface['methods'][mname]
+        for interface in module.interfaces:
+            if interface.name == interface_name:
+                for mname in interface.methods:
+                    method = interface.methods[mname]
 
-                    ret = utils.get_type_string(method['return'], module['name'])
-                    name = method['name']
+                    ret = utils.get_type_string(method.ret, module.name)
+                    name = method.name
 
-                    param_str = utils.get_parameters_string(method, module['name'], self.component.language)
+                    param_str = utils.get_parameters_string(method, module.name, self.component.language)
                     if param_str:
                         param_str = f"{param_str}, const Ice::Current&"
                     else:

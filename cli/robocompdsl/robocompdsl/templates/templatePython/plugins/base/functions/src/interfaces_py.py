@@ -75,7 +75,7 @@ class src_interfaces_py(TemplateDict):
             # module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
             module = self.component.idsl_pool[name]
             logger.debug(f"Module: {module}")
-            result += f"import {module['name']}\n"
+            result += f"import {module.name}\n"
         return result
 
     def create_lists_classes(self):
@@ -88,12 +88,12 @@ class src_interfaces_py(TemplateDict):
                 exit(-1)
 
             if module is not None:  # For modules without interface
-                for sequence in module['sequences']:
-                    item_type = utils.get_type_string(sequence['typeSequence'], module['name'])
+                for sequence in module.sequences:
+                    item_type = utils.get_type_string(sequence['typeSequence'], module.name)
                     if item_type == 'bytes': continue
                     result += Template(LIST_CLASSES_STR).substitute(list_type=sequence['name'].split('/')[1],
                                                                     item_type=item_type,
-                                                                    module_name=module['name'])
+                                                                    module_name=module.name)
         return result
 
     def implements_and_subscribes_imports(self):
@@ -109,7 +109,7 @@ class src_interfaces_py(TemplateDict):
             if communication_is_ice(iface):
                 name = iface.name
                 module = self.component.idsl_pool.module_providing_interface(iface.name)
-                result += Template(REQUIRE_STR).substitute(iface_name=name, module_name=module['name'],
+                result += Template(REQUIRE_STR).substitute(iface_name=name, module_name=module.name,
                                                            iface_name_lower=name.lower(), num=num)
         return result
 
@@ -121,7 +121,7 @@ class src_interfaces_py(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(iface.name)
                 result += Template(PUBLISHES_STR).substitute(iface_name=name,
                                                              iface_name_lower=name.lower(),
-                                                             module_name=module['name'])
+                                                             module_name=module.name)
         return result
 
     def implements_adapters_creation(self):

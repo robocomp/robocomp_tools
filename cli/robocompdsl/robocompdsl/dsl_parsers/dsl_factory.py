@@ -56,6 +56,7 @@ class DSLFactory(Singleton):
         :param file_path: path to the file containing the dsl. Format is extracted from the file extension.
         :param update: force the update of any cached file
         :return: struct/dict containing the information of the dsl contained in the file
+        TODO: Needs to be adapted to only use Path objects from standard library pathlib
         """
         if file_path is None:
             return None
@@ -97,6 +98,9 @@ class DSLFactory(Singleton):
                 # store the parser with the result in the cache fo the factory
                 self._cache[file_path] = result
         return result
+
+    def from_filename(self):
+        idsl
 
     @staticmethod
     def create_parser(dsl_type):

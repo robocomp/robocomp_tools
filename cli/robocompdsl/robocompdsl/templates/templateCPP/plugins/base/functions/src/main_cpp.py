@@ -204,7 +204,7 @@ class src_main_cpp(TemplateDict):
                     ptr = "Ptr"
                 name = interface.name
                 module = self.component.idsl_pool.module_providing_interface(name)
-                proxy_type = utils.get_type_string(name, module['name'])
+                proxy_type = utils.get_type_string(name, module.name)
                 result += Template(PROXY_PTR_STR).substitute(prx_type=proxy_type, ptr=ptr, lower=name.lower(), num=num,
                                                              prefix=prefix)
         return result
@@ -242,7 +242,7 @@ class src_main_cpp(TemplateDict):
                     result += "std::shared_ptr<IceStorm::TopicPrx> " + pb.lower() + "_topic;\n"
                 result += PUBLISHES_STR.replace("<NORMAL>", pb).replace("<LOWER>", pb.lower())
                 module = self.component.idsl_pool.module_providing_interface(pb)
-                proxy_type = utils.get_type_string(pb, module['name'])
+                proxy_type = utils.get_type_string(pb, module.name)
                 if self.component.language.lower() == "cpp":
                     result += "Ice::ObjectPrx " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
                     result += "" + pb.lower() + "_pubproxy = " + proxy_type + "Prx::uncheckedCast(" + pb.lower() + "_pub);\n"
@@ -269,7 +269,7 @@ class src_main_cpp(TemplateDict):
                     change4 = "auto"
 
                 module = self.component.idsl_pool.module_providing_interface(name)
-                proxy_type = utils.get_type_string(name, module['name'])
+                proxy_type = utils.get_type_string(name, module.name)
                 result += SUBSCRIBESTO_STR.replace("<CHANGE1>", change1).replace("<CHANGE2>", change2).replace(
                     "<CHANGE3>",
                     change3).replace(
@@ -300,7 +300,7 @@ class src_main_cpp(TemplateDict):
             name = interface.name
             if communication_is_ice(interface):
                 module = self.component.idsl_pool.module_providing_interface(name)
-                proxy_type = utils.get_type_string(name, module['name'])
+                proxy_type = utils.get_type_string(name, module.name)
                 if self.component.language.lower() == "cpp":
                     cpp = "<PROXYNAME>_proxy = <PROXY_TYPE>Prx::uncheckedCast( communicator()->stringToProxy( proxy ) );"
                 else:

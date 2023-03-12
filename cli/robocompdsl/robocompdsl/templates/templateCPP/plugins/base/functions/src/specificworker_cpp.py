@@ -128,17 +128,16 @@ class specificworker_cpp(TemplateDict):
             else:
                 imp = impa[0]
             module = pool.module_providing_interface(imp)
-            for interface in module['interfaces']:
-                if interface['name'] == imp:
-                    for mname in interface['methods']:
-                        method = interface['methods'][mname]
+            for interface in module.interfaces:
+                if interface.name == imp:
+                    for mname in interface.methods:
+                        method = interface.methods[mname]
                         param_str_a = ''
-                        body_code = self.body_code_from_name(method['name'])
+                        body_code = self.body_code_from_name(method.name)
                         if p_utils.communication_is_ice(impa):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
-                            return_type = utils.get_type_string(method['return'], module['name'])
-                            result += return_type + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n//implementCODE\n" + body_code + "\n}\n\n"
+                            param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
+                            return_type = utils.get_type_string(method.ret, module.name)
+                            result += return_type + ' SpecificWorker::' + interface.name + "_" + method.name + '(' + param_str_a + ")\n{\n//implementCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result
@@ -150,18 +149,17 @@ class specificworker_cpp(TemplateDict):
             module = pool.module_providing_interface(subscribes.name)
             if module is None:
                 raise ValueError('\nCan\'t find module providing %s\n' % subscribes.name)
-            for interface in module['interfaces']:
-                if interface['name'] == subscribes.name:
-                    for mname in interface['methods']:
-                        method = interface['methods'][mname]
+            for interface in module.interfaces:
+                if interface.name == subscribes.name:
+                    for mname in interface.methods:
+                        method = interface.methods[mname]
                         param_str_a = ''
-                        body_code = self.body_code_from_name(method['name'])
+                        body_code = self.body_code_from_name(method.name)
                         if p_utils.communication_is_ice(subscribes):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
-                            result += "//SUBSCRIPTION to " + method['name'] + " method from " + interface[
+                            param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
+                            result += "//SUBSCRIPTION to " + method.name + " method from " + interface[
                                 'name'] + " interface\n"
-                            result += method['return'] + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n//subscribesToCODE\n" + body_code + "\n}\n\n"
+                            result += method.ret + ' SpecificWorker::' + interface.name + "_" + method.name + '(' + param_str_a + ")\n{\n//subscribesToCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result
@@ -200,16 +198,16 @@ class specificworker_cpp(TemplateDict):
                             action = "call"
                             pub = ""
                         proxy_reference = "this->" + interface.name.lower() + num + f"_{pub}proxy->"
-                        for method in module['interfaces'][0]['methods']:
+                        for method in module.interfaces[0].methods:
                             proxy_methods_calls += f"// {proxy_reference}{method}(...)\n"
                         if proxy_methods_calls:
-                            result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module['name'],
+                            result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module.name,
                                                                                      methods=proxy_methods_calls,
                                                                                      action=action)
                     structs_str = ""
-                    for struct in module['structs']:
+                    for struct in module.structs:
                         structs_str += f"// {struct['name'].replace('/', '::')}\n"
                     if structs_str:
-                        result += Template(INTERFACE_TYPES_COMMENT_STR).substitute(module_name=module['name'],
+                        result += Template(INTERFACE_TYPES_COMMENT_STR).substitute(module_name=module.name,
                                                                                    types=structs_str)
         return result

@@ -63,7 +63,7 @@ class IDSLPool(OrderedDict):
                     self[module_name] = module
                     # try to add the modules that this one imports
                     aux_imports = []
-                    for i_import in module['imports']:
+                    for i_import in module.imports:
                         if i_import != '' and i_import not in self:
                             if communication_is_ice(i_import):
                                 aux_imports.append(i_import)
@@ -86,13 +86,14 @@ class IDSLPool(OrderedDict):
         :param files: list of idsl files to be included in the pool (file.idsl)
         """
         if len(files) == 0:
-            return
+            return []
         logger.debug(f"Looking for {files} in {self.include_directories}")
         recursive_imports = []
         for f in files:
+            module_name = f.split('.')[0]
             if f not in self:
                 module = self.add_idsl(f)
-                for i_import in module['imports']:
+                for i_import in module.imports:
                     if i_import != '' and i_import not in self:
                         if communication_is_ice(i_import):
                             recursive_imports.append(i_import)
@@ -119,26 +120,26 @@ class IDSLPool(OrderedDict):
         """
         self._initialice_mandatory_modules()
         logger.debug(f"Looking for {interface} in {list(self.keys())}")
-        for module in self:
-            logger.debug(f"Module {module} has {len(self[module]['interfaces'])} interfaces")
-            for m in self[module]['interfaces']:
-                if m['name'] == interface:
-                    logger.debug(f"Found {interface} in {module} ({self[module]['filename']}")
-                    return self[module]
+        for module_name in self:
+            logger.debug(f"Module {module_name} has {len(self[module_name].interfaces)} interfaces")
+            for m in self[module_name].interfaces:
+                if m.name == interface:
+                    logger.debug(f"Found {interface} in {module_name} ({self[module_name].filename}")
+                    return self[module_name]
         logger.warning(f"Couldn't find any module providing {interface}")
         return None
 
     def module_inteface_check(self):
         for module in self:
             problem_found = True
-            for m in self[module]['interfaces']:
-                if m['name'] == os.path.splitext(os.path.basename(self[module]['filename']))[0]:
+            for m in self[module].interfaces:
+                if m.name == os.path.splitext(os.path.basename(self[module]['filename']))[0]:
                     problem_found = False
                     break
             if problem_found:
                 interface_names = []
-                for m in self[module]['interfaces']:
-                    interface_names.append(m['name'])
+                for m in self[module].interfaces:
+                    interface_names.append(m.name)
                 logger.warning(f"It's expected to find at least one interface with the name of the file."
                                f"\n\tExpected interface name <{os.path.splitext(os.path.basename(self[module]['filename']))[0]}> but only found "
                                f"<{', '.join(interface_names)}> in {self[module]['filename']}", style='red')
@@ -149,8 +150,8 @@ class IDSLPool(OrderedDict):
         """
         interfaces = []
         for module in self:
-            for m in self[module]['interfaces']:
-                interfaces.append(m['name'])
+            for m in self[module].interfaces:
+                interfaces.append(m.name)
         return interfaces
 
     def idsl_path(self, idsl_name):

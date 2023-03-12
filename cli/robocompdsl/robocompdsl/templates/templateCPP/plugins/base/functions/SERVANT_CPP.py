@@ -28,29 +28,29 @@ class SERVANT_H(TemplateDict):
         module = pool.module_providing_interface(interface_name)
         if module is None:
             return result
-        for interface in module['interfaces']:
-            if interface['name'] == interface_name:
-                for mname in interface['methods']:
-                    method = interface['methods'][mname]
+        for interface in module.interfaces:
+            if interface.name == interface_name:
+                for mname in interface.methods:
+                    method = interface.methods[mname]
 
-                    ret = utils.get_type_string(method['return'], module['name'])
-                    name = method['name']
+                    ret = utils.get_type_string(method.ret, module.name)
+                    name = method.name
 
-                    param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
+                    param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
                     if param_str_a:
                         param_str_a = f"{param_str_a}, const Ice::Current&"
                     else:
                         param_str_a = "const Ice::Current&"
                     param_str_b = ''
-                    for p in method['params']:
+                    for p in method.params:
                         if param_str_b == '':
                             delim = ''
                         else:
                             delim = ', '
-                        param_str_b += delim + p['name']
+                        param_str_b += delim + p.name
 
                     result += Template(INTERFACE_METHOD_STR).substitute(ret=ret,
-                                                                        interface_name=interface['name'],
+                                                                        interface_name=interface.name,
                                                                         method_name=name,
                                                                         input_params=param_str_a,
                                                                         to_return="return " if ret != "void" else "",

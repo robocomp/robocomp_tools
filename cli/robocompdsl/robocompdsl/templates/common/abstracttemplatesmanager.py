@@ -209,11 +209,11 @@ class InterfaceTemplateManager(AbstractTemplatesManager):
             if output_path.endswith('.ice'):
                 pass
             elif os.path.exists(output_path):
-                if self.module['filename']:
-                    new_filename = self.module['filename'].split('/')[-1].split('.')[0] + ".ice"
+                if self.module.filename:
+                    new_filename = self.module.filename.split('/')[-1].split('.')[0] + ".ice"
                     output_path = os.path.join(output_path, new_filename)
-                elif os.path.exists(output_path) and self.module['name']:
-                    output_path = os.path.join(output_path, self.module['name'] + ".ice")
+                elif os.path.exists(output_path) and self.module.name:
+                    output_path = os.path.join(output_path, self.module.name + ".ice")
                 else:
                     raise ValueError("Invalid output name in module for the ice interface")
             else:

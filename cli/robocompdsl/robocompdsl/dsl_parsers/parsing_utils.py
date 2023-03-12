@@ -25,20 +25,20 @@ def communication_is_ice(sb):
 
 
 def is_valid_pubsub_idsl(idsl):
-    for interface in idsl['interfaces']:
+    for interface in idsl.interfaces:
         if len(interface["methods"]) != 1:
             return False
         for method in interface["methods"].values():
-            if method["return"] != "void":
+            if method.ret != "void":
                 return False
-            for param in method["params"]:
+            for param in method.params:
                 if param["decorator"] == "out":
                     return False
     return True
 
 
 def is_valid_rpc_idsl(idsl):
-    for interface in idsl['interfaces']:
+    for interface in idsl.interfaces:
         if len(interface["methods"]) > 0:
             return True
     return False

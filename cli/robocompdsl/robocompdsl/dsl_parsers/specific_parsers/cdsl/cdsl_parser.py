@@ -95,13 +95,21 @@ class CDSLParser(DSLParserTemplate):
         return CDSL
 
     def string_to_struct(self, string: str, **kwargs) -> componentfacade.ComponentFacade:
+        """
+        ComponentFacade is a class with methods to content the data of a robocomp component.
+        The returned value of parsing the string is a dictionary with a specific structure.
+        This method creates a ComponentFacade object from the dictionary.
+
+        """
         parsing_result = self.parse_string(string)
+        component = componentfacade.ComponentFacade()
+
         logger.debug(f"Creating component from string. Parsing result: {list(parsing_result.keys())}")
         # print 'parseCDSL.component', includeDirectories
         if "include_directories" in kwargs:
             self.include_directories = kwargs["include_directories"]
 
-        component = componentfacade.ComponentFacade()
+
         # Set options
         component.options = []
 
@@ -127,7 +135,7 @@ class CDSLParser(DSLParserTemplate):
             imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
         component.imports.extend(list(map(os.path.basename, sorted(imprts))))
         from robocompdsl.dsl_parsers.idslpool import idsl_pool
-        component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports))
+        component.recursiveImports = list(set(idsl_pool.update_with_idsls(list(component.imports)))-set(component.imports))
         # Language
         component.language = parsing_result['component']['content']['language']
         # Statemachine

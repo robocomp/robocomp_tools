@@ -41,7 +41,7 @@ class genericworker_cpp(TemplateDict):
             if self.component.language.lower() == 'cpp':
                 if prx_type not in CPP_TYPES and '::' not in prx_type:
                     module = self.component.idsl_pool.module_providing_interface(name)
-                    prx_type = f"{module['name']}::{prx_type}"
+                    prx_type = f"{module.name}::{prx_type}"
                 result += name.lower() + num + proxy_suffix + " = (*(" + prx_type + "Prx*)mprx[\"" + name + name_suffix + num + "\"]);\n"
             else:
                 result += name.lower() + num + proxy_suffix + " = std::get<" + str(cont) + ">(tprx);\n"

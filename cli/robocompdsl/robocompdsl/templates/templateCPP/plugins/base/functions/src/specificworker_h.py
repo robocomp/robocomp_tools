@@ -23,14 +23,13 @@ class specificworker_h(TemplateDict):
         else:
             interface_name = interface.name
         module = pool.module_providing_interface(interface_name)
-        for idsl_interface in module['interfaces']:
-            if idsl_interface['name'] == interface_name:
-                for method_name, method in idsl_interface['methods'].items():
+        for idsl_interface in module.interfaces:
+            if idsl_interface.name == interface_name:
+                for method_name, method in idsl_interface.methods.items():
                     if p_utils.communication_is_ice(interface):
-                        params_string = utils.get_parameters_string(method, module['name'], self.component.language)
-                        return_type = utils.get_type_string(method['return'], module['name'])
-                        result += return_type + ' ' + idsl_interface['name'] + "_" + method[
-                            'name'] + '(' + params_string + ");\n"
+                        params_string = utils.get_parameters_string(method, module.name, self.component.language)
+                        return_type = utils.get_type_string(method.ret, module.name)
+                        result += return_type + ' ' + idsl_interface.name + "_" + method.name + '(' + params_string + ");\n"
                     else:
                         pass
         return result
@@ -50,16 +49,15 @@ class specificworker_h(TemplateDict):
             else:
                 imp = impa.name
             module = pool.module_providing_interface(imp)
-            for interface in module['interfaces']:
-                if interface['name'] == imp:
-                    for mname in interface['methods']:
-                        method = interface['methods'][mname]
+            for interface in module.interfaces:
+                if interface.name == imp:
+                    for mname in interface.methods:
+                        method = interface.methods[mname]
                         param_str_a = ''
                         if p_utils.communication_is_ice(impa):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
-                            return_type = utils.get_type_string(method['return'], module['name'])
-                            result += return_type + ' ' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ");\n"
+                            param_str_a = utils.get_parameters_string(method, module.name, self.component.language)
+                            return_type = utils.get_type_string(method.ret, module.name)
+                            result += return_type + ' ' + interface.name + "_" + method.name + '(' + param_str_a + ");\n"
                         else:
                             pass
         return result

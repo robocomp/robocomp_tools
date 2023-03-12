@@ -48,10 +48,10 @@ class TEMPLATE_ICE(TemplateDict):
     def __init__(self, module):
         super(TEMPLATE_ICE, self).__init__()
         self.module = module
-        self['module_name'] = module['name']
-        self['module_filename'] = os.path.basename(module['filename']).split('.')[0]
-        self['module_file'] = os.path.basename(module['filename'])
-        self['module_name_upper'] = module['name'].upper()
+        self['module_name'] = module.name
+        self['module_filename'] = os.path.basename(module.filename).split('.')[0]
+        self['module_file'] = os.path.basename(module.filename)
+        self['module_name_upper'] = module.name.upper()
         self['ice_imports'] = self.ice_imports()
         self['ice_types'] = self.ice_types()
         self['ice_interfaces'] = self.ice_interfaces()
@@ -99,33 +99,33 @@ class TEMPLATE_ICE(TemplateDict):
     def ice_interfaces(self):
         result = ""
         if "interfaces" in self.module:
-            for interface in self.module['interfaces']:
+            for interface in self.module.interfaces:
                 methods = ""
-                for method in interface['methods'].values():
+                for method in interface.methods.values():
                     param_str_a = ''
-                    for p in method['params']:
+                    for p in method.params:
                         # delim
                         if param_str_a == '':
                             delim = ''
                         else:
                             delim = ', '
                         # STR
-                        if p['decorator'] != "none" and p['decorator'] != '':
-                            param_str_a += delim + p['decorator'] + ' ' + p['type'] + ' ' + p['name']
+                        if p.decorator != "none" and p.decorator != '':
+                            param_str_a += delim + p.decorator + ' ' + p.type + ' ' + p.name
                         else:
-                            param_str_a += delim + p['type'] + ' ' + p['name']
+                            param_str_a += delim + p.type + ' ' + p.name
                     exception = ""
-                    if method['throws'] != "nothing":
+                    if method.throws != "nothing":
                         exception += " throws "
-                        for p in method['throws']:
+                        for p in method.throws:
                             # STR
                             exception += p
-                    method_decorator = method['decorator']+" " if bool(method['decorator']) else ""
+                    method_decorator = method.decorator+" " if bool(method.decorator) else ""
                     methods += Template(ICE_METHOD_STR).substitute(method_decorator=method_decorator,
-                                                                   method_return=method['return'],
-                                                                   method_name=method['name'],
+                                                                   method_return=method.ret,
+                                                                   method_name=method.name,
                                                                    params_str_a=param_str_a,
                                                                    exception=exception)
-                result += CTemplate(ICE_INTERFACE_STR).substitute(interface_name=interface['name'],
+                result += CTemplate(ICE_INTERFACE_STR).substitute(interface_name=interface.name,
                                                                   interface_methods=methods)
         return result

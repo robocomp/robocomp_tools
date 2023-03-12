@@ -5,6 +5,7 @@ from pyparsing import Suppress, Word, alphas, alphanums, Group, \
     OneOrMore, ZeroOrMore, Optional, cppStyleComment, Literal, CharsNotIn
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
+from robocompdsl.dsl_parsers.specific_parsers.interfacefacade import InterfaceFacade
 from robocompdsl.logger import logger
 
 class IDSLParser(DSLParserTemplate):
@@ -67,33 +68,35 @@ class IDSLParser(DSLParserTemplate):
         IDSL.ignore(cppStyleComment)
         return IDSL
 
-    def string_to_struct(self, string, **kwargs):
+    def string_to_struct(self, string, **kwargs) -> InterfaceFacade:
         logger.debug("Parsing IDSL")
         parsing_result = self.parse_string(string)
-        result_dict = OrderedDict()
+        interface = InterfaceFacade()
+
+
         self.include_directories = []
         if "include_directories" in kwargs:
             self.include_directories = kwargs["include_directories"]
         logger.debug(f"\twith include_directories: {self.include_directories}")
         # Hack to make robocompdsl work with pyparsing > 2.2
         try:
-            result_dict['name'] = parsing_result['module']['name']
+            interface.name = parsing_result['module']['name']
         except KeyError:
-            result_dict['name'] = parsing_result['name']
-        logger.debug(f"\twith name: {result_dict['name']}")
+            interface.name = parsing_result['name']
+        logger.debug(f"\twith name: {interface.name}")
 
-        result_dict['imports'] = []
-        result_dict['recursive_imports'] = []
+        interface.imports = []
+        interface.recursive_imports = []
         if 'imports' in parsing_result:
-            # print result_dict['name'], parsing_result['imports']
-            result_dict['imports'] = parsing_result['imports'].asList()
-            logger.debug(f"\twith imports: {result_dict['imports']}")
+            # print interface.name, parsing_result['imports']
+            interface.imports = parsing_result['imports'].asList()
+            logger.debug(f"\twith imports: {interface.imports}")
             from robocompdsl.dsl_parsers.idslpool import idsl_pool
-            result_dict['recursive_imports'] = idsl_pool.update_with_idsls(list(parsing_result['imports']))
-            logger.debug(f"\twith recursive_imports: {result_dict['recursive_imports']}")
-        # INTERFACES DEFINED IN THE MODULE
-        result_dict['interfaces'] = []
+            interface.recursive_imports = idsl_pool.update_with_idsls(list(parsing_result['imports']))
+            logger.debug(f"\twith recursive_imports: {interface.recursive_imports}")
 
+        # INTERFACES DEFINED IN THE MODULE
+        interface.interfaces = []
         # Hack to make robocompdsl work with pyparsing > 2.2
         try:
             contents = parsing_result['module']['contents']
@@ -102,37 +105,38 @@ class IDSLParser(DSLParserTemplate):
 
         for contentDef in contents:
             if contentDef[0] == 'interface':
-                interface = {'name': contentDef[1], 'methods': OrderedDict()}
-                for method in sorted(contentDef['methods'], key=attrgetter('name')):
-                    interface['methods'][method['name']] = {}
+                # interface_struct = {'name': contentDef[1], 'methods': OrderedDict()}
+                # for method in sorted(contentDef.methods, key=attrgetter('name')):
+                #     interface_struct.methods[method.name] = {}
+                #
+                #     interface_struct.methods[method.name]['name'] = method.name
+                #     try:
+                #         interface_struct.methods[method.name]['decorator'] = method.decorator
+                #     except KeyError:
+                #         interface_struct.methods[method.name]['decorator'] = ''
+                #
+                #     interface_struct.methods[method.name]['return'] = method.ret
+                #
+                #     params = []
+                #     try:
+                #         for p in method.params:
+                #             try:
+                #                 params.append({'decorator': p.decorator, 'type': p.type, 'name': p.name})
+                #             except KeyError:
+                #                 params.append({'decorator': 'none', 'type': p.type, 'name': p.name})
+                #     except KeyError:
+                #         pass
+                #     interface_struct.methods[method.name]['params'] = params
+                #
+                #     try:
+                #         interface_struct.methods[method.name]['throws'] = method.raise.asList()
+                #     except KeyError:
+                #         interface_struct.methods[method.name]['throws'] = 'nothing'
+                interface.interfaces.append(contentDef.asDict())
+        logger.debug(f"\twith {len(interface.interfaces)} interfaces")
 
-                    interface['methods'][method['name']]['name'] = method['name']
-                    try:
-                        interface['methods'][method['name']]['decorator'] = method['decorator']
-                    except KeyError:
-                        interface['methods'][method['name']]['decorator'] = ''
-
-                    interface['methods'][method['name']]['return'] = method['ret']
-
-                    params = []
-                    try:
-                        for p in method['params']:
-                            try:
-                                params.append({'decorator': p['decorator'], 'type': p['type'], 'name': p['name']})
-                            except KeyError:
-                                params.append({'decorator': 'none', 'type': p['type'], 'name': p['name']})
-                    except KeyError:
-                        pass
-                    interface['methods'][method['name']]['params'] = params
-
-                    try:
-                        interface['methods'][method['name']]['throws'] = method['raise'].asList()
-                    except KeyError:
-                        interface['methods'][method['name']]['throws'] = 'nothing'
-                result_dict['interfaces'].append(interface)
-        logger.debug(f"\twith {len(result_dict['interfaces'])} interfaces")
         # TYPES DEFINED IN THE MODULE
-        result_dict['types'] = []
+        interface.types = []
         # print '---\n---\nPARSE IDSL TYPES'
         for contentDef in contents:
             # print contentDef[0]
@@ -141,35 +145,37 @@ class IDSLParser(DSLParserTemplate):
                 typedef = contentDef.asDict()
 
                 # print typedef
-                result_dict['types'].append(typedef)
+                interface.types.append(typedef)
             elif contentDef[0] in ['sequence', 'dictionary']:
                 typedef = contentDef.asDict()
                 # print typedef
-                result_dict['types'].append(typedef)
+                interface.types.append(typedef)
             elif contentDef[0] in ['interface']:
                 pass
             else:
                 print(('Unknown module content', contentDef))
+
         # SEQUENCES DEFINED IN THE MODULE
-        result_dict['sequences'] = []
-        result_dict['simpleSequences'] = []
+        interface.sequences = []
+        interface.simpleSequences = []
         for contentDef in contents:
             if contentDef['type'] == 'sequence':
-                seq_def = {'name': result_dict['name'] + "/" + contentDef['name'], 'type': contentDef['type'], 'typeSequence': contentDef['typeSequence']}
-                simple_seq_def = {'name': result_dict['name'], 'strName': contentDef['name']}
+                seq_def = {'name': interface.name + "/" + contentDef['name'], 'type': contentDef['type'], 'typeSequence': contentDef['typeSequence']}
+                simple_seq_def = {'name': interface.name, 'strName': contentDef['name']}
                 # print structdef
-                result_dict['sequences'].append(seq_def)
-                result_dict['simpleSequences'].append(simple_seq_def)
+                interface.sequences.append(seq_def)
+                interface.simpleSequences.append(simple_seq_def)
+
         # STRUCTS DEFINED IN THE MODULE
-        result_dict['structs'] = []
-        result_dict['simpleStructs'] = []
+        interface.structs = []
+        interface.simpleStructs = []
         for contentDef in contents:
             if contentDef['type'] == 'struct':
-                structdef = {'name': result_dict['name'] + "/" + contentDef['name'], 'type': contentDef['type'], 'structIdentifiers': contentDef['structIdentifiers'].asList()}
-                simple_struct_def = {'name': result_dict['name'], 'strName': contentDef['name']}
+                structdef = {'name': interface.name + "/" + contentDef['name'], 'type': contentDef['type'], 'structIdentifiers': contentDef['structIdentifiers'].asList()}
+                simple_struct_def = {'name': interface.name, 'strName': contentDef['name']}
                 # print structdef
-                result_dict['structs'].append(structdef)
-                result_dict['simpleStructs'].append(simple_struct_def)
+                interface.structs.append(structdef)
+                interface.simpleStructs.append(simple_struct_def)
 
-        self.struct = result_dict
-        return result_dict
+        self.struct = interface
+        return interface

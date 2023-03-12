@@ -2,6 +2,7 @@ import datetime
 from string import Template
 
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
+from robocompdsl.logger import logger
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 
@@ -86,33 +87,34 @@ class src_specificworker_py(TemplateDict):
         result = ""
         for interface in interfaces:
             module = self.component.idsl_pool.module_providing_interface(interface.name)
-            for module_interface in module['interfaces']:
-                if module_interface['name'] == interface.name:
-                    for mname in module_interface['methods']:
-                        method = module_interface['methods'][mname]
+            for module_interface in module.interfaces:
+                if module_interface.name == interface.name:
+                    for mname in module_interface.methods:
+                        method = module_interface.methods[mname]
                         out_values = []
-                        if method['return'] != 'void':
-                            out_values.append([method['return'], 'ret'])
+                        if method.ret != 'void':
+                            out_values.append([method.ret, 'ret'])
                         param_str_a = ''
-                        for p in method['params']:
-                            if p['decorator'] == 'out':
-                                out_values.append([p['type'], p['name']])
+                        logger.debug(f"method.params: {method.params}")
+                        for p in method.params:
+                            if p.decorator == 'out':
+                                out_values.append([p.type, p.name])
                             else:
-                                param_str_a += ', ' + p['name']
+                                param_str_a += ', ' + p.name
 
-                        if method['return'] != 'void':
+                        if method.ret != 'void':
                             returned_type = ""
-                            if method['return'] in [struct['name'].split('/')[1] for struct in module['structs']+module['sequences']] or \
-                                method['return'] in [struct['strName'] for struct in module['simpleSequences']]:
+                            if method.ret in [struct['name'].split('/')[1] for struct in module.structs+module.sequences] or \
+                                method.ret in [struct['strName'] for struct in module.simpleSequences]:
                                 returned_type= "ifaces."
-                            returned_type += utils.get_type_string(method['return'], module['name'])
+                            returned_type += utils.get_type_string(method.ret, module.name)
                             return_creation = f'ret = {returned_type}()'
                         else:
                             return_creation = ''
 
                         return_str = "pass\n\n"
                         if len(out_values) == 1:
-                            if method['return'] != 'void':
+                            if method.ret != 'void':
                                 return_str = "return ret"
                             else:
                                 return_str = out_values[0][1] + " = " + self.replace_type_cpp_to_python(out_values[0][0]) + "()\n"
@@ -128,8 +130,8 @@ class src_specificworker_py(TemplateDict):
                         else:
                             method_str1 = "IMPLEMENTATION of"
                         result += Template(METHOD_STR).substitute(method_str1=method_str1,
-                                                                  method_name=method['name'],
-                                                                  interface_name=module_interface['name'],
+                                                                  method_name=method.name,
+                                                                  interface_name=module_interface.name,
                                                                   param_str_a=param_str_a,
                                                                   return_creation=return_creation,
                                                                   return_str=return_str)
@@ -181,17 +183,17 @@ class src_specificworker_py(TemplateDict):
                             action = "publish calling"
                         else:
                             action = "call"
-                        for method in module['interfaces'][0]['methods']:
+                        for method in module.interfaces[0].methods:
                             proxy_methods_calls += f"# {proxy_reference}{method}(...)\n"
                         if proxy_methods_calls:
-                            result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module['name'],
+                            result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module.name,
                                                                                      methods=proxy_methods_calls,
                                                                                      action=action)
                     structs_str = ""
-                    for struct in module['structs']:
+                    for struct in module.structs:
                         structs_str += f"# {struct['name'].replace('/', '.')}\n"
                     if structs_str:
-                        result += Template(INTERFACE_TYPES_COMMENT_STR).substitute(module_name=module['name'],
+                        result += Template(INTERFACE_TYPES_COMMENT_STR).substitute(module_name=module.name,
                                                                                    types=structs_str)
         return result
     def startup_check_ice(self):
@@ -206,8 +208,8 @@ class src_specificworker_py(TemplateDict):
             for interface, num in get_name_number(interfaces):
                 if communication_is_ice(interface):
                     module = self.component.idsl_pool.module_providing_interface(interface.name)
-                    for struct in module['structs']:
+                    for struct in module.structs:
                         struct_str = f"{struct['name'].replace('/', '.')}"
-                        result += Template(INTERFACE_TYPES_TEST_STR).substitute(module_name=module['name'],
+                        result += Template(INTERFACE_TYPES_TEST_STR).substitute(module_name=module.name,
                                                                                 type=struct_str)
         return result
