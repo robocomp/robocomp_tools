@@ -1,5 +1,8 @@
 import os
 import sys
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ROBOCOMPDSL_DIR = os.path.join(CURRENT_DIR, "..")
-sys.path.append(ROBOCOMPDSL_DIR)
+from pathlib import Path
+
+
+CURRENT_DIR = Path(__file__).parent
+ROBOCOMPDSL_DIR = CURRENT_DIR / ".."
+sys.path.append(str(ROBOCOMPDSL_DIR))

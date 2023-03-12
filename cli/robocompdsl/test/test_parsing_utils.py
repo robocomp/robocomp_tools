@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from config_tests import CURRENT_DIR
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.componentfacade import Interface
-from robocompdsl.dsl_parsers import parsing_utils
+from robocompdsl.dsl_parsers import parsing_utils, idslpool
 from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
 
 
@@ -32,16 +32,15 @@ class ParsingUtilsTest(unittest.TestCase):
         self.assertTrue(parsing_utils.communication_is_ice(["CameraSimple"]))
 
     def test_IDSLPool(self):
-        self.assertRaises(AssertionError, parsing_utils.IDSLPool, "AprilTags.idsl", [])
-        pool = parsing_utils.IDSLPool(["AprilTags.idsl"], [])
+        pool = idslpool.idsl_pool
+        pool.add_idsl("AprilTags.idsl")
         self.assertIn("AprilTags", pool)
-        self.assertIn("GenericBase", pool)
-        self.assertIn("JointMotor", pool)
+        self.assertIn("CameraRGBDSimple", pool)
 
-        module = pool.module_providing_interface("JointMotor")
-        self.assertEqual(module['name'], 'RoboCompJointMotor')
+        module = pool.module_providing_interface("AprilTags")
+        self.assertEqual(module.name, 'RoboCompAprilTags')
 
-        idsl_module = pool.IDSL_file_for_module(module)
+        idsl_module = pool.idsl_file_for_module(module)
         self.assertEqual(idsl_module, '/opt/robocomp/interfaces/IDSLs/JointMotor.idsl')
 
         interfaces = pool.interfaces()
@@ -49,10 +48,10 @@ class ParsingUtilsTest(unittest.TestCase):
 
     def test_is_agm_agent(self):
         component = DSLFactory().from_file(
-            os.path.join(CURRENT_DIR, "resources", "camerasimple.cdsl"))
+            CURRENT_DIR / "resources" / "camerasimple.cdsl")
         self.assertFalse(component.is_agm_agent())
         component = DSLFactory().from_file(
-            os.path.join(CURRENT_DIR, "resources", "humanAgent.cdsl"))
+            CURRENT_DIR / "resources" / "humanAgent.cdsl")
         self.assertTrue(component.is_agm_agent())
 
     # def test_is_agm2_agent(self):
