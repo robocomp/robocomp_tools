@@ -62,7 +62,17 @@ class ComponentGenerationChecker:
             console.log("[red]No robocompdsl installation have been found. Have you installed it?[/red]")
             exit(-1)
         if interface_dir is not None:
-            robocompdsl_exe += " -I %s" % interface_dir
+            if not os.path.exists(interface_dir):
+                console.log(f"[yellow]Interface directory {interface_dir} does not exist[/yellow]")
+                # try with pwd + interface_dir
+                interface_dir = os.path.join(os.getcwd(),"..", interface_dir)
+                console.log(f"[yellow]Trying to find it in {interface_dir}[/yellow]")
+                if not os.path.exists(interface_dir):
+                    console.log(f"[yellow]Interface directory {interface_dir} does not exist[/yellow]")
+                    console.log("[yellow]Not setting -I option to robocompdsl[/yellow]")
+                    console.log("[yellow]You probably should explicitly set the interface directory with -I option[/yellow]")
+            else:
+                robocompdsl_exe += " -I %s" % interface_dir
         if dry_run:
             print(robocompdsl_exe+' %file > /dev/null 2>&1' % cdsl_file)
             print(robocompdsl_exe+' %cdsl_file . > %log_file 2>&1' % (cdsl_file, log_file))
