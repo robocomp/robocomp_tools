@@ -9,6 +9,7 @@ from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_parser import CDSLParser
 # from robocompdsl.dsl_parsers.specific_parsers.cdsl.cdsl_ply_parser import CDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.idsl_parser import IDSLParser
 from robocompdsl.dsl_parsers.specific_parsers.smdsl_parser import SMDSLParser
+from robocompdsl.logger import logger
 
 
 class Singleton(object):
@@ -58,15 +59,9 @@ class DSLFactory(Singleton):
         """
         if file_path is None:
             return None
-        if not os.path.isfile(file_path):
-            # local import to avoid problem with mutual imports
-            from robocompdsl.dsl_parsers.parsing_utils import idsl_robocomp_path
-            new_file_path = idsl_robocomp_path(file_path)
-            if new_file_path is None or not os.path.isfile(new_file_path):
-                print("DSLFactory. %s could not be found in Robocomp" % file_path)
-                raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), file_path)
-            else:
-                file_path = new_file_path
+        if file_path is None or not file_path.is_file():
+            print("DSLFactory. %s could not be found in Robocomp" % file_path)
+            raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), file_path)
         else:
             file_path = os.path.abspath(file_path)
         # if update is false and file_path exists in the cache, it's returned
@@ -97,6 +92,7 @@ class DSLFactory(Singleton):
                 raise
 
             else:
+                # store the filename in the result
                 result['filename'] = file_path
                 # store the parser with the result in the cache fo the factory
                 self._cache[file_path] = result

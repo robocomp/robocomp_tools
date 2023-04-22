@@ -2,6 +2,8 @@ import filecmp
 import os
 import subprocess
 import sys
+from pathlib import Path
+
 from rich import text
 from rich.console import Console
 import pyparsing
@@ -26,7 +28,6 @@ class FilesGenerator:
     def __init__(self):
         self.__dsl_file = None
         self.__output_path = None
-        self.__include_dirs = None
         self.diff = None
         self.ast = None
 
@@ -36,8 +37,8 @@ class FilesGenerator:
 
     @dsl_file.setter
     def dsl_file(self, value):
-        assert isinstance(value, str), "dsl_file must be a string not %s" % str(type(value))
-        assert os.path.exists(value), "%s dsl file not found." % value
+        assert isinstance(value, Path), "dsl_file must be a string not %s" % str(type(value))
+        assert value.is_file(), "%s dsl file not found." % value
         self.__dsl_file = value
 
     @property
@@ -49,19 +50,10 @@ class FilesGenerator:
         assert isinstance(value, str), "output_path must be a string not %s" % str(type(value))
         self.__output_path = value
 
-    @property
-    def include_dirs(self):
-        return self.__include_dirs
-
-    @include_dirs.setter
-    def include_dirs(self, value):
-        assert isinstance(value, list), "include_dirs must be a string not %s" % str(type(value))
-        self.__include_dirs = value
-
-    def generate(self, input_file, output_path, include_dirs, diff=None, test=False):
+    # TODO: diff and test should not be responsability of this class
+    def generate(self, input_file, output_path, diff=None, test=False):
         self.dsl_file = input_file
         self.output_path = output_path
-        self.include_dirs = include_dirs
         self.diff = diff
         self.__load_ast()
         new_existing_files = self.__create_files(test)
@@ -69,7 +61,7 @@ class FilesGenerator:
 
     def __load_ast(self):
         try:
-            self.ast = dsl_factory.DSLFactory().from_file(self.dsl_file, include_directories=self.include_dirs)
+            self.ast = dsl_factory.DSLFactory().from_file(self.dsl_file)
         except ValueError as e:
             console.log(f"Parsing error in file {text.Text(self.dsl_file, style='red')} while generating AST.")
             console.log(f"Exception info: {text.Text(e.args[0], style='red')} in line {e.args[1]} of:\n{text.Text(e.args[2].rstrip(), style='magenta')}")
@@ -77,7 +69,7 @@ class FilesGenerator:
         except FileNotFoundError as e:
             console.log(f"Dependency file not found for {text.Text(self.dsl_file, style='red')} while generating AST.")
             console.log(
-                f"Exception info: {text.Text(e.args[0], style='red')} in line {e.args[1]} of:\n{text.Text(e.args[2].rstrip(), style='magenta')}")
+                f"Exception info: {text.Text(str(e.args), style='red')}.")
             exit(1)
         except pyparsing.ParseSyntaxException as e:
             console.log(f"Parsing error in file {text.Text(self.dsl_file, style='red')} while generating AST.")
@@ -88,14 +80,14 @@ class FilesGenerator:
 
     def __create_files(self, test=False):
         new_existing_files = {}
-        if self.dsl_file.endswith(".cdsl") or self.dsl_file.endswith(".jcdsl"):
+        if self.dsl_file.suffix in [".cdsl", ".jcdsl"]:
             # Check output directory
             self.__create_component_directories(test)
 
             # Generate specific_component
             new_existing_files = self.__generate_component(test)
 
-        elif self.dsl_file.endswith(".idsl"):
+        elif self.dsl_file.suffix == ".idsl":
             new_existing_files = self.__generate_interface()
         return new_existing_files
 
@@ -117,7 +109,7 @@ class FilesGenerator:
                         break
                     except Exception as e:
                         console.log("Exception trying to execute %s" % diff_tool)
-                        console.log(e.message)
+                        console.log(e)
 
                 else:
                     console.log("Binary equal files %s and %s" % (o_file, n_file))

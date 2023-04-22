@@ -25,6 +25,15 @@ app = typer.Typer(short_help=typer.style("Command to build components or robocom
 class RCBuild:
     def __init__(self):
         self.ws = Workspace()
+        self.check_tools()
+
+    def check_tools(self):
+        execute_command("cmake --version")
+        execute_command("make --version")
+        execute_command("g++ --version")
+        execute_command("python3 --version")
+
+
 
     def build_component(self, bcomponent, do_clean_first=False, reg_exp=False, all_comps=False):
         if all_comps:
@@ -90,7 +99,13 @@ class RCBuild:
             except Exception as e:
                 raise RuntimeError("Couldn't generate doc files {0}".format(e))
 
-builder = RCBuild()
+try:
+    builder = RCBuild()
+except FileNotFoundError as e:
+    print(e)
+    print("You need to install cmake, make, g++ and python3")
+    exit(1)
+
 
 
 @app.command(name="doc", help=typer.style("Build documentation of the specified component", fg=typer.colors.GREEN))

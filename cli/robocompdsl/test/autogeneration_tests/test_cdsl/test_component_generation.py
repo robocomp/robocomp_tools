@@ -14,6 +14,7 @@ from rich.text import Text
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 TESTS_DIR = os.path.join(CURRENT_DIR)
+IDSL_DIR = os.path.join(CURRENT_DIR, "IDSLS")
 console = Console()
 
 class MyParser(argparse.ArgumentParser):
@@ -43,7 +44,7 @@ class ComponentGenerationChecker:
         self.exec_failed = 0
         self.dry_run = False
 
-    def generate_code(self, cdsl_file, log_file, dry_run=True):
+    def generate_code(self, cdsl_file, log_file, dry_run=True, interface_dir=None):
         """
         Execution of the robocompdsl script to generate the component code for a gigen .cdsl file.
         :param cdsl_file: filename of the .cdsl of the component to be generated
@@ -60,6 +61,8 @@ class ComponentGenerationChecker:
         if robocompdsl_exe is None:
             console.log("[red]No robocompdsl installation have been found. Have you installed it?[/red]")
             exit(-1)
+        if interface_dir is not None:
+            robocompdsl_exe += " -I %s" % interface_dir
         if dry_run:
             print(robocompdsl_exe+' %file > /dev/null 2>&1' % cdsl_file)
             print(robocompdsl_exe+' %cdsl_file . > %log_file 2>&1' % (cdsl_file, log_file))
@@ -150,7 +153,7 @@ class ComponentGenerationChecker:
                         rmtree(file)
 
     def check_components_generation(self, test_component_dir, dry_run, dirty, generate_only=False, no_execution=False, filter="", avoid=None,
-                                    clean_only=False):
+                                    clean_only=False, interface_dir=None):
         """
         Main method of the class. Generate needed code, compile and show the results
         :param test_component_dir: alternative dir for the robocompdsl installation
@@ -192,7 +195,7 @@ class ComponentGenerationChecker:
                         self.valid += 1
                         self.results[current_dir] = {"generation":False, "compilation": False, "execution": False}
                         console.log("Generating code ... [yellow]WAIT![/yellow]")
-                        if (generation_result := self.generate_code(cdsl_file, "generation_output.log", False))[0] == 0:
+                        if (generation_result := self.generate_code(cdsl_file, "generation_output.log", False, interface_dir))[0] == 0:
                             console.log("%s generation [green]OK[/green]" % current_dir)
                             self.results[current_dir]['generation'] = True
                             self.generated += 1
@@ -299,6 +302,9 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--test-folder", type=str,
                         help=".",
                         default=TESTS_DIR)
+    parser.add_argument("-I", "--interfaces", type=str,
+                        help="Custom where the interfaces are stored",
+                        default=IDSL_DIR)
     parser.add_argument('--avoid', nargs='*',
                         help="List of components dir names to be avoided",
                         type=str)
@@ -311,13 +317,14 @@ if __name__ == '__main__':
         checker = ComponentGenerationChecker()
 
         result = checker.check_components_generation(args.test_folder,
-                                                    args.dry_run,
-                                                    args.dirty,
-                                                    args.generate_only,
-                                                    args.no_execution,
-                                                    args.filter,
-                                                    args.avoid,
-                                                    args.clean)
+                                                     args.dry_run,
+                                                     args.dirty,
+                                                     args.generate_only,
+                                                     args.no_execution,
+                                                     args.filter,
+                                                     args.avoid,
+                                                     args.clean,
+                                                     args.interfaces)
 
     except (KeyboardInterrupt, SystemExit):
         console.log("\nExiting in the middle of the execution.", style="red")

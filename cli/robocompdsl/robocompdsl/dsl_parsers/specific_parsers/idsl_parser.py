@@ -5,8 +5,7 @@ from pyparsing import Suppress, Word, alphas, alphanums, Group, \
     OneOrMore, ZeroOrMore, Optional, cppStyleComment, Literal, CharsNotIn
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.parsing_utils import generate_recursive_imports
-
+from robocompdsl.logger import logger
 
 class IDSLParser(DSLParserTemplate):
     def __init__(self):
@@ -69,23 +68,29 @@ class IDSLParser(DSLParserTemplate):
         return IDSL
 
     def string_to_struct(self, string, **kwargs):
+        logger.debug("Parsing IDSL")
         parsing_result = self.parse_string(string)
         result_dict = OrderedDict()
         self.include_directories = []
         if "include_directories" in kwargs:
             self.include_directories = kwargs["include_directories"]
+        logger.debug(f"\twith include_directories: {self.include_directories}")
         # Hack to make robocompdsl work with pyparsing > 2.2
         try:
             result_dict['name'] = parsing_result['module']['name']
         except KeyError:
             result_dict['name'] = parsing_result['name']
+        logger.debug(f"\twith name: {result_dict['name']}")
 
         result_dict['imports'] = []
         result_dict['recursive_imports'] = []
         if 'imports' in parsing_result:
             # print result_dict['name'], parsing_result['imports']
             result_dict['imports'] = parsing_result['imports'].asList()
-            result_dict['recursive_imports'] = generate_recursive_imports(list(parsing_result['imports']), self.include_directories)
+            logger.debug(f"\twith imports: {result_dict['imports']}")
+            from robocompdsl.dsl_parsers.idslpool import idsl_pool
+            result_dict['recursive_imports'] = idsl_pool.update_with_idsls(list(parsing_result['imports']))
+            logger.debug(f"\twith recursive_imports: {result_dict['recursive_imports']}")
         # INTERFACES DEFINED IN THE MODULE
         result_dict['interfaces'] = []
 
@@ -125,6 +130,7 @@ class IDSLParser(DSLParserTemplate):
                     except KeyError:
                         interface['methods'][method['name']]['throws'] = 'nothing'
                 result_dict['interfaces'].append(interface)
+        logger.debug(f"\twith {len(result_dict['interfaces'])} interfaces")
         # TYPES DEFINED IN THE MODULE
         result_dict['types'] = []
         # print '---\n---\nPARSE IDSL TYPES'

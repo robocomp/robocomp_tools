@@ -2,6 +2,7 @@ from string import Template
 
 from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
+from robocompdsl.logger import logger
 from robocompdsl.templates.common.templatedict import TemplateDict
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
 
@@ -65,11 +66,15 @@ class src_interfaces_py(TemplateDict):
     def load_slice_and_create_imports(self, includeDirectories=None):
         result = ""
         import os
+        logger.debug(f"Loading slice files: {self.component.recursiveImports + self.component.imports}")
         for imp in sorted(set(self.component.recursiveImports + self.component.imports)):
             file_name = os.path.basename(imp)
             name = os.path.splitext(file_name)[0]
             result += Template(SLICE_LOAD_STR).substitute(interface_name=name)
-            module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
+            logger.debug(f"Loading slice file: {file_name} ({name})")
+            # module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
+            module = self.component.idsl_pool[name]
+            logger.debug(f"Module: {module}")
             result += f"import {module['name']}\n"
         return result
 

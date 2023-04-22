@@ -1,7 +1,9 @@
-import robocompdsl.common.rcExceptions
-from robocompdsl.dsl_parsers.parsing_utils import IDSLPool
+from robocompdsl.common import rcExceptions
 from dataclasses import dataclass
 from abc import ABC
+
+from robocompdsl.logger import logger
+
 
 # class ComponentFacade(dict):
 #     """
@@ -105,14 +107,6 @@ from abc import ABC
 #                 names.append(item)
 #         return names
 #
-#     @property
-#     def idsl_pool(self):
-#         if 'idsl_pool' in self:
-#             return self.idsl_pool
-#         else:
-#             the_idsls = ''.join([imp + '#' for imp in self.imports])
-#             idsl_pool = IDSLPool(the_idsls, [])
-#             self.idsl_pool = idsl_pool
 
 
 # @dataclass
@@ -220,16 +214,19 @@ class ComponentFacade:
                 value = new_class(value)
         super(ComponentFacade, self).__setattr__(key, value)
 
+    # TODO: bad idea to import and make the check each time we access the property
     @property
     def idsl_pool(self):
         if hasattr(self, '__idsl_pool'):
             return self.__idsl_pool
         else:
-            idsl_pool = IDSLPool(self.imports, [])
             interface_list = self.requires + self.implements + self.subscribesTo + \
                              self.publishes
+            from robocompdsl.dsl_parsers.idslpool import idsl_pool
+            logger.debug(f"IDSL POOL includes {idsl_pool.include_directories}")
             for interface_required in interface_list:
                 if not idsl_pool.module_providing_interface(interface_required.name):
+                    logger.error(f"Interface {interface_required.name} not found in any module in the IDSL pool {idsl_pool.interfaces()} {list(idsl_pool.keys())}")
                     raise rcExceptions.InterfaceNotFound(interface_required.name, idsl_pool.interfaces())
             self.__idsl_pool = idsl_pool
             return idsl_pool
@@ -276,3 +273,6 @@ class ComponentFacade:
             else:
                 return False
         return equal
+
+    def __len__(self):
+        return len(self.__dict__)
