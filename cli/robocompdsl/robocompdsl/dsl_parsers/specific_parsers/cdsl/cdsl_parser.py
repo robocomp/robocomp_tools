@@ -1,5 +1,6 @@
 import os
 from operator import itemgetter
+from pathlib import Path
 
 from pyparsing import Suppress, Word, CaselessKeyword, alphas, alphanums, CharsNotIn, Group, ZeroOrMore, Optional, \
     delimitedList, cppStyleComment
@@ -142,7 +143,7 @@ class CDSLParser(DSLParserTemplate):
         component.statemachine_path = None
         try:
             statemachine = parsing_result['component']['content']['statemachine']['machine_path']
-            component.statemachine_path = statemachine
+            component.statemachine_path = Path(statemachine)
         except KeyError:
             pass
 
