@@ -92,6 +92,7 @@ class ComponentDir:
         for current_check in cls.checks:
             result, component = current_check.check(path, component)
             if not result:
+                print(f"Failed on check {current_check} with result={result} and component={str(component)}")
                 return None
         component.path = path
         return component

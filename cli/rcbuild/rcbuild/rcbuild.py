@@ -46,6 +46,9 @@ class RCBuild:
             component = ComponentDir.create_component(Path(bcomponent))
             if component is not None:
                 component.build()
+            else:
+                print(f"No component found in {bcomponent} in path {os.getcwd()}")
+                print(f"Check that you have already generated the component with robocompdsl")
 
 
     def remove_cmakecache_files(self, path: Path):
