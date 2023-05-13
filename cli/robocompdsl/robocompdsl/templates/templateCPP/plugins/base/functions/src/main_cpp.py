@@ -144,7 +144,7 @@ catch(const Ice::Exception& ex)
 	cout << "[" << PROGRAM_NAME << "]: Exception creating proxy <NORMAL><PROXYNUMBER>: " << ex;
 	return EXIT_FAILURE;
 }
-rInfo("<NORMAL>Proxy<PROXYNUMBER> initialized Ok!");
+qWarning("<NORMAL>Proxy<PROXYNUMBER> initialized Ok!");
 
 """
 

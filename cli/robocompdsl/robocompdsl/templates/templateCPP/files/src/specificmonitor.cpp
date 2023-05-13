@@ -51,14 +51,14 @@ void SpecificMonitor::run()
  */
 void SpecificMonitor::initialize()
 {
-	rInfo("Starting monitor ...");
+	qWarning("Starting monitor ...");
 	initialTime=QTime::currentTime();
 	RoboCompCommonBehavior::ParameterList params;
 	readPConfParams(params);
 	readConfig(params);
 	if(!sendParamsToWorker(params))
 	{
-		rError("Error reading config parameters. Exiting");
+		qError("Error reading config parameters. Exiting");
 		killYourSelf();
 	}
 	state = RoboCompCommonBehavior::State::Running;
@@ -75,7 +75,7 @@ bool SpecificMonitor::sendParamsToWorker(RoboCompCommonBehavior::ParameterList p
 	}
 	else
 	{
-		rError("Incorrect parameters");
+		qError("Incorrect parameters");
 	}
 	return false;
 

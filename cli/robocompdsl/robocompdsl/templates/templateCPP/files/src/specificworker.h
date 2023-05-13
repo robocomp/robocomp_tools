@@ -29,6 +29,7 @@ ${agmagent_comment}
 #define SPECIFICWORKER_H
 
 #include <genericworker.h>
+#include <doublebuffer/DoubleBuffer.h>
 ${dsr_includes}
 
 class SpecificWorker : public GenericWorker

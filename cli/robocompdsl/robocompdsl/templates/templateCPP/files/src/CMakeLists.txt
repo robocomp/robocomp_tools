@@ -1,31 +1,40 @@
 cmake_minimum_required(VERSION 3.10)
 
+# Preferably place project() call here, if you have one.
+project(${component_name})
 
-IF ( "$$ENV{ROBOCOMP}" STREQUAL "")
-  MESSAGE(WARNING "ROBOCOMP variable not set. Using the default value: /opt/robocomp")
-  SET (ENV{ROBOCOMP} "/opt/robocomp/")
-ENDIF ( "$$ENV{ROBOCOMP}" STREQUAL "")
+# Check for ROBOCOMP environment variable
+if (DEFINED ENV{ROBOCOMP})
+  set(ROBOCOMP_WORKSPACE $ENV{ROBOCOMP})
+else()
+  message(WARNING "ROBOCOMP environment variable not set. Using the default value: /opt/robocomp")
+  set(ROBOCOMP_WORKSPACE "/opt/robocomp/")
+endif()
 
-IF(NOT EXISTS $$ENV{ROBOCOMP}/cmake)
-  MESSAGE(FATAL_ERROR "Couldn't find RoboComp in $$ENV{ROBOCOMP}! Exiting...")
-ENDIF(NOT EXISTS $$ENV{ROBOCOMP}/cmake)
+# Check for RoboComp's existence
+if(NOT EXISTS ${ROBOCOMP_WORKSPACE}/cmake)
+  message(FATAL_ERROR "Couldn't find RoboComp in ${ROBOCOMP_WORKSPACE}! Exiting...")
+endif()
 
-INCLUDE( $$ENV{ROBOCOMP}/cmake/robocomp.cmake )
-INCLUDE( $$ENV{ROBOCOMP}/cmake/modules/qt.cmake )
-INCLUDE ( CMakeListsSpecific.txt)
+# Include RoboComp and Qt cmake scripts
+list(APPEND CMAKE_MODULE_PATH ${ROBOCOMP_WORKSPACE}/cmake)
+include(robocomp)
+include(qt)
+
+# Include the specific cmake list
+include(CMakeListsSpecific)
 
 # Sources set
-SET ( SOURCES
-  $${SOURCES}
-  $$ENV{ROBOCOMP}/classes/rapplication/rapplication.cpp
-  $$ENV{ROBOCOMP}/classes/sigwatch/sigwatch.cpp
-  $$ENV{ROBOCOMP}/classes/qlog/qlog.cpp
-  main.cpp
-  genericmonitor.cpp
-  commonbehaviorI.cpp
-  genericworker.cpp
-  ${interface_sources}
-  ${statemachine_visual_sources}
+set(SOURCES
+    $${SOURCES}
+    $${ROBOCOMP_WORKSPACE}/classes/rapplication/rapplication.cpp
+    $${ROBOCOMP_WORKSPACE}/classes/sigwatch/sigwatch.cpp
+    main.cpp
+    genericmonitor.cpp
+    commonbehaviorI.cpp
+    genericworker.cpp
+    ${interface_sources}
+    ${statemachine_visual_sources}
 )
 
 
@@ -33,22 +42,33 @@ ${cpp11_ice_packages}
 
 ${agm_includes}
 
-#ROBOCOMP
-ROBOCOMP_INITIALIZE( $$ENV{ROBOCOMP}/ )
+# RoboComp initialize
+ROBOCOMP_INITIALIZE( $${ROBOCOMP_WORKSPACE}/ )
 ${wrap_ice}
-SET (EXECUTABLE_OUTPUT_PATH $${RC_COMPONENT_DEVEL_PATH}/bin)
+set(EXECUTABLE_OUTPUT_PATH $${RC_COMPONENT_DEVEL_PATH}/bin)
 
 ${wrap_ui}
 
-# no-char8_t to avoid a problem with ICE Connection lib.
-SET(COMPONENT_COMPILE_DEFINITIONS $${COMPONENT_COMPILE_DEFINITIONS} -g  -fmax-errors=1 -fno-char8_t)
-
 # Specify construction and link process
-ADD_EXECUTABLE( ${component_name} $${SOURCES} $${MOC_SOURCES} $${RC_SOURCES} $${UI_HEADERS} )
-TARGET_LINK_LIBRARIES( ${component_name} $${LIBS} $${STATIC_LIBS} $${SPECIFIC_LIBS} $${QT_LIBRARIES} $${Ice_LIBRARIES})
-TARGET_COMPILE_DEFINITIONS(${component_name} $${COMPONENT_COMPILE_DEFINITIONS})
-SET_TARGET_PROPERTIES(${component_name}
-        PROPERTIES
-        CXX_STANDARD 20
-        )
-INSTALL(FILES $${EXECUTABLE_OUTPUT_PATH}/${component_name} DESTINATION $${RC_COMPONENT_INSTALL_PATH}/bin/ PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
+add_executable(${component_name} $${SOURCES} $${MOC_SOURCES} $${RC_SOURCES} $${UI_HEADERS})
+
+# Link libraries
+target_link_libraries(${component_name}
+    $${LIBS}
+    $${STATIC_LIBS}
+    $${SPECIFIC_LIBS}
+    $${QT_LIBRARIES}
+    $${Ice_LIBRARIES}
+)
+
+# Add compile definitions
+# no-char8_t to avoid a problem with ICE Connection lib.
+target_compile_definitions(${component_name} $${COMPONENT_COMPILE_DEFINITIONS} -g  -fmax-errors=1 -fno-char8_t)
+set_target_properties(${component_name} PROPERTIES
+    CXX_STANDARD 20
+)
+
+# Installation
+install(TARGETS $${EXECUTABLE_OUTPUT_PATH}/${component_name} DESTINATION $${RC_COMPONENT_INSTALL_PATH}/bin
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+)

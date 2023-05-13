@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required( VERSION 3.10 )
 PROJECT( ${component_name} )
 
 SET(RC_COMPONENT_PATH $${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "component base path" FORCE)
@@ -12,7 +12,7 @@ SET(RC_COMPONENT_INSTALL_PATH "/opt/robocomp" CACHE STRING "component install pa
 #STRING(STRIP $${COMPONENT_NAME} COMPONENT_NAME)
 #SET(COMPONENT_NAME $${COMPONENT_NAME} CACHE STRING "component name" FORCE)
 
-SUBDIRS( src )
+ADD_SUBDIRECTORY( src )
 
 INSTALL(FILES etc/config DESTINATION $${RC_COMPONENT_INSTALL_PATH}/etc-default/ RENAME ${component_name}.conf )
 

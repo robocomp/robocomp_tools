@@ -72,7 +72,6 @@
 
 #include <rapplication/rapplication.h>
 #include <sigwatch/sigwatch.h>
-#include <qlog/qlog.h>
 
 #include "config.h"
 #include "genericmonitor.h"

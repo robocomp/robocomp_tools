@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include <stdint.h>
-#include <qlog/qlog.h>
+#include <QtCore>
 ${gui_includes}
 ${statemachine_includes}
 #include <CommonBehavior.h>

@@ -294,3 +294,61 @@ It is recommended that once you are done with the manual tests you make sure to 
 python3 test_component_generation.py -c
 ```
 to delete temporary files and not upload them to the repository.
+
+
+# Tutorial: Making changes to robocompdsl templates
+
+Imagina que recibes un encargo de tu jefe de modificar el código que genera robocompdsl.
+Objetivo: Componentes en C++. Conseguir generar componentes en C++ que compilen correctamente
+Cosas a corregir:
+* CMakeList.txt
+  * cmake_minimum_required(VERSION 3.10)
+  * reemplazar SUBDIRS(src) por add_subdirectory(src)
+
+Como se ha explicado anteriormente robocompdsl funciona con templates. En el directorio robocompdsl/robocompdsl/templates
+podemos encontrar el directorio templateCPP que es el que nos interesa. En este directorio podemos encontrar los directorios
+files y plugins. En el directorio files podemos encontrar los ficheros que se copian tal cual al componente generado.
+En el directorio plugins podemos encontrar los ficheros que se utilizan para generar dinámicamente el código del componente.
+
+Lo normal es empezar mirando en files y buscar el fichero que se quiere modificar, en este caso CMakeLists.txt
+robocomp_tools/cli/robocompdsl/robocompdsl/templates/templateCPP/files/CMakeLists.txt
+En este fichero podemos encontras las referencias que nos piden que cambienpor por ejemplo, 
+actualmente la cabecera del fichero tiene la declaración
+```
+cmake_minimum_required( VERSION 2.8 )
+```
+que nos piden que actualicemos a
+```
+cmake_minimum_required( VERSION 3.10 )
+```
+Con este simple cambio todos los componentes que se generen a partir de ahora llevarán en ese CMakelists.txt la versión 3.10
+
+El siguiente cambio que nos piden es que en lugar de utilizar la función SUBDIRS(src) se utilice la función add_subdirectory(src)
+Como podemos ver este es un cambio que de nuevo podemos hacer directamente en ese fichero.
+```
+SUBDIRS(src)
+```
+por
+```
+add_subdirectory(src)
+```
+
+
+
+
+> Lo más importante es cambiar la parte de la variable de entorno del cmake
+```
+    IF ( "$ENV{ROBOCOMP}" STREQUAL "")
+      MESSAGE(WARNING "ROBOCOMP variable not set. Using the default value: /opt/robocomp")
+      SET (ENV{ROBOCOMP} "/opt/robocomp/")
+    ENDIF ( "$ENV{ROBOCOMP}" STREQUAL "")
+```
+> esto no coge la variable ROBOCOMP definida en .bashrc por algún motivo. El default ahora debería ser /home/robocomp/robocomp
+
+Lo primero que deberías hacer es averiguar si el trozo de código que se quiere cambiar es de un componente en C++ o en Python.
+En este caso podemos ver que es un trozo de código de CMake y se utiliza en ambos componentes.
+Si hacemos una búsqueda por ejemplo de un trozo de ese código 
+`MESSAGE(WARNING "ROBOCOMP variable not set. Using the default value: /opt/robocomp")`
+Veremos que aparece en variso sitios (entre otros ahora dentro de este tutorial), pero el que parece más interesante
+ahora mismo es en el fichero `robocomp_tools/cli/robocompdsl/robocompdsl/templates/templateCPP/files/src/CMakeLists.txt`
+```cmake
