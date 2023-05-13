@@ -5,19 +5,19 @@ project(${component_name})
 
 # Check for ROBOCOMP environment variable
 if (DEFINED ENV{ROBOCOMP})
-  set(ROBOCOMP_WORKSPACE $ENV{ROBOCOMP})
+  set(ROBOCOMP_WORKSPACE $$ENV{ROBOCOMP})
 else()
   message(WARNING "ROBOCOMP environment variable not set. Using the default value: /opt/robocomp")
   set(ROBOCOMP_WORKSPACE "/opt/robocomp/")
 endif()
 
 # Check for RoboComp's existence
-if(NOT EXISTS ${ROBOCOMP_WORKSPACE}/cmake)
-  message(FATAL_ERROR "Couldn't find RoboComp in ${ROBOCOMP_WORKSPACE}! Exiting...")
+if(NOT EXISTS $${ROBOCOMP_WORKSPACE}/cmake)
+  message(FATAL_ERROR "Couldn't find RoboComp in $${ROBOCOMP_WORKSPACE}! Exiting...")
 endif()
 
 # Include RoboComp and Qt cmake scripts
-list(APPEND CMAKE_MODULE_PATH ${ROBOCOMP_WORKSPACE}/cmake)
+list(APPEND CMAKE_MODULE_PATH $${ROBOCOMP_WORKSPACE}/cmake)
 include(robocomp)
 include(qt)
 
