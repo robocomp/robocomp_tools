@@ -19,7 +19,7 @@ endif()
 # Include RoboComp and Qt cmake scripts
 list(APPEND CMAKE_MODULE_PATH $${ROBOCOMP_WORKSPACE}/cmake)
 include(robocomp)
-include(qt)
+include(modules/qt)
 
 # Include the specific cmake list
 include(CMakeListsSpecific)
