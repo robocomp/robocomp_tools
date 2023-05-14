@@ -67,7 +67,7 @@ void GenericMonitor::setPeriod(int _period)
 */
 void GenericMonitor::killYourSelf()
 {
-	rDebug("Killing myself");
+	qDebug("Killing myself");
 	worker->killYourSelf();
 	emit kill();
 

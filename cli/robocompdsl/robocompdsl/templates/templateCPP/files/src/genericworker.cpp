@@ -43,7 +43,7 @@ GenericWorker::~GenericWorker()
 }
 void GenericWorker::killYourSelf()
 {
-	rDebug("Killing myself");
+	qDebug("Killing myself");
 	emit kill();
 }
 /**
@@ -52,7 +52,7 @@ void GenericWorker::killYourSelf()
 */
 void GenericWorker::setPeriod(int p)
 {
-	rDebug("Period changed"+QString::number(p));
+	qDebug("Period changed"+QString::number(p));
 	Period = p;
 	timer.start(Period);
 }
