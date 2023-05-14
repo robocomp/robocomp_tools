@@ -145,7 +145,6 @@ bool GenericMonitor::configGetString(Ice::CommunicatorPtr communicator, const st
 		if (list->contains(QString::fromStdString(value)) == false)
 		{
 			qFatal("Reading config file: %s is not a valid string", compound.c_str());
-			qError("Reading config file:"+compound+" is not a valid string");
 		}
 		QString error = QString("not valid configuration value");
 		qDebug() << error;

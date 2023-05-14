@@ -58,7 +58,7 @@ void SpecificMonitor::initialize()
 	readConfig(params);
 	if(!sendParamsToWorker(params))
 	{
-		qError("Error reading config parameters. Exiting");
+		qCritical("Error reading config parameters. Exiting");
 		killYourSelf();
 	}
 	state = RoboCompCommonBehavior::State::Running;
@@ -75,7 +75,7 @@ bool SpecificMonitor::sendParamsToWorker(RoboCompCommonBehavior::ParameterList p
 	}
 	else
 	{
-		qError("Incorrect parameters");
+		qWarning("Incorrect parameters");
 	}
 	return false;
 

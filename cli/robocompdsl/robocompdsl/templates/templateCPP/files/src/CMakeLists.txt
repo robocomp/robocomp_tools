@@ -22,7 +22,7 @@ include(robocomp)
 include(modules/qt)
 
 # Include the specific cmake list
-include(CMakeListsSpecific)
+include(CMakeListsSpecific.txt)
 
 # Sources set
 set(SOURCES
@@ -61,9 +61,9 @@ target_link_libraries(${component_name}
     $${Ice_LIBRARIES}
 )
 
-# Add compile definitions
+# Add compile options
 # no-char8_t to avoid a problem with ICE Connection lib.
-target_compile_definitions(${component_name} $${COMPONENT_COMPILE_DEFINITIONS} -g  -fmax-errors=1 -fno-char8_t)
+target_compile_options(${component_name} PRIVATE -g  -fmax-errors=1 -fno-char8_t)
 set_target_properties(${component_name} PROPERTIES
     CXX_STANDARD 20
 )
