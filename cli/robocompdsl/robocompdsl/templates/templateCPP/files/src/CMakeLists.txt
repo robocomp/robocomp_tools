@@ -1,6 +1,10 @@
+# Use the latest policy behavior
+cmake_policy(VERSION 3.10)
+
+# Set the minimum version
 cmake_minimum_required(VERSION 3.10)
 
-# Preferably place project() call here, if you have one.
+# Project call
 project(${component_name})
 
 # Check for ROBOCOMP environment variable
@@ -37,6 +41,8 @@ set(SOURCES
     ${statemachine_visual_sources}
 )
 
+add_library(${component_name}_lib STATIC ${SOURCES})
+target_include_directories(${component_name}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 ${cpp11_ice_packages}
 
@@ -45,7 +51,6 @@ ${agm_includes}
 # RoboComp initialize
 ROBOCOMP_INITIALIZE( $${ROBOCOMP_WORKSPACE}/ )
 ${wrap_ice}
-set(EXECUTABLE_OUTPUT_PATH $${RC_COMPONENT_DEVEL_PATH}/bin)
 
 ${wrap_ui}
 
@@ -69,6 +74,6 @@ set_target_properties(${component_name} PROPERTIES
 )
 
 # Installation
-install(TARGETS $${EXECUTABLE_OUTPUT_PATH}/${component_name} DESTINATION $${RC_COMPONENT_INSTALL_PATH}/bin
+install(TARGETS ${component_name} DESTINATION $${RC_COMPONENT_INSTALL_PATH}/bin
     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
 )
