@@ -41,8 +41,8 @@ set(SOURCES
     ${statemachine_visual_sources}
 )
 
-add_library(${component_name}_lib STATIC ${SOURCES})
-target_include_directories(${component_name}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(${component_name}_lib STATIC $${SOURCES})
+target_include_directories(${component_name}_lib PUBLIC $${CMAKE_CURRENT_SOURCE_DIR})
 
 ${cpp11_ice_packages}
 
