@@ -24,14 +24,18 @@ GenericWorker::GenericWorker(${constructor_proxies}) : ${inherited_constructor}
 {
 
 	${statemachine_initialization}
+	
 	${require_and_publish_proxies_creation}
 
-	mutex = new QMutex();
+	${state_statemachine}
+
+	${transition_statemachine}
+
+	${add_state_statemachine}
+
+	${configure_statemachine}
 
 	${gui_setup}
-	Period = BASIC_PERIOD;
-	${compute_connect}
-
 }
 
 /**
@@ -46,6 +50,18 @@ void GenericWorker::killYourSelf()
 	rDebug("Killing myself");
 	emit kill();
 }
+
+void GenericWorker::initialize()
+{
+	statemachine.start();
+
+	auto error = statemachine.errorString();
+    if (error.length() > 0){
+        qWarning() << error;
+        throw error;
+    }
+
+}
 /**
 * \brief Change compute period
 * @param per Period in ms
@@ -53,7 +69,6 @@ void GenericWorker::killYourSelf()
 void GenericWorker::setPeriod(int p)
 {
 	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
+	stCompute->changePeriod(p);
 }
 ${agm_methods}

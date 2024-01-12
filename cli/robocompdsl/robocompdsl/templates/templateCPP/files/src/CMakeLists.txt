@@ -20,6 +20,7 @@ SET ( SOURCES
   $$ENV{ROBOCOMP}/classes/rapplication/rapplication.cpp
   $$ENV{ROBOCOMP}/classes/sigwatch/sigwatch.cpp
   $$ENV{ROBOCOMP}/classes/qlog/qlog.cpp
+  $$ENV{ROBOCOMP}/classes/grafcetStep/GRAFCETStep.cpp
   main.cpp
   genericmonitor.cpp
   commonbehaviorI.cpp
@@ -43,9 +44,14 @@ ${wrap_ui}
 # no-char8_t to avoid a problem with ICE Connection lib.
 add_definitions(-fmax-errors=1 -fno-char8_t)
 
+find_package(Qt6 COMPONENTS Core Widgets StateMachine REQUIRED)
+
 # Specify construction and link process
 ADD_EXECUTABLE( ${component_name} $${SOURCES} $${MOC_SOURCES} $${RC_SOURCES} $${UI_HEADERS} )
-TARGET_LINK_LIBRARIES( ${component_name} $${LIBS} $${STATIC_LIBS} $${SPECIFIC_LIBS} $${QT_LIBRARIES} $${Ice_LIBRARIES})
+TARGET_LINK_LIBRARIES( ${component_name} $${LIBS} $${STATIC_LIBS} $${SPECIFIC_LIBS} $${QT_LIBRARIES} $${Ice_LIBRARIES} 
+Qt6::Core
+Qt6::Widgets
+Qt6::StateMachine )
 SET_TARGET_PROPERTIES(${component_name}
         PROPERTIES
         CXX_STANDARD 20

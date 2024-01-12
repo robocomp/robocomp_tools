@@ -13,13 +13,16 @@ INNERMODEL_COMPUTE_STR = """\
 """
 
 COMPUTE_METHOD_STR = """\
-void SpecificWorker::compute()
+void SpecificWorker::computeState()
 {
+    std::cout << "Compute worker" << std::endl;
 	//computeCODE
 	//QMutexLocker locker(mutex);
 	//try
 	//{
 	//  camera_proxy->getYImage(0,img, cState, bState);
+    //    if (img.empty())
+    //        emit goToEmergencyState()
 	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
 	//  searchTags(image_gray);
 	//}
@@ -29,6 +32,28 @@ void SpecificWorker::compute()
 	//}
 	${compute_innermodelviewer}
 	
+}
+"""
+
+EMERGENCY_METHOD_STR = """\
+void SpecificWorker::emergencyState()
+{
+    std::cout << "Emergency worker" << std::endl;
+	//computeCODE
+	//
+	//if (SUCCESSFUL)
+    //  emmit goToRestoreState()
+}
+"""
+
+RESTORE_METHOD_STR = """\
+//Execute one when exiting to emergencyState
+void SpecificWorker::restoreState()
+{
+    std::cout << "Restore worker" << std::endl;
+	//computeCODE
+	//Restore emergency component
+
 }
 """
 
@@ -52,9 +77,12 @@ class specificworker_cpp(TemplateDict):
         self['proxy_map_type'] = self.proxy_map_type()
         self['proxy_map_name'] = self.proxy_map_name()
         self['compute_method'] = self.compute_method()
+        self['emergency_method'] = self.emergency_method()
+        self['restore_method'] = self.restore_method()
         self['implements'] = self.implements()
         self['subscribes'] = self.subscribes()
         self['interface_specific_comment'] = self.interface_specific_comment()
+
 
 
     # TODO: Extract pieces of code to strings and refactor
@@ -110,6 +138,20 @@ class specificworker_cpp(TemplateDict):
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
             result += Template(COMPUTE_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
+        return result
+    
+    def emergency_method(self):
+        result = ""
+        statemachine = self.component.statemachine
+        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += Template(EMERGENCY_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
+        return result
+    
+    def restore_method(self):
+        result = ""
+        statemachine = self.component.statemachine
+        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += Template(RESTORE_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
         return result
 
     def compute_innermodelviewer(self):

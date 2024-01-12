@@ -25,6 +25,11 @@
 ${gui_includes}
 ${statemachine_includes}
 #include <CommonBehavior.h>
+#include <grafcetStep/GRAFCETStep.h>
+#include <QStateMachine>
+#include <QEvent>
+#include <QString>
+#include <functional>
 
 ${interfaces_includes}
 ${agm_includes}
@@ -48,7 +53,10 @@ public:
 	virtual void setPeriod(int p);
 
 	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
-	QMutex *mutex;
+	QStateMachine statemachine;
+
+
+
 	${agm_methods}
 
 
@@ -58,23 +66,24 @@ public:
 	${subscribes}
 
 protected:
+	GRAFCETStep *stCompute;
+
 	${statemachine_creation}
 
-	QTimer timer;
-	int Period;
 	${agm_attributes_creation}
 
 private:
 
-
 public slots:
 	${statemachine_slots}
-	${virtual_compute}
-	virtual void initialize(int period) = 0;
+	${virtual_statemachine}
+
+	void initialize();
 	
 signals:
 	void kill();
 	${statemachine_signals}
+	${signal_statemachine}
 };
 
 #endif

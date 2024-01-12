@@ -14,7 +14,10 @@ class genericworker_cpp(TemplateDict):
         self['constructor_proxies'] = self.constructor_proxies()
         self['inherited_constructor'] = self.inherited_constructor()
         self['require_and_publish_proxies_creation'] = self.require_and_publish_proxies_creation()
-        self['compute_connect'] = self.compute_connect()
+        self['state_statemachine'] = self.state_statemachine()        
+        self['transition_statemachine'] = self.transition_statemachine()
+        self['add_state_statemachine'] = self.add_state_statemachine()
+        self['configure_statemachine'] = self.configure_statemachine()
 
     def require_and_publish_proxies_creation(self):
         result = ""
@@ -62,8 +65,37 @@ class genericworker_cpp(TemplateDict):
         else:
             return "QObject()"
 
-    def compute_connect(self):
+    
+    def state_statemachine(self):
         result = ""
         if self.component.statemachine_path is None:
-            result += "connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));\n"
+            result += 'GRAFCETStep *stInt = new GRAFCETStep("Init", 0, nullptr, std::bind(&GenericWorker::initState, this));\n'
+            result += 'stCompute = new GRAFCETStep("Compute", 100, std::bind(&GenericWorker::computeState, this));\n'
+            result += 'GRAFCETStep *stEmergency = new GRAFCETStep("Emergency", 100, std::bind(&GenericWorker::emergencyState, this));\n'
+            result += 'GRAFCETStep *stRestore = new GRAFCETStep("Restore", 0, nullptr, std::bind(&GenericWorker::restoreState, this));\n'
+        return result
+    
+    def transition_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "stInt->addTransition(stInt, SIGNAL(entered()), stCompute);\n"
+            result += "stCompute->addTransition(this, SIGNAL(goToEmergencyState()), stEmergency);\n"
+            result += "stEmergency->addTransition(this, SIGNAL(goToRestoreState()), stRestore);\n"
+            result += "stRestore->addTransition(stRestore, SIGNAL(entered()), stCompute);\n"
+        return result
+    
+    def add_state_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "statemachine.addState(stInt);\n"
+            result += "statemachine.addState(stCompute);\n"
+            result += "statemachine.addState(stEmergency);\n"
+            result += "statemachine.addState(stRestore);\n"
+        return result
+
+    def configure_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "statemachine.setChildMode(QState::ExclusiveStates);;\n"
+            result += "statemachine.setInitialState(stInt);\n"
         return result
