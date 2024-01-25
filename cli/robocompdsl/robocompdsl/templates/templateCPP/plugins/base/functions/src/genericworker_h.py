@@ -25,6 +25,10 @@ class genericworker_h(TemplateDict):
     def interfaces_includes(self):
         result = ""
         pool = self.component.idsl_pool
+
+        if self.component.recursiveImports is None or self.component.ice_interfaces_names is None:
+            return ""
+
         for iface in sorted(list(set(self.component.recursiveImports + self.component.ice_interfaces_names))):
             name = iface.split('/')[-1].split('.')[0]
             result += '#include <' + name + '.h>\n'

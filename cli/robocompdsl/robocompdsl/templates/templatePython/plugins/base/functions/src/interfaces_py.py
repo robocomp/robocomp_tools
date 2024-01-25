@@ -66,34 +66,37 @@ class src_interfaces_py(TemplateDict):
     def load_slice_and_create_imports(self, includeDirectories=None):
         result = ""
         import os
-        logger.debug(f"Loading slice files: {self.component.recursiveImports + self.component.imports}")
-        for imp in sorted(set(self.component.recursiveImports + self.component.imports)):
-            file_name = os.path.basename(imp)
-            name = os.path.splitext(file_name)[0]
-            result += Template(SLICE_LOAD_STR).substitute(interface_name=name)
-            logger.debug(f"Loading slice file: {file_name} ({name})")
-            # module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
-            module = self.component.idsl_pool[name]
-            logger.debug(f"Module: {module}")
-            result += f"import {module['name']}\n"
+        if self.component.recursiveImports is not None and self.component.imports is not None:
+            logger.debug(f"Loading slice files: {self.component.recursiveImports + self.component.imports}")
+            for imp in sorted(set(self.component.recursiveImports + self.component.imports)):
+                file_name = os.path.basename(imp)
+                name = os.path.splitext(file_name)[0]
+                result += Template(SLICE_LOAD_STR).substitute(interface_name=name)
+                logger.debug(f"Loading slice file: {file_name} ({name})")
+                # module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
+                module = self.component.idsl_pool[name]
+                logger.debug(f"Module: {module}")
+                result += f"import {module['name']}\n"
+
         return result
 
     def create_lists_classes(self):
         result = ""
-        for idsl in sorted(set(self.component.recursiveImports + self.component.imports)):
-            try:
-                module = self.component.idsl_pool.module_providing_interface(idsl.split('.')[0])
-            except Exception as e:
-                print(e.message)
-                exit(-1)
+        if self.component.recursiveImports is not None and self.component.imports is not None:
+            for idsl in sorted(set(self.component.recursiveImports + self.component.imports)):
+                try:
+                    module = self.component.idsl_pool.module_providing_interface(idsl.split('.')[0])
+                except Exception as e:
+                    print(e.message)
+                    exit(-1)
 
-            if module is not None:  # For modules without interface
-                for sequence in module['sequences']:
-                    item_type = utils.get_type_string(sequence['typeSequence'], module['name'])
-                    if item_type == 'bytes': continue
-                    result += Template(LIST_CLASSES_STR).substitute(list_type=sequence['name'].split('/')[1],
-                                                                    item_type=item_type,
-                                                                    module_name=module['name'])
+                if module is not None:  # For modules without interface
+                    for sequence in module['sequences']:
+                        item_type = utils.get_type_string(sequence['typeSequence'], module['name'])
+                        if item_type == 'bytes': continue
+                        result += Template(LIST_CLASSES_STR).substitute(list_type=sequence['name'].split('/')[1],
+                                                                        item_type=item_type,
+                                                                        module_name=module['name'])
         return result
 
     def implements_and_subscribes_imports(self):
