@@ -50,15 +50,17 @@ public:
 	GenericWorker(${constructor_proxies});
 	virtual ~GenericWorker();
 	virtual void killYourSelf();
-	virtual void setPeriod(int p);
-
 	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
+
+	enum STATES { Initialize, Compute, Emergency, Restore, NumberOfStates };
+	void setPeriod(STATES state, int p);
+	int getPeriod(STATES state);
+
 	QStateMachine statemachine;
-
-
+	QTimer hibernationChecker;
+	atomic_bool hibernation = false;
 
 	${agm_methods}
-
 
 	${create_proxies}
 
@@ -66,19 +68,21 @@ public:
 	${subscribes}
 
 protected:
-	GRAFCETStep *stCompute;
-
 	${statemachine_creation}
 
 	${agm_attributes_creation}
 
 private:
+	int period = BASIC_PERIOD;
+	std::vector<GRAFCETStep*> states;
 
 public slots:
 	${statemachine_slots}
 	${virtual_statemachine}
 
-	void initialize();
+	void initializeWorker();
+	void hibernationCheck();
+
 	
 signals:
 	void kill();

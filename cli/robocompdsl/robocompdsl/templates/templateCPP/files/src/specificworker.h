@@ -28,6 +28,8 @@ ${agmagent_comment}
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
+#define HIBERNATION_ENABLED
+
 #include <genericworker.h>
 ${dsr_includes}
 

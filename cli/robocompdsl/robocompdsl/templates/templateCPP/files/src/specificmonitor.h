@@ -22,8 +22,8 @@
 #include "genericmonitor.h"
 
 /**
-       \brief
-       @author authorname
+* \brief
+* @author authorname
 */
 class SpecificMonitor : public GenericMonitor
 {

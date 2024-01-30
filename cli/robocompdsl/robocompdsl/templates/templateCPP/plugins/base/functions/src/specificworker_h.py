@@ -76,10 +76,10 @@ class specificworker_h(TemplateDict):
         result = ""
         sm = self.component.statemachine
         if (sm is not None and sm['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += "void initState();\n"
-            result += "void computeState();\n"
-            result += "void emergencyState();\n"
-            result += "void restoreState();\n"
+            result += "void initialize();\n"
+            result += "void compute();\n"
+            result += "void emergency();\n"
+            result += "void restore();\n"
         return result
 
 

@@ -13,7 +13,7 @@ INNERMODEL_COMPUTE_STR = """\
 """
 
 COMPUTE_METHOD_STR = """\
-void SpecificWorker::computeState()
+void SpecificWorker::compute()
 {
     std::cout << "Compute worker" << std::endl;
 	//computeCODE
@@ -22,7 +22,7 @@ void SpecificWorker::computeState()
 	//{
 	//  camera_proxy->getYImage(0,img, cState, bState);
     //    if (img.empty())
-    //        emit goToEmergencyState()
+    //        emit goToEmergency()
 	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
 	//  searchTags(image_gray);
 	//}
@@ -36,19 +36,19 @@ void SpecificWorker::computeState()
 """
 
 EMERGENCY_METHOD_STR = """\
-void SpecificWorker::emergencyState()
+void SpecificWorker::emergency()
 {
     std::cout << "Emergency worker" << std::endl;
 	//computeCODE
 	//
 	//if (SUCCESSFUL)
-    //  emmit goToRestoreState()
+    //  emmit goToRestore()
 }
 """
 
 RESTORE_METHOD_STR = """\
 //Execute one when exiting to emergencyState
-void SpecificWorker::restoreState()
+void SpecificWorker::restore()
 {
     std::cout << "Restore worker" << std::endl;
 	//computeCODE
@@ -180,7 +180,7 @@ class specificworker_cpp(TemplateDict):
                             param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
                             return_type = utils.get_type_string(method['return'], module['name'])
                             result += return_type + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n//implementCODE\n" + body_code + "\n}\n\n"
+                                'name'] + '(' + param_str_a + ")\n{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//implementCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result
@@ -203,7 +203,7 @@ class specificworker_cpp(TemplateDict):
                             result += "//SUBSCRIPTION to " + method['name'] + " method from " + interface[
                                 'name'] + " interface\n"
                             result += method['return'] + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n//subscribesToCODE\n" + body_code + "\n}\n\n"
+                                'name'] + '(' + param_str_a + ")\n{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//subscribesToCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result

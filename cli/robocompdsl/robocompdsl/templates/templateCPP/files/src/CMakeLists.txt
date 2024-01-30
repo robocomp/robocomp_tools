@@ -45,13 +45,15 @@ ${wrap_ui}
 add_definitions(-fmax-errors=1 -fno-char8_t)
 
 find_package(Qt6 COMPONENTS Core Widgets StateMachine REQUIRED)
+SET (QT_LIBRARIES 
+    $${QT_LIBRARIES} 
+    Qt6::Core
+    Qt6::Widgets
+    Qt6::StateMachine )
 
 # Specify construction and link process
 ADD_EXECUTABLE( ${component_name} $${SOURCES} $${MOC_SOURCES} $${RC_SOURCES} $${UI_HEADERS} )
-TARGET_LINK_LIBRARIES( ${component_name} $${LIBS} $${STATIC_LIBS} $${SPECIFIC_LIBS} $${QT_LIBRARIES} $${Ice_LIBRARIES} 
-Qt6::Core
-Qt6::Widgets
-Qt6::StateMachine )
+TARGET_LINK_LIBRARIES( ${component_name} $${LIBS} $${STATIC_LIBS} $${SPECIFIC_LIBS} $${QT_LIBRARIES} $${Ice_LIBRARIES} )
 SET_TARGET_PROPERTIES(${component_name}
         PROPERTIES
         CXX_STANDARD 20

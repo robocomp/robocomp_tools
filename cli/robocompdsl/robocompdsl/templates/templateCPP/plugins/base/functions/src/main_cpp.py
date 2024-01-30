@@ -186,6 +186,9 @@ class src_main_cpp(TemplateDict):
     @staticmethod
     def interface_includes(interfaces, suffix='', lower=False):
         result = ""
+        if interfaces is None:
+            return ""
+
         for interface in sorted(interfaces):
             if communication_is_ice(interface):
                 name = interface if isinstance(interface, str) else interface.name

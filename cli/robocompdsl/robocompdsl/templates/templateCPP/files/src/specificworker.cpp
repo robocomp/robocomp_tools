@@ -62,7 +62,7 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 	return true;
 }
 
-void SpecificWorker::initState()
+void SpecificWorker::initialize()
 {
 	std::cout << "Initialize worker" << std::endl;
 	if(this->startup_check_flag)
@@ -71,7 +71,14 @@ void SpecificWorker::initState()
 	}
 	else
 	{
-		this->stCompute->changePeriod(100);
+
+		#ifdef HIBERNATION_ENABLED
+			hibernationChecker.start(500);
+		#endif
+
+		this->setPeriod(STATES::Compute, 100);
+		//this->setPeriod(STATES::Emergency, 500);
+
 		${statemachine_initialize_to_compute}
 		${dsr_initialize}
 	}

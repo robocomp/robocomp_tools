@@ -27,6 +27,10 @@ class genericworker_h(TemplateDict):
     def interfaces_includes(self):
         result = ""
         pool = self.component.idsl_pool
+
+        if self.component.recursiveImports is None or self.component.ice_interfaces_names is None:
+            return ""
+
         for iface in sorted(list(set(self.component.recursiveImports + self.component.ice_interfaces_names))):
             name = iface.split('/')[-1].split('.')[0]
             result += '#include <' + name + '.h>\n'
@@ -131,18 +135,18 @@ class genericworker_h(TemplateDict):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += "virtual void initState() = 0;\n"
-            result += "virtual void computeState() = 0;\n"
-            result += "virtual void emergencyState() = 0;\n"
-            result += "virtual void restoreState() = 0;\n"
+            result += "virtual void initialize() = 0;\n"
+            result += "virtual void compute() = 0;\n"
+            result += "virtual void emergency() = 0;\n"
+            result += "virtual void restore() = 0;\n"
         return result
     
     def signal_statemachine(self):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += "void goToEmergencyState();\n"
-            result += "void goToRestoreState();\n"
+            result += "void goToEmergency();\n"
+            result += "void goToRestore();\n"
         return result
 
 
