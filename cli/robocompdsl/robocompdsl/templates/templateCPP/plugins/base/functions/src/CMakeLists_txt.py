@@ -33,7 +33,7 @@ class src_CMakeLists_txt(TemplateDict):
         interface_names = []
         
         if self.component.recursiveImports is not None and self.component.ice_interfaces_names is not None:
-            for im in sorted(self.component.recursiveImports + self.component.ice_interfaces_names):
+            for im in sorted(self.component.recursiveImports + self.component.ice_interfaces_names):<<<<<<< development
                 name = im.split('/')[-1].split('.')[0]
                 interface_names.append(name)
 
