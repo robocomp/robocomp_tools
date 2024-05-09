@@ -14,7 +14,10 @@ class genericworker_cpp(TemplateDict):
         self['constructor_proxies'] = self.constructor_proxies()
         self['inherited_constructor'] = self.inherited_constructor()
         self['require_and_publish_proxies_creation'] = self.require_and_publish_proxies_creation()
-        self['compute_connect'] = self.compute_connect()
+        self['state_statemachine'] = self.state_statemachine()        
+        self['transition_statemachine'] = self.transition_statemachine()
+        self['add_state_statemachine'] = self.add_state_statemachine()
+        self['configure_statemachine'] = self.configure_statemachine()
 
     def require_and_publish_proxies_creation(self):
         result = ""
@@ -62,8 +65,38 @@ class genericworker_cpp(TemplateDict):
         else:
             return "QObject()"
 
-    def compute_connect(self):
+    
+    def state_statemachine(self):
         result = ""
         if self.component.statemachine_path is None:
-            result += "connect(&timer, SIGNAL(timeout()), this, SLOT(compute()));\n"
+            result += 'states.resize(STATES::NumberOfStates);\n'
+            result += 'states[STATES::Initialize] = new GRAFCETStep("Initialize", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::initialize, this));\n'
+            result += 'states[STATES::Compute] = new GRAFCETStep("Compute", BASIC_PERIOD, std::bind(&GenericWorker::compute, this));\n'
+            result += 'states[STATES::Emergency] = new GRAFCETStep("Emergency", BASIC_PERIOD, std::bind(&GenericWorker::emergency, this));\n'
+            result += 'states[STATES::Restore] = new GRAFCETStep("Restore", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::restore, this));\n'
+        return result
+    
+    def transition_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "states[STATES::Initialize]->addTransition(states[STATES::Initialize], SIGNAL(entered()), states[STATES::Compute]);\n"
+            result += "states[STATES::Compute]->addTransition(this, SIGNAL(goToEmergency()), states[STATES::Emergency]);\n"
+            result += "states[STATES::Emergency]->addTransition(this, SIGNAL(goToRestore()), states[STATES::Restore]);\n"
+            result += "states[STATES::Restore]->addTransition(states[STATES::Restore], SIGNAL(entered()), states[STATES::Compute]);\n"
+        return result
+    
+    def add_state_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "statemachine.addState(states[STATES::Initialize]);\n"
+            result += "statemachine.addState(states[STATES::Compute]);\n"
+            result += "statemachine.addState(states[STATES::Emergency]);\n"
+            result += "statemachine.addState(states[STATES::Restore]);\n"
+        return result
+
+    def configure_statemachine(self):
+        result = ""
+        if self.component.statemachine_path is None:
+            result += "statemachine.setChildMode(QState::ExclusiveStates);;\n"
+            result += "statemachine.setInitialState(states[STATES::Initialize]);\n"
         return result

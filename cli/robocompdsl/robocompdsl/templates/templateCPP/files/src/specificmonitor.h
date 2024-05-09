@@ -22,8 +22,8 @@
 #include "genericmonitor.h"
 
 /**
-       \brief
-       @author authorname
+* \brief
+* @author authorname
 */
 class SpecificMonitor : public GenericMonitor
 {
@@ -35,8 +35,7 @@ class SpecificMonitor : public GenericMonitor
 	
 	void readConfig(RoboCompCommonBehavior::ParameterList &params );
 	void run();
-	void initialize();
-    
+    void initialize();
 	bool sendParamsToWorker(RoboCompCommonBehavior::ParameterList params);
 	bool checkParams(RoboCompCommonBehavior::ParameterList l);
 	

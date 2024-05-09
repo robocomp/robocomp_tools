@@ -24,14 +24,18 @@ GenericWorker::GenericWorker(${constructor_proxies}) : ${inherited_constructor}
 {
 
 	${statemachine_initialization}
+	
 	${require_and_publish_proxies_creation}
 
-	mutex = new QMutex();
+	${state_statemachine}
+
+	${transition_statemachine}
+
+	${add_state_statemachine}
+
+	${configure_statemachine}
 
 	${gui_setup}
-	Period = BASIC_PERIOD;
-	${compute_connect}
-
 }
 
 /**
@@ -39,6 +43,9 @@ GenericWorker::GenericWorker(${constructor_proxies}) : ${inherited_constructor}
 */
 GenericWorker::~GenericWorker()
 {
+	for (auto state : states) {
+        delete state;
+    }
 
 }
 void GenericWorker::killYourSelf()
@@ -46,14 +53,89 @@ void GenericWorker::killYourSelf()
 	rDebug("Killing myself");
 	emit kill();
 }
+
+void GenericWorker::initializeWorker()
+{
+	statemachine.start();
+
+	connect(&hibernationChecker, SIGNAL(timeout()), this, SLOT(hibernationCheck()));
+
+	auto error = statemachine.errorString();
+    if (error.length() > 0){
+        qWarning() << error;
+        throw error;
+    }
+
+}
+
 /**
 * \brief Change compute period
+* @param nameState name state "Compute" or "Emergency"
 * @param per Period in ms
 */
-void GenericWorker::setPeriod(int p)
+void GenericWorker::setPeriod(STATES state, int p)
 {
-	rDebug("Period changed"+QString::number(p));
-	Period = p;
-	timer.start(Period);
+	switch (state)
+	{
+	case STATES::Compute:
+		this->period = p;
+		states[STATES::Compute]->setPeriod(this->period);
+		std::cout << "Period Compute changed " << p  << "ms" << std::endl<< std::flush;
+		break;
+
+	case STATES::Emergency:
+		states[STATES::Emergency]->setPeriod(this->period);
+		std::cout << "Period Emergency changed " << p << "ms" << std::endl<< std::flush;
+		break;
+	
+	default:
+		std::cerr<<"No change in the period, the state parameter must be 'Compute' or 'Emergency'."<< std::endl<< std::flush;
+		break;
+	}
 }
+
+int GenericWorker::getPeriod(STATES state)
+{
+	if (state < 0 || state >= STATES::NumberOfStates) {
+        std::cerr << "Invalid state parameter." << std::endl << std::flush;
+        return -1;
+    }
+	return states[state]->getPeriod();
+}
+
+void GenericWorker::hibernationCheck()
+{
+	//Time between activity to activate hibernation
+    static const int HIBERNATION_TIMEOUT = 5000;
+
+    static std::chrono::high_resolution_clock::time_point lastWakeTime = std::chrono::high_resolution_clock::now();
+	static int originalPeriod = this->period;
+    static bool isInHibernation = false;
+
+	// Update lastWakeTime by calling a function
+    if (hibernation)
+    {
+        hibernation = false;
+        lastWakeTime = std::chrono::high_resolution_clock::now();
+
+		// Restore period
+        if (isInHibernation)
+        {
+            this->setPeriod(STATES::Compute, originalPeriod);
+            isInHibernation = false;
+        }
+    }
+
+    auto now = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastWakeTime);
+
+	//HIBERNATION_TIMEOUT exceeded, change period
+    if (elapsedTime.count() > HIBERNATION_TIMEOUT && !isInHibernation)
+    {
+        isInHibernation = true;
+		originalPeriod = this->getPeriod(STATES::Compute);
+        this->setPeriod(STATES::Compute, 500);
+    }
+}
+
 ${agm_methods}

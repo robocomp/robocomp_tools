@@ -19,7 +19,9 @@ class genericworker_h(TemplateDict):
         self['create_proxies'] = self.create_proxies()
         self['implements'] = self.implements()
         self['subscribes'] = self.subscribes()
-        self['virtual_compute'] = self.virtual_compute()
+        self['virtual_statemachine'] = self.virtual_statemachine()
+        self['signal_statemachine'] = self.signal_statemachine()
+
 
 
     def interfaces_includes(self):
@@ -127,13 +129,26 @@ class genericworker_h(TemplateDict):
         else:
             result += "TuplePrx tprx"
         return result
+    
 
-    def virtual_compute(self):
+    def virtual_statemachine(self):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += "virtual void initialize() = 0;\n"
             result += "virtual void compute() = 0;\n"
+            result += "virtual void emergency() = 0;\n"
+            result += "virtual void restore() = 0;\n"
         return result
+    
+    def signal_statemachine(self):
+        result = ""
+        statemachine = self.component.statemachine
+        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += "void goToEmergency();\n"
+            result += "void goToRestore();\n"
+        return result
+
 
     def inherited_object(self):
         if self.component.gui:

@@ -53,37 +53,43 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 //		innerModel = std::make_shared(innermodel_path);
 //	}
 //	catch(const std::exception &e) { qFatal("Error reading config params"); }
-
-
 	${innermodel_and_viewer_attribute_init}
-
 	${agm_innermodel_association}
-
 	${state_machine_start}
-
+	
 	${dsr_set_params}
 
 	return true;
 }
 
-void SpecificWorker::initialize(int period)
+void SpecificWorker::initialize()
 {
 	std::cout << "Initialize worker" << std::endl;
-	this->Period = period;
 	if(this->startup_check_flag)
 	{
 		this->startup_check();
 	}
 	else
 	{
+
+		#ifdef HIBERNATION_ENABLED
+			hibernationChecker.start(500);
+		#endif
+
+		this->setPeriod(STATES::Compute, 100);
+		//this->setPeriod(STATES::Emergency, 500);
+
 		${statemachine_initialize_to_compute}
 		${dsr_initialize}
-		timer.start(Period);
 	}
 
 }
 
 ${compute_method}
+
+${emergency_method}
+
+${restore_method}
 
 int SpecificWorker::startup_check()
 {

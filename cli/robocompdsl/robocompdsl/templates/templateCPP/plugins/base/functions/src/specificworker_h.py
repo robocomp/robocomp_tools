@@ -12,7 +12,7 @@ class specificworker_h(TemplateDict):
         self['constructor_proxies'] = self.constructor_proxies()
         self['implements_method_definitions'] = self.implements_method_definitions()
         self['subscribes_method_definitions'] = self.subscribes_method_definitions()
-        self['compute'] = self.compute()
+        self['state_machine_method'] = self.state_machine_method()
 
 
     def generate_interface_method_definition(self, interface):
@@ -72,11 +72,14 @@ class specificworker_h(TemplateDict):
             result += "TuplePrx tprx"
         return result
 
-    def compute(self):
+    def state_machine_method(self):
         result = ""
         sm = self.component.statemachine
         if (sm is not None and sm['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += "void initialize();\n"
             result += "void compute();\n"
+            result += "void emergency();\n"
+            result += "void restore();\n"
         return result
 
 

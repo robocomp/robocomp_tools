@@ -28,6 +28,8 @@ ${agmagent_comment}
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
+#define HIBERNATION_ENABLED
+
 #include <genericworker.h>
 ${dsr_includes}
 
@@ -44,9 +46,8 @@ public:
 	${subscribes_method_definitions}
 
 public slots:
-	${compute}
+	${state_machine_method}
 	int startup_check();
-	void initialize(int period);
 	${statemachine_methods_definitions}
 	${dsr_slots}
 private:
