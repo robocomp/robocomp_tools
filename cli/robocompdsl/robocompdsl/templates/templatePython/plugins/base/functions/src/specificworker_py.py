@@ -122,7 +122,7 @@ class src_specificworker_py(TemplateDict):
                                 if v[1] != 'ret':
                                     return_str += "    " + v[1] + " = " + self.replace_type_cpp_to_python(v[0]) + "()\n"
                             vector_str = ", ".join([v[1] for v in out_values])
-                            return_str = f"    return [{vector_str}]"
+                            return_str = f"return [{vector_str}]"
                         if subscribe:
                             method_str1 = "SUBSCRIPTION to"
                         else:

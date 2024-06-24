@@ -1,18 +1,18 @@
 ${dsr_find_eigen}
 # Sources set
-SET ( SOURCES
+LIST(APPEND SOURCES
   specificworker.cpp
   specificmonitor.cpp
 )
 
 # Headers set
-SET ( HEADERS
+LIST(APPEND HEADERS
   specificworker.h
   specificmonitor.h
 )
 
 
 ${dsr_definitions}
-SET (LIBS $${LIBS}  ${dsr_libs})
+LIST(APPEND LIBS $${LIBS}  ${dsr_libs})
 
 
