@@ -1,7 +1,8 @@
 import inspect
 import os
 import pkgutil
-import importlib
+import importlib.util
+import sys
 
 from robocompdsl.templates.common.templatedict import TemplateDict
 
@@ -15,6 +16,15 @@ class Plugin(object):
         self.classes = {}
         self.description = 'UNKNOWN'
 
+    def load_module_from_path(self, module_name, path):
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        if spec is None:
+            raise ImportError(f"Cannot find module {module_name} at {path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        return module
+
     def load_functions(self):
         for root, dirs, files in os.walk(self.abs_path + "/functions"):
             for file in files:
@@ -24,12 +34,12 @@ class Plugin(object):
                 if relative_path not in self.classes:
                     try:
                         module_name = self.__class__.__name__+"_"+relative_path.replace('/','_').split('.')[0]
-                        module = importlib.machinery.SourceFileLoader(module_name,
-                                                                      os.path.join(root, file)).load_module()
+                        module = self.load_module_from_path(module_name, os.path.join(root, file))
                     except AssertionError as e:
-                        pass
+                        print(f"ERROR AssertionError: {e}")
                     except ValueError as e:
-                        pass
+                        print(f"ERROR ValueError: {e}")
+                        
                     for _, the_class in inspect.getmembers(module, lambda x: inspect.isclass(x) and issubclass(x, TemplateDict) and x.__name__!="TemplateDict"):
                         # print(f"Loading plugin: {relative_path}")
                         self.classes[relative_path] = the_class
