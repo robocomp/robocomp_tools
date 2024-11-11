@@ -9,7 +9,7 @@ DSR_DEDINITIONS = """\
 add_definitions(-g  -fmax-errors=1 -std=c++2a -fno-char8_t -I/usr/include/x86_64-linux-gnu/qt6/QtOpenGLWidgets/)
 """
 
-DSR_LIBS = " dsr_core dsr_gui dsr_api fastcdr fastrtps osgDB OpenThreads Eigen3::Eigen QGLViewer-qt6 Qt6OpenGLWidgets"
+DSR_LIBS = " dsr_core dsr_gui dsr_api fastcdr fastdds osgDB OpenThreads Eigen3::Eigen QGLViewer-qt6 Qt6OpenGLWidgets"
 
 
 class src_CMakeListsSpecific_txt(TemplateDict):
