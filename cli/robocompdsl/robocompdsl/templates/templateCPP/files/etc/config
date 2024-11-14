@@ -6,6 +6,10 @@ ${config_requires_proxies}
 ${storm_topic_manager}
 ${dsr_config}
 
+ComputePeriod=100
+EmergencyPeriod=500
+
+
 InnerModelPath = innermodel.xml
 
 Ice.Warn.Connections=0

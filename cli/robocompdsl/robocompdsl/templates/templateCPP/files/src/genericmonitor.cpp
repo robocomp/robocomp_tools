@@ -24,7 +24,6 @@ GenericMonitor::GenericMonitor(GenericWorker *_worker,Ice::CommunicatorPtr _comm
 {
 	worker = _worker;
 	this->communicator = _communicator;
-	period = 100;
 	state = RoboCompCommonBehavior::State::Starting;
 	QObject::connect(this, SIGNAL(initializeWorker()), worker, SLOT(initializeWorker()));
 }
@@ -51,7 +50,15 @@ RoboCompCommonBehavior::State GenericMonitor::getState()
 */
 int GenericMonitor::getPeriod()
 {
-	return period;
+	return this->getPeriod(GenericWorker::STATES::Compute);
+}
+/**
+* \brief Get worker period
+* @return int Worker period in ms
+*/
+int GenericMonitor::getPeriod(GenericWorker::STATES state)
+{
+	return worker->getPeriod(state);
 }
 /**
 * \brief Change worker period
@@ -59,8 +66,15 @@ int GenericMonitor::getPeriod()
 */
 void GenericMonitor::setPeriod(int _period)
 {
-	period =_period;
-	worker->setPeriod(worker->Compute, _period);
+	this->setPeriod(GenericWorker::STATES::Compute, _period);
+}
+/**
+* \brief Change worker period
+* @param per Period in ms
+*/
+void GenericMonitor::setPeriod(GenericWorker::STATES state, int _period)
+{
+	worker->setPeriod(state, _period);
 }
 /**
 * \brief Kill component

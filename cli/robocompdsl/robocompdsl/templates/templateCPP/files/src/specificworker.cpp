@@ -52,7 +52,11 @@ bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
 //		std::string innermodel_path = par.value;
 //		innerModel = std::make_shared(innermodel_path);
 //	}
-//	catch(const std::exception &e) { qFatal("Error reading config params"); }
+//	catch(const std::exception &e) { qFatal("Error reading config params"); }std::stof(params["rx"].value);
+
+	this->setPeriod(STATES::Compute, std::stof(params.at("ComputePeriod").value));
+	this->setPeriod(STATES::Emergency, std::stof(params.at("EmergencyPeriod").value));
+
 	${innermodel_and_viewer_attribute_init}
 	${agm_innermodel_association}
 	${state_machine_start}
@@ -75,9 +79,6 @@ void SpecificWorker::initialize()
 		#ifdef HIBERNATION_ENABLED
 			hibernationChecker.start(500);
 		#endif
-
-		this->setPeriod(STATES::Compute, 100);
-		//this->setPeriod(STATES::Emergency, 500);
 
 		${statemachine_initialize_to_compute}
 		${dsr_initialize}

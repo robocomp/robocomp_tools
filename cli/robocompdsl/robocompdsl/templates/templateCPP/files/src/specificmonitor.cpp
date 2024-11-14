@@ -39,7 +39,7 @@ void SpecificMonitor::run()
 	forever
 	{
 		//rDebug("specific monitor run");
-		this->sleep(period);
+		this->sleep(this->getPeriod());
 	}
 }
 
@@ -86,10 +86,16 @@ bool SpecificMonitor::sendParamsToWorker(RoboCompCommonBehavior::ParameterList p
 ///We need to supply a list of accepted values to each call
 void SpecificMonitor::readConfig(RoboCompCommonBehavior::ParameterList &params )
 {
-//	RoboCompCommonBehavior::Parameter aux;
-//	aux.editable = true;
+	RoboCompCommonBehavior::Parameter aux;
+	aux.editable = true;
 //	configGetString( "","InnerModelPath", aux.value, "nofile");
 //	params["InnerModelPath"] = aux;
+
+	configGetString( "","ComputePeriod", aux.value, "100");
+	params["ComputePeriod"] = aux;
+	configGetString( "","EmergencyPeriod", aux.value, "500");
+	params["EmergencyPeriod"] = aux;
+
 	${dsr_read_config}
 }
 

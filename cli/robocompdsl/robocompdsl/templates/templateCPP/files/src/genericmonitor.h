@@ -41,7 +41,9 @@ public:
 
     //CommonBehavior
 	int getPeriod();
+	int getPeriod(GenericWorker::STATES state);
 	void setPeriod(int period);
+	void setPeriod(GenericWorker::STATES state, int period);
 	void killYourSelf();
 	int timeAwake();
 	RoboCompCommonBehavior::ParameterList getParameterList();
@@ -54,7 +56,6 @@ public:
 	virtual void initialize() = 0;
 
 protected:
-	int period;
 	GenericWorker *worker;
 	Ice::CommunicatorPtr communicator;
 	QTime initialTime;
