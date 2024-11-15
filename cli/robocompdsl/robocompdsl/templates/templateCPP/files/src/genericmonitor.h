@@ -22,8 +22,6 @@
 #include <Ice/Ice.h>
 #include <QtCore>
 #include "genericworker.h"
-#include "config.h"
-#include <qlog/qlog.h>
 #include <CommonBehavior.h>
 
 /**

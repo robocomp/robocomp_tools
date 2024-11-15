@@ -33,11 +33,9 @@ SET ( SOURCES
   $${SOURCES}
   $$ENV{ROBOCOMP}/classes/rapplication/rapplication.cpp
   $$ENV{ROBOCOMP}/classes/sigwatch/sigwatch.cpp
-  $$ENV{ROBOCOMP}/classes/qlog/qlog.cpp
   $$ENV{ROBOCOMP}/classes/grafcetStep/GRAFCETStep.cpp
   main.cpp
   genericmonitor.cpp
-  commonbehaviorI.cpp
   genericworker.cpp
   ${interface_sources}
   ${statemachine_visual_sources}

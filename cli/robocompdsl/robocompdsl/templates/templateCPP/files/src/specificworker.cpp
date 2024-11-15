@@ -29,7 +29,6 @@ SpecificWorker::SpecificWorker(${proxy_map_type} ${proxy_map_name}, bool startup
 	// Uncomment if there's too many debug messages
 	// but it removes the possibility to see the messages
 	// shown in the console with qDebug()
-//	QLoggingCategory::setFilterRules("*.debug=false\n");
 }
 
 /**
@@ -95,7 +94,7 @@ ${restore_method}
 int SpecificWorker::startup_check()
 {
 	std::cout << "Startup check" << std::endl;
-	QTimer::singleShot(200, qApp, SLOT(quit()));
+	QTimer::singleShot(200, QCoreApplication::instance(), SLOT(quit()));
 	return 0;
 }
 

@@ -19,9 +19,7 @@
 #ifndef GENERICWORKER_H
 #define GENERICWORKER_H
 
-#include "config.h"
 #include <stdint.h>
-#include <qlog/qlog.h>
 ${gui_includes}
 ${statemachine_includes}
 #include <CommonBehavior.h>
@@ -30,14 +28,20 @@ ${statemachine_includes}
 #include <QEvent>
 #include <QString>
 #include <functional>
+#include <atomic>
+#include <QtCore>
+
+
 
 ${interfaces_includes}
 ${agm_includes}
 
+${need_gui}
 
-#define CHECK_PERIOD 5000
+#define PROGRAM_NAME    "${component_name}"
+#define SERVER_FULL_NAME   "RoboComp ${component_name}:: ${component_name}"
+
 #define BASIC_PERIOD 100
-
 
 ${ice_proxies_map}
 
@@ -53,12 +57,12 @@ public:
 	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
 
 	enum STATES { Initialize, Compute, Emergency, Restore, NumberOfStates };
-	void setPeriod(STATES state, int p);
+	void setPeriod(STATES state, int period);
 	int getPeriod(STATES state);
 
 	QStateMachine statemachine;
 	QTimer hibernationChecker;
-	atomic_bool hibernation = false;
+	std::atomic_bool hibernation = false;
 
 	${agm_methods}
 
@@ -73,7 +77,6 @@ protected:
 	${agm_attributes_creation}
 
 private:
-	int period = BASIC_PERIOD;
 	std::vector<GRAFCETStep*> states;
 
 public slots:

@@ -72,14 +72,11 @@
 
 #include <rapplication/rapplication.h>
 #include <sigwatch/sigwatch.h>
-#include <qlog/qlog.h>
 
-#include "config.h"
 #include "genericmonitor.h"
 #include "genericworker.h"
 #include "specificworker.h"
 #include "specificmonitor.h"
-#include "commonbehaviorI.h"
 
 ${implements_interface_includes}
 ${subscribes_interface_includes}
@@ -158,24 +155,6 @@ int ::${component_name}::run(int argc, char* argv[])
 
 	try
 	{
-		try {
-			// Server adapter creation and publication
-			if (not GenericMonitor::configGetString(communicator(), prefix, "CommonBehavior.Endpoints", tmp, "")) {
-				cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy CommonBehavior\n";
-			}
-			Ice::ObjectAdapterPtr adapterCommonBehavior = communicator()->createObjectAdapterWithEndpoints("commonbehavior", tmp);
-			${commonbehaviorI_creation}
-			adapterCommonBehavior->add(commonbehaviorI, Ice::stringToIdentity("commonbehavior"));
-			adapterCommonBehavior->activate();
-		}
-		catch(const Ice::Exception& ex)
-		{
-			status = EXIT_FAILURE;
-
-			cout << "[" << PROGRAM_NAME << "]: Exception raised while creating CommonBehavior adapter: " << endl;
-			cout << ex;
-
-		}
 
 
 		${implements}

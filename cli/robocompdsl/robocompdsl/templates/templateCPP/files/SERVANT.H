@@ -23,7 +23,6 @@
 #include <Ice/Ice.h>
 #include <${filename_without_extension}.h>
 
-#include <config.h>
 #include "genericworker.h"
 
 

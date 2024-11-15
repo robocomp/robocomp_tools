@@ -50,7 +50,7 @@ GenericWorker::~GenericWorker()
 }
 void GenericWorker::killYourSelf()
 {
-	rDebug("Killing myself");
+	qDebug("Killing myself");
 	emit kill();
 }
 
@@ -73,19 +73,18 @@ void GenericWorker::initializeWorker()
 * @param nameState name state "Compute" or "Emergency"
 * @param per Period in ms
 */
-void GenericWorker::setPeriod(STATES state, int p)
+void GenericWorker::setPeriod(STATES state, int period)
 {
 	switch (state)
 	{
 	case STATES::Compute:
-		this->period = p;
-		states[STATES::Compute]->setPeriod(this->period);
-		std::cout << "Period Compute changed " << p  << "ms" << std::endl<< std::flush;
+		states[STATES::Compute]->setPeriod(period);
+		std::cout << "Period Compute changed " << period  << "ms" << std::endl<< std::flush;
 		break;
 
 	case STATES::Emergency:
-		states[STATES::Emergency]->setPeriod(this->period);
-		std::cout << "Period Emergency changed " << p << "ms" << std::endl<< std::flush;
+		states[STATES::Emergency]->setPeriod(period);
+		std::cout << "Period Emergency changed " << period << "ms" << std::endl<< std::flush;
 		break;
 	
 	default:
@@ -109,7 +108,7 @@ void GenericWorker::hibernationCheck()
     static const int HIBERNATION_TIMEOUT = 5000;
 
     static std::chrono::high_resolution_clock::time_point lastWakeTime = std::chrono::high_resolution_clock::now();
-	static int originalPeriod = this->period;
+	static int originalPeriod;
     static bool isInHibernation = false;
 
 	// Update lastWakeTime by calling a function

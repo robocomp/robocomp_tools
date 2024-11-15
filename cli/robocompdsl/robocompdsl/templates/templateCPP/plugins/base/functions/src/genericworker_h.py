@@ -21,6 +21,7 @@ class genericworker_h(TemplateDict):
         self['subscribes'] = self.subscribes()
         self['virtual_statemachine'] = self.virtual_statemachine()
         self['signal_statemachine'] = self.signal_statemachine()
+        self['component_name'] = self.component.name
 
 
 

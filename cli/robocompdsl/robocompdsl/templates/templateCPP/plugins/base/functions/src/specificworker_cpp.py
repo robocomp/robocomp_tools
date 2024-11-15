@@ -180,7 +180,7 @@ class specificworker_cpp(TemplateDict):
                             param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
                             return_type = utils.get_type_string(method['return'], module['name'])
                             result += return_type + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//implementCODE\n" + body_code + "\n}\n\n"
+                                'name'] + '(' + param_str_a + ")\n{\n\t#ifdef HIBERNATION_ENABLED\n\t\thibernation = true;\n\t#endif\n\t"+return_type+" ret{};\n\t//implementCODE\n" + body_code + "\n\treturn ret;\n}\n\n"
                         else:
                             pass
         return result
