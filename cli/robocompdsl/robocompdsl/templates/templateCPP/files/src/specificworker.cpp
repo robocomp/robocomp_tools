@@ -21,7 +21,7 @@
 /**
 * \brief Default constructor
 */
-SpecificWorker::SpecificWorker(${proxy_map_type} ${proxy_map_name}, bool startup_check) : GenericWorker(${proxy_map_name})
+SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_type} ${proxy_map_name}, bool startup_check) : GenericWorker(configLoader, ${proxy_map_name})
 {
 	${innermodelviewer_code}
 	${agmagent_attributes}
@@ -41,29 +41,6 @@ SpecificWorker::~SpecificWorker()
 	${dsr_destructor}
 }
 
-bool SpecificWorker::setParams(RoboCompCommonBehavior::ParameterList params)
-{
-//	THE FOLLOWING IS JUST AN EXAMPLE
-//	To use innerModelPath parameter you should uncomment specificmonitor.cpp readConfig method content
-//	try
-//	{
-//		RoboCompCommonBehavior::Parameter par = params.at("InnerModelPath");
-//		std::string innermodel_path = par.value;
-//		innerModel = std::make_shared(innermodel_path);
-//	}
-//	catch(const std::exception &e) { qFatal("Error reading config params"); }std::stof(params["rx"].value);
-
-	this->setPeriod(STATES::Compute, std::stof(params.at("ComputePeriod").value));
-	this->setPeriod(STATES::Emergency, std::stof(params.at("EmergencyPeriod").value));
-
-	${innermodel_and_viewer_attribute_init}
-	${agm_innermodel_association}
-	${state_machine_start}
-	
-	${dsr_set_params}
-
-	return true;
-}
 
 void SpecificWorker::initialize()
 {
@@ -79,6 +56,14 @@ void SpecificWorker::initialize()
 			hibernationChecker.start(500);
 		#endif
 
+		this->setPeriod(STATES::Compute, configLoader.get<int>("Period.Compute"));
+		this->setPeriod(STATES::Emergency, configLoader.get<int>("Period.Emergency"));
+
+		${innermodel_and_viewer_attribute_init}
+		${agm_innermodel_association}
+		${state_machine_start}
+		
+		${dsr_set_params}
 		${statemachine_initialize_to_compute}
 		${dsr_initialize}
 	}

@@ -20,8 +20,10 @@
 /**
 * \brief Default constructor
 */
-GenericWorker::GenericWorker(${constructor_proxies}) : ${inherited_constructor}
+GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_proxies}) : ${inherited_constructor}
 {
+
+	this->configLoader = configLoader;
 
 	${statemachine_initialization}
 	

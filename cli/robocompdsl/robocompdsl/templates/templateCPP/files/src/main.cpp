@@ -70,7 +70,8 @@
 #include <IceStorm/IceStorm.h>
 #include <Ice/Application.h>
 
-#include <rapplication/rapplication.h>
+#include <ConfigLoader/ConfigLoader.h>
+
 #include <sigwatch/sigwatch.h>
 
 #include "genericmonitor.h"
@@ -85,13 +86,18 @@ ${imports_interface_includes}
 
 
 
-class ${component_name} : public RoboComp::Application
+class ${component_name} : public Ice::Application
 {
 public:
-	${component_name} (QString prfx, bool startup_check) { prefix = prfx.toStdString(); this->startup_check_flag=startup_check; }
+	${component_name} (QString configFile, QString prfx, bool startup_check) { 
+		this->configFile = configFile.toStdString();
+		this->prefix = prfx.toStdString();
+		this->startup_check_flag=startup_check; 
+		}
 private:
 	void initialize();
-	std::string prefix;
+	std::string prefix, configFile;
+	ConfigLoader configLoader;
 	${proxies_map_creation}
 	bool startup_check_flag = false;
 
@@ -101,9 +107,8 @@ public:
 
 void ::${component_name}::initialize()
 {
-	// Config file properties read example
-	// configGetString( PROPERTY_NAME_1, property1_holder, PROPERTY_1_DEFAULT_VALUE );
-	// configGetInt( PROPERTY_NAME_2, property1_holder, PROPERTY_2_DEFAULT_VALUE );
+    this->configLoader.load(this->configFile);
+	this->configLoader.printConfig();
 }
 
 int ::${component_name}::run(int argc, char* argv[])
@@ -132,7 +137,7 @@ int ::${component_name}::run(int argc, char* argv[])
 	${publishes_proxy_ptr}
 	${requires_proxy_ptr}
 
-	string proxy, tmp;
+	std::string proxy, tmp;
 	initialize();
 	${requires}
 	${topic_manager_creation}
@@ -155,13 +160,11 @@ int ::${component_name}::run(int argc, char* argv[])
 
 	try
 	{
-
-
 		${implements}
 		${subscribes_to}
 
 		// Server adapter creation and publication
-		cout << SERVER_FULL_NAME " started" << endl;
+		std::cout << SERVER_FULL_NAME " started" << std::endl;
 
 		// User defined QtGui elements ( main window, dialogs, etc )
 
@@ -180,8 +183,8 @@ int ::${component_name}::run(int argc, char* argv[])
 	{
 		status = EXIT_FAILURE;
 
-		cout << "[" << PROGRAM_NAME << "]: Exception raised on main thread: " << endl;
-		cout << ex;
+		std::cout << "[" << PROGRAM_NAME << "]: Exception raised on main thread: " << std::endl;
+		std::cout << ex;
 
 	}
 	#ifdef USE_QTGUI
@@ -198,7 +201,7 @@ int ::${component_name}::run(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	string arg;
+	std::string arg;
 
 	// Set config file
 	QString configFile("etc/config");
@@ -217,7 +220,7 @@ int main(int argc, char* argv[])
 			if (arg.find(startup.toStdString(), 0) != std::string::npos)
 			{
 				startup_check_flag = true;
-				cout << "Startup check = True"<< endl;
+				std::cout << "Startup check = True"<< std::endl;
 			}
 			else if (arg.find(prfx.toStdString(), 0) != std::string::npos)
 			{
@@ -239,7 +242,7 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	::${component_name} app(prefix, startup_check_flag);
+	::${component_name} app(configFile, prefix, startup_check_flag);
 
-	return app.main(argc, argv, configFile.toLocal8Bit().data());
+	return app.main(argc, argv);
 }

@@ -22,14 +22,15 @@
 #include <stdint.h>
 ${gui_includes}
 ${statemachine_includes}
-#include <CommonBehavior.h>
 #include <grafcetStep/GRAFCETStep.h>
+#include <ConfigLoader/ConfigLoader.h>
 #include <QStateMachine>
 #include <QEvent>
 #include <QString>
 #include <functional>
 #include <atomic>
 #include <QtCore>
+#include <variant>
 
 
 
@@ -51,10 +52,9 @@ class GenericWorker : ${inherited_object}
 {
 Q_OBJECT
 public:
-	GenericWorker(${constructor_proxies});
+	GenericWorker(const ConfigLoader& configLoader, ${constructor_proxies});
 	virtual ~GenericWorker();
 	virtual void killYourSelf();
-	virtual bool setParams(RoboCompCommonBehavior::ParameterList params) = 0;
 
 	enum STATES { Initialize, Compute, Emergency, Restore, NumberOfStates };
 	void setPeriod(STATES state, int period);
@@ -72,12 +72,15 @@ public:
 	${subscribes}
 
 protected:
+	std::vector<GRAFCETStep*> states;
+	ConfigLoader configLoader;
+	
 	${statemachine_creation}
 
 	${agm_attributes_creation}
 
+
 private:
-	std::vector<GRAFCETStep*> states;
 
 public slots:
 	${statemachine_slots}

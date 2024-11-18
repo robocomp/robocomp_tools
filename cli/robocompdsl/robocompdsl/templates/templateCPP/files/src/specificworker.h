@@ -37,9 +37,8 @@ class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
 public:
-	SpecificWorker(${constructor_proxies}, bool startup_check);
+	SpecificWorker(const ConfigLoader& configLoader, ${constructor_proxies}, bool startup_check);
 	~SpecificWorker();
-	bool setParams(RoboCompCommonBehavior::ParameterList params);
 
 	${implements_method_definitions}
 

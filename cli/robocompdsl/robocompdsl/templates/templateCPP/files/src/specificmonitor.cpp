@@ -70,7 +70,7 @@ bool SpecificMonitor::sendParamsToWorker(RoboCompCommonBehavior::ParameterList p
 	if(checkParams(params))
 	{
 		//Set params to worker
-		if(worker->setParams(params)) 
+		// if(worker->setParams(params)) 
 			return true;
 	}
 	else

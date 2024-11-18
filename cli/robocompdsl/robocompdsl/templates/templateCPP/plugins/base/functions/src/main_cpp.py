@@ -15,17 +15,17 @@ TOPIC_MANAGER_STR = """
 IceStorm::TopicManagerPrx${ptr} topicManager;
 try
 {
-	topicManager = ${type}(communicator()->propertyToProxy("TopicManager.Proxy"));
+	topicManager = ${type}(communicator()->stringToProxy(configLoader.get<std::string>("TopicManager.Proxy")));
 	if (!topicManager)
 	{
-	    cout << "[" << PROGRAM_NAME << "]: TopicManager.Proxy not defined in config file."<<endl;
-	    cout << "\t Config line example: TopicManager.Proxy=IceStorm/TopicManager:default -p 9999"<<endl;
+	    std::cout << "[" << PROGRAM_NAME << "]: TopicManager.Proxy not defined in config file."<<std::endl;
+	    std::cout << "\t Config line example: TopicManager.Proxy=IceStorm/TopicManager:default -p 9999"<<std::endl;
         return EXIT_FAILURE;
 	}
 }
 catch (const Ice::Exception &ex)
 {
-	cout << "[" << PROGRAM_NAME << "]: Exception: \'rcnode\' not running: " << ex << endl;
+	std::cout << "[" << PROGRAM_NAME << "]: Exception: \'rcnode\' not running: " << ex << std::endl;
 	return EXIT_FAILURE;
 }
 """
@@ -40,19 +40,19 @@ while (!<LOWER>_topic)
 	}
 	catch (const IceStorm::NoSuchTopic&)
 	{
-		cout << "[" << PROGRAM_NAME << "]: ERROR retrieving <NORMAL> topic. \\n";
+		std::cout << "[" << PROGRAM_NAME << "]: ERROR retrieving <NORMAL> topic. \\n";
 		try
 		{
 			<LOWER>_topic = topicManager->create("<NORMAL>");
 		}
 		catch (const IceStorm::TopicExists&){
 			// Another client created the topic.
-			cout << "[" << PROGRAM_NAME << "]: ERROR publishing the <NORMAL> topic. It's possible that other component have created\\n";
+			std::cout << "[" << PROGRAM_NAME << "]: ERROR publishing the <NORMAL> topic. It's possible that other component have created\\n";
 		}
 	}
 	catch(const IceUtil::NullHandleException&)
 	{
-		cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
+		std::cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
 		"\\t\\tTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\n";
 		return EXIT_FAILURE;
 	}
@@ -66,10 +66,8 @@ SUBSCRIBESTO_STR = """
 <CHANGE2> <PROXYNAME>;
 try
 {
-	if (not GenericMonitor::configGetString(communicator(), prefix, "<NORMAL>Topic.Endpoints", tmp, ""))
-	{
-		cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy <NORMAL>Proxy";
-	}
+
+    tmp = configLoader.get<std::string>("<NORMAL>Topic.Endpoints");
 	Ice::ObjectAdapterPtr <NORMAL>_adapter = communicator()->createObjectAdapterWithEndpoints("<LOWER>", tmp);
 	<PTR_TYPE>Ptr <LOWER>I_ = <CHANGE3>(worker);
 	<CHANGE4> <PROXYNAME> = <NORMAL>_adapter->addWithUUID(<LOWER>I_)->ice_oneway();
@@ -81,18 +79,18 @@ try
 		catch (const IceStorm::TopicExists&) {
 			//Another client created the topic
 			try{
-				cout << "[" << PROGRAM_NAME << "]: Probably other client already opened the topic. Trying to connect.\\n";
+				std::cout << "[" << PROGRAM_NAME << "]: Probably other client already opened the topic. Trying to connect.\\n";
 				<LOWER>_topic = topicManager->retrieve("<NORMAL>");
 			}
 			catch(const IceStorm::NoSuchTopic&)
 			{
-				cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\\n";
+				std::cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\\n";
 				//Error. Topic does not exist
 			}
 		}
 		catch(const IceUtil::NullHandleException&)
 		{
-			cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
+			std::cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
 			"\\t\\tTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\n";
 			return EXIT_FAILURE;
 		}
@@ -103,7 +101,7 @@ try
 }
 catch(const IceStorm::NoSuchTopic&)
 {
-	cout << "[" << PROGRAM_NAME << "]: Error creating <NORMAL> topic.\\n";
+	std::cout << "[" << PROGRAM_NAME << "]: Error creating <NORMAL> topic.\\n";
 	//Error. Topic does not exist
 }
 
@@ -113,18 +111,15 @@ IMPLEMENTS_STR = """
 try
 {
 	// Server adapter creation and publication
-	if (not GenericMonitor::configGetString(communicator(), prefix, "<NORMAL>.Endpoints", tmp, ""))
-	{
-		cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy <NORMAL>";
-	}
-	Ice::ObjectAdapterPtr adapter<NORMAL> = communicator()->createObjectAdapterWithEndpoints("<NORMAL>", tmp);
+    tmp = configLoader.get<std::string>("<NORMAL>.Endpoints");
+    Ice::ObjectAdapterPtr adapter<NORMAL> = communicator()->createObjectAdapterWithEndpoints("<NORMAL>", tmp);
 	<C++_VERSION>
 	adapter<NORMAL>->add(<LOWER>, Ice::stringToIdentity("<LOWER>"));
 	adapter<NORMAL>->activate();
-	cout << "[" << PROGRAM_NAME << "]: <NORMAL> adapter created in port " << tmp << endl;
+	std::cout << "[" << PROGRAM_NAME << "]: <NORMAL> adapter created in port " << tmp << std::endl;
 }
 catch (const IceStorm::TopicExists&){
-	cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for <NORMAL>\\n";
+	std::cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for <NORMAL>\\n";
 }
 
 """
@@ -133,15 +128,12 @@ catch (const IceStorm::TopicExists&){
 REQUIRE_STR = """
 try
 {
-	if (not GenericMonitor::configGetString(communicator(), prefix, "<NORMAL><PROXYNUMBER>Proxy", proxy, ""))
-	{
-		cout << "[" << PROGRAM_NAME << "]: Can't read configuration for proxy <NORMAL>Proxy\\n";
-	}
+    proxy = configLoader.get<std::string>("<NORMAL><PROXYNUMBER>Proxy");
 	<C++_VERSION>
 }
 catch(const Ice::Exception& ex)
 {
-	cout << "[" << PROGRAM_NAME << "]: Exception creating proxy <NORMAL><PROXYNUMBER>: " << ex;
+	std::cout << "[" << PROGRAM_NAME << "]: Exception creating proxy <NORMAL><PROXYNUMBER>: " << ex;
 	return EXIT_FAILURE;
 }
 qInfo("<NORMAL>Proxy<PROXYNUMBER> initialized Ok!");
@@ -227,7 +219,7 @@ class src_main_cpp(TemplateDict):
                 manager_type = "IceStorm::TopicManagerPrx::checkedCast"
             else:
                 ptr = "Ptr"
-                manager_type = "topicManager = Ice::checkedCast<IceStorm::TopicManagerPrx>"
+                manager_type = "Ice::checkedCast<IceStorm::TopicManagerPrx>"
             result += Template(TOPIC_MANAGER_STR).substitute(ptr=ptr, type=manager_type)
         return result
 
@@ -305,9 +297,9 @@ class src_main_cpp(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
                 if self.component.language.lower() == "cpp":
-                    cpp = "<PROXYNAME>_proxy = <PROXY_TYPE>Prx::uncheckedCast( communicator()->stringToProxy( proxy ) );"
+                    cpp = "<PROXYNAME>_proxy = <PROXY_TYPE>Prx::uncheckedCast(communicator()->stringToProxy(proxy));"
                 else:
-                    cpp = "<PROXYNAME>_proxy = Ice::uncheckedCast<<PROXY_TYPE>Prx>( communicator()->stringToProxy( proxy ) );"
+                    cpp = "<PROXYNAME>_proxy = Ice::uncheckedCast<<PROXY_TYPE>Prx>(communicator()->stringToProxy(proxy));"
                 result += REQUIRE_STR.replace("<C++_VERSION>", cpp).replace("<NORMAL>", name).replace("<LOWER>",
                                                                                                       name.lower()).replace(
                     "<PROXYNAME>", name.lower() + num).replace("<PROXYNUMBER>", num).replace('<PROXY_TYPE>', proxy_type)
@@ -327,7 +319,7 @@ class src_main_cpp(TemplateDict):
                 result += "tprx = std::make_tuple(" + ",".join(proxy_list) + ");\n"
             else:
                 result += "tprx = std::tuple<>();\n"
-        result += "SpecificWorker *worker = new SpecificWorker({}prx, startup_check_flag);\n".format(var_name)
+        result += "SpecificWorker *worker = new SpecificWorker(this->configLoader, {}prx, startup_check_flag);\n".format(var_name)
         return result
 
     def unsubscribe_code(self):
