@@ -227,7 +227,7 @@ class specificworker_cpp(TemplateDict):
         result = ""
         interfaces_by_type = {
             "requires": self.component.requires,
-            "publishes":  self.component.publishes,
+            "publishes": self.component.publishes,
             "implements": self.component.implements,
             "subscribesTo": self.component.subscribesTo
         }
@@ -244,12 +244,23 @@ class specificworker_cpp(TemplateDict):
                             action = "call"
                             pub = ""
                         proxy_reference = "this->" + interface.name.lower() + num + f"_{pub}proxy->"
-                        for method in module['interfaces'][0]['methods']:
-                            proxy_methods_calls += f"// {proxy_reference}{method}(...)\n"
+
+                        for method_name, method_details in module['interfaces'][0]['methods'].items():
+                            return_type = f"{module['name']}::{method_details['return']}"
+                            method_signature = f"{return_type} {proxy_reference}{method_name}("
+                            params = []
+                            for param in method_details['params']:
+                                param_type = param['type']
+                                param_name = param['name']
+                                params.append(f"{param_type} {param_name}")
+                            method_signature += ", ".join(params) + ")"
+                            proxy_methods_calls += f"// {method_signature}\n"
+
                         if proxy_methods_calls:
                             result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module['name'],
                                                                                      methods=proxy_methods_calls,
                                                                                      action=action)
+
                     structs_str = ""
                     for struct in module['structs']:
                         structs_str += f"// {struct['name'].replace('/', '::')}\n"
