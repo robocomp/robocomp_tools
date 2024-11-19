@@ -8,9 +8,9 @@ include_directories(/usr/include/libxml2/)
 """
 
 
-class src_CMakeLists_txt(TemplateDict):
+class generated_CMakeLists_txt(TemplateDict):
     def __init__(self, component):
-        super(src_CMakeLists_txt, self).__init__()
+        super(generated_CMakeLists_txt, self).__init__()
         self.component = component
         self['agm_includes'] = self.agm_includes()
 

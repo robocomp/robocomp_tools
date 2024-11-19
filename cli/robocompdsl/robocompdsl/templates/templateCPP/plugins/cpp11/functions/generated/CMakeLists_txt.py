@@ -8,7 +8,7 @@ FIND_PACKAGE( Ice REQUIRED COMPONENTS Ice++11 IceStorm++11)
 """
 
 
-class src_CMakeLists_txt(TemplateDict):
+class generated_CMakeLists_txt(TemplateDict):
     def __init__(self, component):
         super().__init__()
         self.component = component

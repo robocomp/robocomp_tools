@@ -152,7 +152,7 @@ class FilesGenerator:
             robocompdslutils.create_directory(self.output_path)
 
         # Create directories within the output directory
-        new_dirs = ["bin", "src", "etc"]
+        new_dirs = ["bin", "src", "etc", "generated"]
         for new_dir in new_dirs:
             if self.ast.language.lower() == "python" and new_dir == "bin":
                 continue

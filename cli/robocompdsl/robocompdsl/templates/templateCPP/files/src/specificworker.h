@@ -47,7 +47,6 @@ public:
 public slots:
 	${state_machine_method}
 	int startup_check();
-	${statemachine_methods_definitions}
 	${dsr_slots}
 private:
 	${agm_attributes}

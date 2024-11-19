@@ -21,7 +21,6 @@
 
 #include <stdint.h>
 ${gui_includes}
-${statemachine_includes}
 #include <grafcetStep/GRAFCETStep.h>
 #include <ConfigLoader/ConfigLoader.h>
 #include <QStateMachine>
@@ -74,8 +73,6 @@ public:
 protected:
 	std::unordered_map<std::string, std::unique_ptr<GRAFCETStep>> states;
 	ConfigLoader configLoader;
-	
-	${statemachine_creation}
 
 	${agm_attributes_creation}
 
@@ -83,14 +80,11 @@ protected:
 private:
 
 public slots:
-	${statemachine_slots}
 	${virtual_statemachine}
-
 	void hibernationCheck();
 	
 signals:
 	void kill();
-	${statemachine_signals}
 	${signal_statemachine}
 };
 

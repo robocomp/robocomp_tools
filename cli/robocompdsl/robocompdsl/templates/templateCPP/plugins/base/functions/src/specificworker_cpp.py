@@ -5,11 +5,13 @@ import robocompdsl.dsl_parsers.parsing_utils as p_utils
 from robocompdsl.templates.templateCPP.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 
-INNERMODEL_COMPUTE_STR = """\
-#ifdef USE_QTGUI
-    if (innerModelViewer) innerModelViewer->update();
-    osgView->frame();
-#endif
+
+INITIALIZE_METHOD_STR = """\
+void SpecificWorker::initialize()
+{
+    std::cout << "initialize worker" << std::endl;
+	//computeCODE
+}
 """
 
 COMPUTE_METHOD_STR = """\
@@ -30,8 +32,6 @@ void SpecificWorker::compute()
 	//{
 	//  std::cout << "Error reading from Camera" << e << std::endl;
 	//}
-	${compute_innermodelviewer}
-	
 }
 """
 
@@ -76,6 +76,7 @@ class specificworker_cpp(TemplateDict):
         self['year'] = str(datetime.date.today().year)
         self['proxy_map_type'] = self.proxy_map_type()
         self['proxy_map_name'] = self.proxy_map_name()
+        self['initialize_method'] = self.initialize_method()
         self['compute_method'] = self.compute_method()
         self['emergency_method'] = self.emergency_method()
         self['restore_method'] = self.restore_method()
@@ -133,31 +134,32 @@ class specificworker_cpp(TemplateDict):
 
 
 
+    def initialize_method(self):
+        result = ""
+        statemachine = self.component.statemachine
+        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
+            result += INITIALIZE_METHOD_STR
+        return result
+
     def compute_method(self):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += Template(COMPUTE_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
+            result += COMPUTE_METHOD_STR
         return result
     
     def emergency_method(self):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += Template(EMERGENCY_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
+            result += EMERGENCY_METHOD_STR
         return result
     
     def restore_method(self):
         result = ""
         statemachine = self.component.statemachine
         if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += Template(RESTORE_METHOD_STR).substitute(compute_innermodelviewer=self.compute_innermodelviewer())
-        return result
-
-    def compute_innermodelviewer(self):
-        result = ""
-        if self.component.innermodelviewer:
-            result += INNERMODEL_COMPUTE_STR
+            result += RESTORE_METHOD_STR
         return result
 
 

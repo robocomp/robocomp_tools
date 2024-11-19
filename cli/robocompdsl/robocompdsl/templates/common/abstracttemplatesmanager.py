@@ -91,7 +91,6 @@ if not (TEMPLATES_DIR := Path('/opt/robocomp/python/robocompdsl/templates/')).ex
     if not (TEMPLATES_DIR := Path(__file__).absolute().parent.parent).absolute().exists():
         print(f"NO TEMPLATE DIR FOUND FOR ROBOCOMPDSL!!!: {__file__}")
 
-
 class AbstractTemplatesManager(ABC):
     def __init__(self, ast, plugins):
         self.ast = ast
@@ -175,7 +174,7 @@ class ComponentTemplatesManager(AbstractTemplatesManager):
         for interface in self.ast.implements + self.ast.subscribesTo:
             if communication_is_ice(interface):
                 for template_file in self.files['servant_files']:
-                    ofile = os.path.join(output_path, 'src', interface.name.lower() + 'I.' + template_file.split('.')[
+                    ofile = os.path.join(output_path, 'generated', interface.name.lower() + 'I.' + template_file.split('.')[
                         -1].lower())
                     console.print(':thumbs_up: Generating %s (servant for %s)' % (ofile, interface.name), style='green')
                     ifile = os.path.join(TEMPLATES_DIR, self.files['template_path'], template_file)

@@ -153,9 +153,9 @@ catch(const Ice::Exception& ex)
 """
 
 
-class src_main_cpp(TemplateDict):
+class generated_main_cpp(TemplateDict):
     def __init__(self, component):
-        super(src_main_cpp, self).__init__()
+        super(generated_main_cpp, self).__init__()
         self.component = component
         self['year'] = str(datetime.date.today().year)
         self['component_name'] = component.name

@@ -75,7 +75,7 @@
 #include <sigwatch/sigwatch.h>
 
 #include "genericworker.h"
-#include "specificworker.h"
+#include "../src/specificworker.h"
 
 ${implements_interface_includes}
 ${subscribes_interface_includes}

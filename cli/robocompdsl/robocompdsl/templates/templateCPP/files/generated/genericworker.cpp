@@ -24,8 +24,6 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 {
 
 	this->configLoader = configLoader;
-
-	${statemachine_initialization}
 	
 	${require_and_publish_proxies_creation}
 

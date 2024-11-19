@@ -12,7 +12,7 @@ SET(RC_COMPONENT_INSTALL_PATH "/home/robocomp/robocomp" CACHE STRING "component 
 #STRING(STRIP $${COMPONENT_NAME} COMPONENT_NAME)
 #SET(COMPONENT_NAME $${COMPONENT_NAME} CACHE STRING "component name" FORCE)
 
-SUBDIRS( src )
+SUBDIRS(generated)
 
 INSTALL(FILES etc/config DESTINATION $${RC_COMPONENT_INSTALL_PATH}/etc-default/ RENAME ${component_name}.conf )
 

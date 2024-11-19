@@ -23,7 +23,6 @@
 */
 SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_type} ${proxy_map_name}, bool startup_check) : GenericWorker(configLoader, ${proxy_map_name})
 {
-	${innermodelviewer_code}
 	${agmagent_attributes}
 
 	this->startup_check_flag = startup_check;
@@ -37,13 +36,7 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 			hibernationChecker.start(500);
 		#endif
 
-
-		${innermodel_and_viewer_attribute_init}
-		${agm_innermodel_association}
-		${state_machine_start}
-		
 		${dsr_set_params}
-		${statemachine_initialize_to_compute}
 		${dsr_initialize}
 
 
@@ -70,7 +63,6 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 SpecificWorker::~SpecificWorker()
 {
 	std::cout << "Destroying SpecificWorker" << std::endl;
-	${statemachine_finalize_emit}
 	${dsr_destructor}
 }
 
@@ -89,8 +81,6 @@ int SpecificWorker::startup_check()
 	QTimer::singleShot(200, QCoreApplication::instance(), SLOT(quit()));
 	return 0;
 }
-
-${statemachine_methods_creation}
 
 ${implements}
 ${subscribes}

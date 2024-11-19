@@ -3,7 +3,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 
 
-class src_CMakeLists_txt(TemplateDict):
+class generated_CMakeLists_txt(TemplateDict):
     def __init__(self, component):
         super().__init__()
         self.component = component
