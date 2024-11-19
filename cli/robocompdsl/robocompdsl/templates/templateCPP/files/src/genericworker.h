@@ -31,6 +31,7 @@ ${statemachine_includes}
 #include <atomic>
 #include <QtCore>
 #include <variant>
+#include <unordered_map>
 
 
 
@@ -40,7 +41,7 @@ ${agm_includes}
 ${need_gui}
 
 #define PROGRAM_NAME    "${component_name}"
-#define SERVER_FULL_NAME   "RoboComp ${component_name}:: ${component_name}"
+#define SERVER_FULL_NAME   "RoboComp ${component_name}::${component_name}"
 
 #define BASIC_PERIOD 100
 
@@ -56,9 +57,8 @@ public:
 	virtual ~GenericWorker();
 	virtual void killYourSelf();
 
-	enum STATES { Initialize, Compute, Emergency, Restore, NumberOfStates };
-	void setPeriod(STATES state, int period);
-	int getPeriod(STATES state);
+	void setPeriod(const std::string& state, int period);
+	int getPeriod(const std::string& state);
 
 	QStateMachine statemachine;
 	QTimer hibernationChecker;
@@ -72,7 +72,7 @@ public:
 	${subscribes}
 
 protected:
-	std::vector<GRAFCETStep*> states;
+	std::unordered_map<std::string, std::unique_ptr<GRAFCETStep>> states;
 	ConfigLoader configLoader;
 	
 	${statemachine_creation}
@@ -86,9 +86,7 @@ public slots:
 	${statemachine_slots}
 	${virtual_statemachine}
 
-	void initializeWorker();
 	void hibernationCheck();
-
 	
 signals:
 	void kill();

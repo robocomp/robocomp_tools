@@ -6,8 +6,8 @@ ${config_requires_proxies}
 ${storm_topic_manager}
 ${dsr_config}
 
-PeriodCompute=100
-PeriodEmergency=500
+Period.Compute=100
+Period.Emergency=500
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0

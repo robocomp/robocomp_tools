@@ -17,7 +17,6 @@ class genericworker_cpp(TemplateDict):
         self['state_statemachine'] = self.state_statemachine()        
         self['transition_statemachine'] = self.transition_statemachine()
         self['add_state_statemachine'] = self.add_state_statemachine()
-        self['configure_statemachine'] = self.configure_statemachine()
 
     def require_and_publish_proxies_creation(self):
         result = ""
@@ -65,38 +64,29 @@ class genericworker_cpp(TemplateDict):
         else:
             return "QObject()"
 
-    
     def state_statemachine(self):
         result = ""
         if self.component.statemachine_path is None:
-            result += 'states.resize(STATES::NumberOfStates);\n'
-            result += 'states[STATES::Initialize] = new GRAFCETStep("Initialize", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::initialize, this));\n'
-            result += 'states[STATES::Compute] = new GRAFCETStep("Compute", BASIC_PERIOD, std::bind(&GenericWorker::compute, this));\n'
-            result += 'states[STATES::Emergency] = new GRAFCETStep("Emergency", BASIC_PERIOD, std::bind(&GenericWorker::emergency, this));\n'
-            result += 'states[STATES::Restore] = new GRAFCETStep("Restore", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::restore, this));\n'
+            result += 'states["Initialize"] = std::make_unique<GRAFCETStep>("Initialize", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::initialize, this));\n'
+            result += 'states["Compute"] = std::make_unique<GRAFCETStep>("Compute", configLoader.get<int>("Period.Compute"), std::bind(&GenericWorker::compute, this));\n'
+            result += 'states["Emergency"] = std::make_unique<GRAFCETStep>("Emergency", configLoader.get<int>("Period.Emergency"), std::bind(&GenericWorker::emergency, this));\n'
+            result += 'states["Restore"] = std::make_unique<GRAFCETStep>("Restore", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::restore, this));\n'
         return result
     
     def transition_statemachine(self):
         result = ""
         if self.component.statemachine_path is None:
-            result += "states[STATES::Initialize]->addTransition(states[STATES::Initialize], SIGNAL(entered()), states[STATES::Compute]);\n"
-            result += "states[STATES::Compute]->addTransition(this, SIGNAL(goToEmergency()), states[STATES::Emergency]);\n"
-            result += "states[STATES::Emergency]->addTransition(this, SIGNAL(goToRestore()), states[STATES::Restore]);\n"
-            result += "states[STATES::Restore]->addTransition(states[STATES::Restore], SIGNAL(entered()), states[STATES::Compute]);\n"
+            result += 'states["Initialize"]->addTransition(states["Initialize"].get(), SIGNAL(entered()), states["Compute"].get());\n'
+            result += 'states["Compute"]->addTransition(this, SIGNAL(goToEmergency()), states["Emergency"].get());\n'
+            result += 'states["Emergency"]->addTransition(this, SIGNAL(goToRestore()), states["Restore"].get());\n'
+            result += 'states["Restore"]->addTransition(states["Restore"].get(), SIGNAL(entered()), states["Compute"].get());\n'
         return result
     
     def add_state_statemachine(self):
         result = ""
         if self.component.statemachine_path is None:
-            result += "statemachine.addState(states[STATES::Initialize]);\n"
-            result += "statemachine.addState(states[STATES::Compute]);\n"
-            result += "statemachine.addState(states[STATES::Emergency]);\n"
-            result += "statemachine.addState(states[STATES::Restore]);\n"
-        return result
-
-    def configure_statemachine(self):
-        result = ""
-        if self.component.statemachine_path is None:
-            result += "statemachine.setChildMode(QState::ExclusiveStates);;\n"
-            result += "statemachine.setInitialState(states[STATES::Initialize]);\n"
+            result += 'statemachine.addState(states["Initialize"].get());\n'
+            result += 'statemachine.addState(states["Compute"].get());\n'
+            result += 'statemachine.addState(states["Emergency"].get());\n'
+            result += 'statemachine.addState(states["Restore"].get());\n'
         return result

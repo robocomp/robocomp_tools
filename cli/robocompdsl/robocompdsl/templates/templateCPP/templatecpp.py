@@ -13,14 +13,12 @@ class TemplatesManagerCpp(ComponentTemplatesManager):
             'regular': [
                 'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'src/main.cpp',
                 'src/CMakeLists.txt', 'src/CMakeListsSpecific.txt',
-                'src/genericmonitor.h', 'src/genericmonitor.cpp', 'src/specificmonitor.h',
-                'src/specificmonitor.cpp', 'src/genericworker.h', 'src/genericworker.cpp', 'src/specificworker.h',
+                'src/genericworker.h', 'src/genericworker.cpp', 'src/specificworker.h',
                 'src/specificworker.cpp', 'src/mainUI.ui'
             ],
             'avoid_overwrite': [
                 'src/specificworker.h', 'src/specificworker.cpp', 'src/CMakeListsSpecific.txt',
-                'src/mainUI.ui', 'src/specificmonitor.h', 'src/specificmonitor.cpp', 'README.md',
-                'etc/config'
+                'src/mainUI.ui', 'README.md','etc/config'
             ],
             'servant_files': ["SERVANT.H", "SERVANT.CPP"],
             'template_path': "templateCPP/files/"

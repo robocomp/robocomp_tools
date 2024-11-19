@@ -35,7 +35,9 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 
 	${add_state_statemachine}
 
-	${configure_statemachine}
+	statemachine.setInitialState(states["Initialize"].get());
+
+	connect(&hibernationChecker, SIGNAL(timeout()), this, SLOT(hibernationCheck()));
 
 	${gui_setup}
 }
@@ -45,10 +47,6 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 */
 GenericWorker::~GenericWorker()
 {
-	for (auto state : states) {
-        delete state;
-    }
-
 }
 void GenericWorker::killYourSelf()
 {
@@ -56,52 +54,33 @@ void GenericWorker::killYourSelf()
 	emit kill();
 }
 
-void GenericWorker::initializeWorker()
-{
-	statemachine.start();
-
-	connect(&hibernationChecker, SIGNAL(timeout()), this, SLOT(hibernationCheck()));
-
-	auto error = statemachine.errorString();
-    if (error.length() > 0){
-        qWarning() << error;
-        throw error;
-    }
-
-}
-
 /**
-* \brief Change compute period
-* @param nameState name state "Compute" or "Emergency"
-* @param per Period in ms
+* \brief Change compute period of state
+* @param state name of state
+* @param period Period in ms
 */
-void GenericWorker::setPeriod(STATES state, int period)
+void GenericWorker::setPeriod(const std::string& state, int period)
 {
-	switch (state)
-	{
-	case STATES::Compute:
-		states[STATES::Compute]->setPeriod(period);
-		std::cout << "Period Compute changed " << period  << "ms" << std::endl<< std::flush;
-		break;
-
-	case STATES::Emergency:
-		states[STATES::Emergency]->setPeriod(period);
-		std::cout << "Period Emergency changed " << period << "ms" << std::endl<< std::flush;
-		break;
-	
-	default:
-		std::cerr<<"No change in the period, the state parameter must be 'Compute' or 'Emergency'."<< std::endl<< std::flush;
-		break;
+    auto it = states.find(state); 
+    if (it != states.end() && it->second != nullptr)
+    {
+		it->second->setPeriod(period);
+		std::cout << "Period for state " << state << " changed to " << period << "ms" << std::endl << std::flush;
 	}
+    else
+        std::cerr << "No change in the period, the state is not valid or not configured."<< std::endl;
 }
 
-int GenericWorker::getPeriod(STATES state)
+int GenericWorker::getPeriod(const std::string& state)
 {
-	if (state < 0 || state >= STATES::NumberOfStates) {
-        std::cerr << "Invalid state parameter." << std::endl << std::flush;
-        return -1;
-    }
-	return states[state]->getPeriod();
+    auto it = states.find(state);
+
+    if (it == states.end() || it->second == nullptr)
+    {
+        std::cerr << "Invalid or unconfigured state: " << state << std::endl;
+        return -1; 
+	}
+    return it->second->getPeriod();
 }
 
 void GenericWorker::hibernationCheck()
@@ -122,7 +101,7 @@ void GenericWorker::hibernationCheck()
 		// Restore period
         if (isInHibernation)
         {
-            this->setPeriod(STATES::Compute, originalPeriod);
+            this->setPeriod("Compute", originalPeriod);
             isInHibernation = false;
         }
     }
@@ -134,8 +113,8 @@ void GenericWorker::hibernationCheck()
     if (elapsedTime.count() > HIBERNATION_TIMEOUT && !isInHibernation)
     {
         isInHibernation = true;
-		originalPeriod = this->getPeriod(STATES::Compute);
-        this->setPeriod(STATES::Compute, 500);
+		originalPeriod = this->getPeriod("Compute");
+        this->setPeriod("Compute", 500);
     }
 }
 

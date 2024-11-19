@@ -25,7 +25,40 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 {
 	${innermodelviewer_code}
 	${agmagent_attributes}
+
 	this->startup_check_flag = startup_check;
+	if(this->startup_check_flag)
+	{
+		this->startup_check();
+	}
+	else
+	{
+		#ifdef HIBERNATION_ENABLED
+			hibernationChecker.start(500);
+		#endif
+
+
+		${innermodel_and_viewer_attribute_init}
+		${agm_innermodel_association}
+		${state_machine_start}
+		
+		${dsr_set_params}
+		${statemachine_initialize_to_compute}
+		${dsr_initialize}
+
+
+		//Your states for machine HERE EXAMPLE
+
+		statemachine.setChildMode(QState::ExclusiveStates);
+		statemachine.start();
+
+		auto error = statemachine.errorString();
+		if (error.length() > 0){
+			qWarning() << error;
+			throw error;
+		}
+		
+	}
 	// Uncomment if there's too many debug messages
 	// but it removes the possibility to see the messages
 	// shown in the console with qDebug()
@@ -42,33 +75,7 @@ SpecificWorker::~SpecificWorker()
 }
 
 
-void SpecificWorker::initialize()
-{
-	std::cout << "Initialize worker" << std::endl;
-	if(this->startup_check_flag)
-	{
-		this->startup_check();
-	}
-	else
-	{
-
-		#ifdef HIBERNATION_ENABLED
-			hibernationChecker.start(500);
-		#endif
-
-		this->setPeriod(STATES::Compute, configLoader.get<int>("Period.Compute"));
-		this->setPeriod(STATES::Emergency, configLoader.get<int>("Period.Emergency"));
-
-		${innermodel_and_viewer_attribute_init}
-		${agm_innermodel_association}
-		${state_machine_start}
-		
-		${dsr_set_params}
-		${statemachine_initialize_to_compute}
-		${dsr_initialize}
-	}
-
-}
+${initialize_method}
 
 ${compute_method}
 

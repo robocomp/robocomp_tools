@@ -36,7 +36,6 @@ SET ( SOURCES
   $$ENV{ROBOCOMP}/classes/grafcetStep/GRAFCETStep.cpp
   $$ENV{ROBOCOMP}/classes/ConfigLoader/ConfigLoader.cpp
   main.cpp
-  genericmonitor.cpp
   genericworker.cpp
   ${interface_sources}
   ${statemachine_visual_sources}

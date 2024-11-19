@@ -74,10 +74,8 @@
 
 #include <sigwatch/sigwatch.h>
 
-#include "genericmonitor.h"
 #include "genericworker.h"
 #include "specificworker.h"
-#include "specificmonitor.h"
 
 ${implements_interface_includes}
 ${subscribes_interface_includes}
@@ -144,19 +142,7 @@ int ::${component_name}::run(int argc, char* argv[])
 	${publish}
 
 	${specificworker_creation}
-	//Monitor thread
-	SpecificMonitor *monitor = new SpecificMonitor(worker,communicator());
-	QObject::connect(monitor, SIGNAL(kill()), &a, SLOT(quit()));
 	QObject::connect(worker, SIGNAL(kill()), &a, SLOT(quit()));
-	monitor->start();
-
-	if ( !monitor->isRunning() )
-		return status;
-
-	while (!monitor->ready)
-	{
-		usleep(10000);
-	}
 
 	try
 	{
@@ -192,10 +178,7 @@ int ::${component_name}::run(int argc, char* argv[])
 	#endif
 
 	status = EXIT_SUCCESS;
-	monitor->terminate();
-	monitor->wait();
 	delete worker;
-	delete monitor;
 	return status;
 }
 
