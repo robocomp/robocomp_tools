@@ -5,18 +5,19 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 
 DSR_CONFIG_STR = """\
-Agent.id = 0 # Change id
-Agent.name = ${name}
-ViewAgent.tree = true
-ViewAgent.graph = true
-ViewAgent.2d = true
-ViewAgent.3d = true
-
+[Agent]
+id = 0 # Change id
+name = ${name}
+[ViewAgent]
+tree = true
+graph = true
+2d = true
+3d = true
 """
 
-class etc_config(TemplateDict):
+class etc_config_toml(TemplateDict):
     def __init__(self, component):
-        super(etc_config, self).__init__()
+        super(etc_config_toml, self).__init__()
         self.component = component
         self['dsr_config'] = self.dsr_config()
 

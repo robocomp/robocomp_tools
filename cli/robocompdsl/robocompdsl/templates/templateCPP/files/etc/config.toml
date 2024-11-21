@@ -1,0 +1,15 @@
+${config_requires_proxies}
+${config_implements_endpoints}
+${config_subscribes_endpoints}
+${storm_topic_manager}
+${dsr_config}
+
+[Period]
+Compute=100
+Emergency=500
+
+[Ice]
+Warn.Connections=0
+Trace.Network=0
+Trace.Protocol=0
+MessageSizeMax=20004800

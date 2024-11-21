@@ -1,6 +1,6 @@
+${config_requires_proxies}
 ${config_implements_endpoints}
 ${config_subscribes_endpoints}
-${config_requires_proxies}
 ${storm_topic_manager}
 ${dsr_config}
 

@@ -11,14 +11,14 @@ class TemplatesManagerCpp(ComponentTemplatesManager):
     def __init__(self, component):
         self.files = {
             'regular': [
-                'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'generated/main.cpp',
-                'generated/CMakeLists.txt', 'src/CMakeLists.txt',
+                'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'etc/config.toml',
+                'generated/main.cpp', 'generated/CMakeLists.txt', 'src/CMakeLists.txt',
                 'generated/genericworker.h', 'generated/genericworker.cpp', 'src/specificworker.h',
                 'src/specificworker.cpp', 'src/mainUI.ui'
             ],
             'avoid_overwrite': [
                 'src/specificworker.h', 'src/specificworker.cpp', 'src/CMakeLists.txt',
-                'src/mainUI.ui', 'README.md','etc/config'
+                'src/mainUI.ui', 'README.md','etc/config', 'etc/config.toml'
             ],
             'servant_files': ["SERVANT.H", "SERVANT.CPP"],
             'template_path': "templateCPP/files/"

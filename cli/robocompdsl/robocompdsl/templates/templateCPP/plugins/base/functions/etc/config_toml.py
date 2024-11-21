@@ -1,16 +1,16 @@
 from string import Template
-
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
 from robocompdsl.templates.common.templatedict import TemplateDict
 
-STORM_TOPIC_MANAGER_STR = """\
+STORM_TOPIC_MANAGER_TOML = """\
 # This property is used by the clients to connect to IceStorm.
-TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
+[TopicManager]
+Proxy = "IceStorm/TopicManager:default -p 9999"
 """
 
-class etc_config(TemplateDict):
+class etc_config_toml(TemplateDict):
     def __init__(self, component):
-        super(etc_config, self).__init__()
+        super(etc_config_toml, self).__init__()
         self.component = component
         self['config_implements_endpoints'] = self.config_implements_endpoints()
         self['config_subscribes_endpoints'] = self.config_subscribes_endpoints()
@@ -21,18 +21,20 @@ class etc_config(TemplateDict):
         result = ""
         for interface in self.component.implements:
             if communication_is_ice(interface):
-                result += interface.name + ".Endpoints=tcp -p 0\n"
+                result += f"[{interface.name}]\n"
+                result += f'Endpoints = "tcp -p 0"\n\n'
         if result != "":
-            result = '# Endpoints for implements interfaces\n' + result + '\n\n'
+            result = '# Endpoints for implements interfaces\n' + result + '\n'
         return result
 
     def config_subscribes_endpoints(self):
         result = ""
         for interface in self.component.subscribesTo:
             if communication_is_ice(interface):
-                result += interface.name + "Topic.Endpoints=tcp -p 0\n"
+                result += f"[{interface.name}Topic]\n"
+                result += f'Endpoints = "tcp -p 0"\n\n'
         if result != "":
-            result = '# Endpoints for subscriptions interfaces\n' + result + '\n\n'
+            result = '# Endpoints for subscriptions interfaces\n' + result + '\n'
         return result
 
     def config_requires_proxies(self):
@@ -40,15 +42,16 @@ class etc_config(TemplateDict):
         for interface, num in get_name_number(self.component.requires):
             if communication_is_ice(interface):
                 port = 0
-                result += interface.name + num + "Proxy = " + interface.name.lower() + ":tcp -h localhost -p " + str(
-                    port) + "\n"
+                if interface.name == 'DifferentialRobot': port = 10004
+                if interface.name == 'Laser': port = 10003
+                #result += f"[{interface.name}{num}Proxy]\n"
+                result += f'{interface.name}{num}Proxy = "{interface.name.lower()}:tcp -h localhost -p {port}"\n\n'
         if result != "":
-            result = '# Proxies for required interfaces\n' + result + '\n\n'
+            result = '# Proxies for required interfaces\n' + result + '\n'
         return result
 
     def storm_topic_manager(self):
         result = ""
         if len(self.component.publishes + self.component.subscribesTo) > 0:
-            result += STORM_TOPIC_MANAGER_STR
+            result += STORM_TOPIC_MANAGER_TOML
         return result
-
