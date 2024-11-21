@@ -40,22 +40,14 @@ class genericworker_cpp(TemplateDict):
             else:
                 proxy_suffix = "_proxy"
                 name_suffix = "Proxy"
-            if self.component.language.lower() == 'cpp':
-                if prx_type not in CPP_TYPES and '::' not in prx_type:
-                    module = self.component.idsl_pool.module_providing_interface(name)
-                    prx_type = f"{module['name']}::{prx_type}"
-                result += name.lower() + num + proxy_suffix + " = (*(" + prx_type + "Prx*)mprx[\"" + name + name_suffix + num + "\"]);\n"
-            else:
-                result += name.lower() + num + proxy_suffix + " = std::get<" + str(cont) + ">(tprx);\n"
+            
+            result += name.lower() + num + proxy_suffix + " = std::get<" + str(cont) + ">(tprx);\n"
         return result
 
 
     def constructor_proxies(self):
         result = ""
-        if self.component.language.lower() == 'cpp':
-            result += "MapPrx& mprx"
-        else:
-            result += "TuplePrx tprx"
+        result += "TuplePrx tprx"
         return result
 
     def inherited_constructor(self):
@@ -66,27 +58,25 @@ class genericworker_cpp(TemplateDict):
 
     def state_statemachine(self):
         result = ""
-        if self.component.statemachine_path is None:
-            result += 'states["Initialize"] = std::make_unique<GRAFCETStep>("Initialize", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::initialize, this));\n'
-            result += 'states["Compute"] = std::make_unique<GRAFCETStep>("Compute", configLoader.get<int>("Period.Compute"), std::bind(&GenericWorker::compute, this));\n'
-            result += 'states["Emergency"] = std::make_unique<GRAFCETStep>("Emergency", configLoader.get<int>("Period.Emergency"), std::bind(&GenericWorker::emergency, this));\n'
-            result += 'states["Restore"] = std::make_unique<GRAFCETStep>("Restore", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::restore, this));\n'
+
+        result += 'states["Initialize"] = std::make_unique<GRAFCETStep>("Initialize", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::initialize, this));\n'
+        result += 'states["Compute"] = std::make_unique<GRAFCETStep>("Compute", configLoader.get<int>("Period.Compute"), std::bind(&GenericWorker::compute, this));\n'
+        result += 'states["Emergency"] = std::make_unique<GRAFCETStep>("Emergency", configLoader.get<int>("Period.Emergency"), std::bind(&GenericWorker::emergency, this));\n'
+        result += 'states["Restore"] = std::make_unique<GRAFCETStep>("Restore", BASIC_PERIOD, nullptr, std::bind(&GenericWorker::restore, this));\n'
         return result
     
     def transition_statemachine(self):
         result = ""
-        if self.component.statemachine_path is None:
-            result += 'states["Initialize"]->addTransition(states["Initialize"].get(), SIGNAL(entered()), states["Compute"].get());\n'
-            result += 'states["Compute"]->addTransition(this, SIGNAL(goToEmergency()), states["Emergency"].get());\n'
-            result += 'states["Emergency"]->addTransition(this, SIGNAL(goToRestore()), states["Restore"].get());\n'
-            result += 'states["Restore"]->addTransition(states["Restore"].get(), SIGNAL(entered()), states["Compute"].get());\n'
+        result += 'states["Initialize"]->addTransition(states["Initialize"].get(), SIGNAL(entered()), states["Compute"].get());\n'
+        result += 'states["Compute"]->addTransition(this, SIGNAL(goToEmergency()), states["Emergency"].get());\n'
+        result += 'states["Emergency"]->addTransition(this, SIGNAL(goToRestore()), states["Restore"].get());\n'
+        result += 'states["Restore"]->addTransition(states["Restore"].get(), SIGNAL(entered()), states["Compute"].get());\n'
         return result
     
     def add_state_statemachine(self):
         result = ""
-        if self.component.statemachine_path is None:
-            result += 'statemachine.addState(states["Initialize"].get());\n'
-            result += 'statemachine.addState(states["Compute"].get());\n'
-            result += 'statemachine.addState(states["Emergency"].get());\n'
-            result += 'statemachine.addState(states["Restore"].get());\n'
+        result += 'statemachine.addState(states["Initialize"].get());\n'
+        result += 'statemachine.addState(states["Compute"].get());\n'
+        result += 'statemachine.addState(states["Emergency"].get());\n'
+        result += 'statemachine.addState(states["Restore"].get());\n'
         return result

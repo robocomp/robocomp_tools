@@ -170,7 +170,6 @@ class generated_main_cpp(TemplateDict):
         self['topic_manager_creation'] = self.topic_manager_creation()
         self['publish'] = self.publish()
         self['specificworker_creation'] = self.specificworker_creation()
-        self['commonbehaviorI_creation'] = self.commonbehaviorI_creation()
         self['implements'] = self.implements()
         self['subscribes_to'] = self.subscribes_to()
         self['unsubscribe_code'] = self.unsubscribe_code()
@@ -194,9 +193,7 @@ class generated_main_cpp(TemplateDict):
         result = ""
         for interface, num in get_name_number(interfaces):
             if communication_is_ice(interface):
-                ptr = ""
-                if self.component.language.lower() != "cpp":
-                    ptr = "Ptr"
+                ptr = "Ptr"
                 name = interface.name
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
@@ -214,12 +211,8 @@ class generated_main_cpp(TemplateDict):
             if communication_is_ice(pub):
                 need_topic = True
         if need_topic:
-            if self.component.language.lower() == "cpp":
-                ptr = ""
-                manager_type = "IceStorm::TopicManagerPrx::checkedCast"
-            else:
-                ptr = "Ptr"
-                manager_type = "Ice::checkedCast<IceStorm::TopicManagerPrx>"
+            ptr = "Ptr"
+            manager_type = "Ice::checkedCast<IceStorm::TopicManagerPrx>"
             result += Template(TOPIC_MANAGER_STR).substitute(ptr=ptr, type=manager_type)
         return result
 
@@ -231,20 +224,11 @@ class generated_main_cpp(TemplateDict):
             else:
                 pb = pba[0]
             if communication_is_ice(pba):
-                if self.component.language.lower() == "cpp":
-                    result += "IceStorm::TopicPrx " + pb.lower() + "_topic;\n"
-                else:
-                    result += "std::shared_ptr<IceStorm::TopicPrx> " + pb.lower() + "_topic;\n"
+                result += "std::shared_ptr<IceStorm::TopicPrx> " + pb.lower() + "_topic;\n"
                 result += PUBLISHES_STR.replace("<NORMAL>", pb).replace("<LOWER>", pb.lower())
                 module = self.component.idsl_pool.module_providing_interface(pb)
-                proxy_type = utils.get_type_string(pb, module['name'])
-                if self.component.language.lower() == "cpp":
-                    result += "Ice::ObjectPrx " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
-                    result += "" + pb.lower() + "_pubproxy = " + proxy_type + "Prx::uncheckedCast(" + pb.lower() + "_pub);\n"
-                    result += "mprx[\"" + pb + "Pub\"] = (::IceProxy::Ice::Object*)(&" + pb.lower() + "_pubproxy);\n"
-                else:
-                    result += "auto " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
-                    result += "" + pb.lower() + "_pubproxy = Ice::uncheckedCast<RoboComp"+pb+"::" + pb + "Prx>(" + pb.lower() + "_pub);\n"
+                result += "auto " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
+                result += "" + pb.lower() + "_pubproxy = Ice::uncheckedCast<RoboComp"+pb+"::" + pb + "Prx>(" + pb.lower() + "_pub);\n"
         return result
 
     def subscribes_to(self):
@@ -252,16 +236,10 @@ class generated_main_cpp(TemplateDict):
         for interface, num in get_name_number(self.component.subscribesTo):
             name = interface.name
             if communication_is_ice(interface):
-                if self.component.language.lower() == "cpp":
-                    change1 = "IceStorm::TopicPrx"
-                    change2 = "Ice::ObjectPrx"
-                    change3 = " new <NORMAL>I"
-                    change4 = "Ice::ObjectPrx"
-                else:
-                    change1 = "std::shared_ptr<IceStorm::TopicPrx>"
-                    change2 = "Ice::ObjectPrxPtr"
-                    change3 = " std::make_shared <<NORMAL>I>"
-                    change4 = "auto"
+                change1 = "std::shared_ptr<IceStorm::TopicPrx>"
+                change2 = "Ice::ObjectPrxPtr"
+                change3 = " std::make_shared <<NORMAL>I>"
+                change4 = "auto"
 
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
@@ -280,10 +258,7 @@ class generated_main_cpp(TemplateDict):
             else:
                 im = ima[0]
             if communication_is_ice(ima):
-                if self.component.language.lower() == "cpp":
-                    cpp = "<NORMAL>I *<LOWER> = new <NORMAL>I(worker);"
-                else:
-                    cpp = "auto <LOWER> = std::make_shared<<NORMAL>I>(worker);"
+                cpp = "auto <LOWER> = std::make_shared<<NORMAL>I>(worker);"
                 result += IMPLEMENTS_STR.replace("<C++_VERSION>", cpp).replace("<NORMAL>", im).replace("<LOWER>",
                                                                                                        im.lower())
 
@@ -296,29 +271,21 @@ class generated_main_cpp(TemplateDict):
             if communication_is_ice(interface):
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
-                if self.component.language.lower() == "cpp":
-                    cpp = "<PROXYNAME>_proxy = <PROXY_TYPE>Prx::uncheckedCast(communicator()->stringToProxy(proxy));"
-                else:
-                    cpp = "<PROXYNAME>_proxy = Ice::uncheckedCast<<PROXY_TYPE>Prx>(communicator()->stringToProxy(proxy));"
+                cpp = "<PROXYNAME>_proxy = Ice::uncheckedCast<<PROXY_TYPE>Prx>(communicator()->stringToProxy(proxy));"
                 result += REQUIRE_STR.replace("<C++_VERSION>", cpp).replace("<NORMAL>", name).replace("<LOWER>",
                                                                                                       name.lower()).replace(
                     "<PROXYNAME>", name.lower() + num).replace("<PROXYNUMBER>", num).replace('<PROXY_TYPE>', proxy_type)
-            if self.component.language.lower() == "cpp":
-                result += "mprx[\"" + name + "Proxy" + num + "\"] = (::IceProxy::Ice::Object*)(&" + name.lower() + num + "_proxy);//Remote server proxy creation example\n"
         return result
 
     def specificworker_creation(self):
         result = ""
-        if self.component.language.lower() == "cpp":
-            var_name = 'm'
+        var_name = 't'
+        proxy_list = [interface.name.lower() + num + "_proxy" for interface, num in get_name_number(self.component.requires)]
+        proxy_list += [interface.name.lower() + "_pubproxy" for interface in self.component.publishes]
+        if proxy_list:
+            result += "tprx = std::make_tuple(" + ",".join(proxy_list) + ");\n"
         else:
-            var_name = 't'
-            proxy_list = [interface.name.lower() + num + "_proxy" for interface, num in get_name_number(self.component.requires)]
-            proxy_list += [interface.name.lower() + "_pubproxy" for interface in self.component.publishes]
-            if proxy_list:
-                result += "tprx = std::make_tuple(" + ",".join(proxy_list) + ");\n"
-            else:
-                result += "tprx = std::tuple<>();\n"
+            result += "tprx = std::tuple<>();\n"
         result += "SpecificWorker *worker = new SpecificWorker(this->configLoader, {}prx, startup_check_flag);\n".format(var_name)
         return result
 
@@ -331,16 +298,5 @@ class generated_main_cpp(TemplateDict):
 
     def proxies_map_creation(self):
         result = ""
-        if self.component.language.lower() == 'cpp':
-            result += "MapPrx mprx;\n"
-        else:
-            result += "TuplePrx tprx;\n"
-        return result
-
-    def commonbehaviorI_creation(self):
-        result = ""
-        if self.component.language.lower() == "cpp":
-            result += "CommonBehaviorI *commonbehaviorI = new CommonBehaviorI(monitor);\n"
-        else:
-            result += "auto commonbehaviorI = std::make_shared<CommonBehaviorI>(monitor);\n"
+        result += "TuplePrx tprx;\n"
         return result

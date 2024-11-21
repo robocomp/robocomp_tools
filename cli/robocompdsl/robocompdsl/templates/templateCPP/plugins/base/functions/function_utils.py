@@ -4,7 +4,7 @@ CPP_TYPES = ['void', 'char', 'unsigned char', 'signed char', 'short', 'int', 'un
              'unsigned short int', 'signed short int', 'long int', 'signed long int', 'unsigned long int', 'long',
              'unsigned long', 'float', 'double', 'long double', 'bool']
 
-def get_parameters_string(method, module_name, language):
+def get_parameters_string(method, module_name):
     param_str = ""
     for p in method['params']:
         # delim
@@ -17,11 +17,8 @@ def get_parameters_string(method, module_name, language):
         if p['decorator'] == 'out':
             const = ''
         else:
-            if language == "cpp":
-                const = 'const '
-            else:
-                const = ''
-                ampersand = ''
+            const = ''
+            ampersand = ''
             if p['type'].lower() in ['int', '::ice::int', 'float', '::ice::float']:
                 ampersand = ''
         # str

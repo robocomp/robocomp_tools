@@ -16,12 +16,6 @@ class genericworker_h(TemplateDict):
         super(genericworker_h, self).__init__()
         self.component = component
         self['gui_includes'] = self.gui_includes()
-        if self.component.gui is not None:
-            need_gui = "#define USE_QTGUI\n\n"
-        else:
-            need_gui = "//#define USE_QTGUI\n\n"
-        self['need_gui'] = need_gui
-
 
     def gui_includes(self):
         result = ""

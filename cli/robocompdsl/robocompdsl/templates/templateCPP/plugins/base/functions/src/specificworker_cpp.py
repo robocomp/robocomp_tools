@@ -98,21 +98,15 @@ class specificworker_cpp(TemplateDict):
             elif name == 'symbolsUpdated':
                 body_code = "\tQMutexLocker l(mutex);\n\tfor (auto modification : modifications)\n\t\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n"
             elif name == 'edgeUpdated':
-                body_code = "\tQMutexLocker locker(mutex);\n\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\tAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n"
+                body_code = "\tQMutexLocker locker(mutex);\n\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\t//TODOAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n"
             elif name == 'edgesUpdated':
-                body_code = "\tQMutexLocker lockIM(mutex);\n\tfor (auto modification : modifications)\n\t{\n\t\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\t\tAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n\t}\n"
+                body_code = "\tQMutexLocker lockIM(mutex);\n\tfor (auto modification : modifications)\n\t{\n\t\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\t\t//TODOAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n\t}\n"
             elif name == 'structuralChange':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \tAGMModelConverter::fromIceToInternal(w, worldModel);\n \n\tinnerModel = std::make_shared<InnerModel>(AGMInner::extractInnerModel(worldModel));"
-                if 'innermodelviewer' in [x.lower() for x in self.component.options]:
-                    body_code += "\n\tregenerateInnerModelViewer();"
+                body_code = "\tQMutexLocker lockIM(mutex);\n \tAGMModelConverter::fromIceToInternal(w, worldModel);\n "
             elif name == 'selfEdgeAdded':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->addEdgeByIdentifiers(nodeid, nodeid, edgeType, attributes); } catch(...){ printf(\"Couldn't add an edge. Duplicate?\\n\"); }\n \n\ttry { innerModel = std::make_shared<InnerModel>(AGMInner::extractInnerModel(worldModel)); } catch(...) { printf(\"Can't extract an InnerModel from the current model.\\n\"); }"
-                if 'innermodelviewer' in [x.lower() for x in self.component.options]:
-                    body_code += "\n\tregenerateInnerModelViewer();"
+                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->addEdgeByIdentifiers(nodeid, nodeid, edgeType, attributes); } catch(...){ printf(\"Couldn't add an edge. Duplicate?\\n\"); }\n"
             elif name == 'selfEdgeDeleted':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->removeEdgeByIdentifiers(nodeid, nodeid, edgeType); } catch(...) { printf(\"Couldn't remove an edge\\n\"); }\n \n\ttry { innerModel = std::make_shared<InnerModel>(AGMInner::extractInnerModel(worldModel)); } catch(...) { printf(\"Can't extract an InnerModel from the current model.\\n\"); }"
-                if 'innermodelviewer' in [x.lower() for x in self.component.options]:
-                    body_code += "\n\tregenerateInnerModelViewer();"
+                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->removeEdgeByIdentifiers(nodeid, nodeid, edgeType); } catch(...) { printf(\"Couldn't remove an edge\\n\"); }\n "
             #######################################
             # code to implement AGMCommonBehavior #
             #######################################
@@ -136,30 +130,23 @@ class specificworker_cpp(TemplateDict):
 
     def initialize_method(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += INITIALIZE_METHOD_STR
+
+        result += INITIALIZE_METHOD_STR
         return result
 
     def compute_method(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += COMPUTE_METHOD_STR
+        result += COMPUTE_METHOD_STR
         return result
     
     def emergency_method(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += EMERGENCY_METHOD_STR
+        result += EMERGENCY_METHOD_STR
         return result
     
     def restore_method(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += RESTORE_METHOD_STR
+        result += RESTORE_METHOD_STR
         return result
 
 
@@ -179,7 +166,7 @@ class specificworker_cpp(TemplateDict):
                         param_str_a = ''
                         body_code = self.body_code_from_name(method['name'])
                         if p_utils.communication_is_ice(impa):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
+                            param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
                             result += return_type + ' SpecificWorker::' + interface['name'] + "_" + method[
                                 'name'] + '(' + param_str_a + ")\n{\n\t#ifdef HIBERNATION_ENABLED\n\t\thibernation = true;\n\t#endif\n\t"+return_type+" ret{};\n\t//implementCODE\n" + body_code + "\n\treturn ret;\n}\n\n"
@@ -201,7 +188,7 @@ class specificworker_cpp(TemplateDict):
                         param_str_a = ''
                         body_code = self.body_code_from_name(method['name'])
                         if p_utils.communication_is_ice(subscribes):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
+                            param_str_a = utils.get_parameters_string(method, module['name'])
                             result += "//SUBSCRIPTION to " + method['name'] + " method from " + interface[
                                 'name'] + " interface\n"
                             result += method['return'] + ' SpecificWorker::' + interface['name'] + "_" + method[
@@ -212,16 +199,10 @@ class specificworker_cpp(TemplateDict):
 
 
     def proxy_map_type(self):
-        if self.component.language.lower() == 'cpp':
-            return "MapPrx&"
-        else:
-            return "TuplePrx"
+        return "TuplePrx"
 
     def proxy_map_name(self):
-        if self.component.language.lower() == 'cpp':
-            return "mprx"
-        else:
-            return "tprx"
+        return "tprx"
 
     def interface_specific_comment(self):
         result = ""

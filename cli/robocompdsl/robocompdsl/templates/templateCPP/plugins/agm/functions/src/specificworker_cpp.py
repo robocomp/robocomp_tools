@@ -5,18 +5,7 @@ import robocompdsl.dsl_parsers.parsing_utils as p_utils
 from robocompdsl.templates.templateCPP.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 
-AGM_INNERMODEL_ASSOCIATION_STR = """\
-innerModel = std::make_shared<InnerModel>(new InnerModel());
-try
-{
-	RoboCompAGMWorldModel::World w = agmexecutive_proxy->getModel();
-	AGMExecutiveTopic_structuralChange(w);
-}
-catch(...)
-{
-	printf("The executive is probably not running, waiting for first AGM model publication...");
-}
-"""
+
 
 SET_PARAMETERS_AND_POSSIBLE_ACTIVATION = """
 bool SpecificWorker::setParametersAndPossibleActivation(const RoboCompAGMCommonBehavior::ParameterMap &prs, bool &reactivated)
@@ -94,7 +83,6 @@ class specificworker_cpp(TemplateDict):
         super(specificworker_cpp, self).__init__()
         self.component = component
         self['agmagent_attributes'] = self.agmagent_attributes()
-        self['agm_innermodel_association'] = self.agm_innermodel_association()
         self['agm_specific_code'] = self.agm_specific_code()
 
 
@@ -106,25 +94,14 @@ class specificworker_cpp(TemplateDict):
             result += "worldModel->name = \"worldModel\";\n"
         return result
 
-    def agm_innermodel_association(self):
-        result = ""
-        if self.component.is_agm_agent():
-            result += AGM_INNERMODEL_ASSOCIATION_STR
-        return result
+
 
 
     def agm_specific_code(self):
         result = ""
-        if ('agmagent' in [x.lower() for x in self.component.options]) and (
-                'innermodelviewer' in [x.lower() for x in self.component.options]):
-            result += REGENERATE_INNERMODEL
-
         if 'agmagent' in [x.lower() for x in self.component.options]:
             result += SET_PARAMETERS_AND_POSSIBLE_ACTIVATION
             agent_name = self.component.name
-            if self.component.language.lower() == "cpp":
-                proxy = "agmexecutive_proxy"
-            else:
-                proxy = "*agmexecutive_proxy.get()"
+            proxy = "*agmexecutive_proxy.get()"
             result += Template(SEND_MODIFICATION_PROPOSAL).substitute(proxy=proxy, agent_name=agent_name)
         return result

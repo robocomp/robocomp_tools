@@ -34,7 +34,7 @@ class SERVANT_H(TemplateDict):
                     ret = utils.get_type_string(method['return'], module['name'])
                     name = method['name']
 
-                    param_str = utils.get_parameters_string(method, module['name'], self.component.language)
+                    param_str = utils.get_parameters_string(method, module['name'])
                     if param_str:
                         param_str = f"{param_str}, const Ice::Current&"
                     else:

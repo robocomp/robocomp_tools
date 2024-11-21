@@ -1,5 +1,3 @@
-CommonBehavior.Endpoints=tcp -p 10000
-
 ${config_implements_endpoints}
 ${config_subscribes_endpoints}
 ${config_requires_proxies}

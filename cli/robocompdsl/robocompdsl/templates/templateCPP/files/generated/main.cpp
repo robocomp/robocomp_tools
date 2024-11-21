@@ -82,6 +82,9 @@ ${subscribes_interface_includes}
 
 ${imports_interface_includes}
 
+${need_gui}
+#define PROGRAM_NAME    "${component_name}"
+#define SERVER_FULL_NAME   "RoboComp ${component_name}::${component_name}"
 
 
 class ${component_name} : public Ice::Application

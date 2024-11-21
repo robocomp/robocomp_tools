@@ -42,52 +42,11 @@ Component <CHANGETHECOMPONENTNAME>
         subscribesTo topicToSubscribeTo;
         publishes topicToPublish;
     };
-    language Cpp//Cpp11//python;
+    language Cpp11//python;
     gui Qt(QWidget//QDialog//QMainWindow);
-    //options dsr, agmagent, InnerModelViewer;
-    statemachine "statemachine.smdsl";
+    //options dsr, agmagent;
+
 };\n\n"""
-
-DUMMY_SMDSL_STRING = """
-/* CHANGE THE NAME OF THE MACHINE IF YOU MAKE
-   ANY CHANGE TO THE DEFAULT STATES OR TRANSITIONS */
-
-defaultMachine{
-    states compute;
-    initial_state initialize;
-    end_state finalize;
-    transitions{
-        initialize => compute;
-        compute => compute;
-        compute => finalize;
-    };
-};
-
-
-/* --------------------------------------------------------------
-   This is the accepted syntax for the State Machine definition 
-
-name_machine{
-    [states name_state *[, name_state];]
-    [initial_state name_state;]
-    [end_state name_state;]
-    [transitions{
-        name_state => name_state *[, name_state];
-        *[name_state => name_state *[, name_state];]
-    };]
-};
-
-[:parent_state [parallel]{
-    states name_state *[, name_state];
-    [initial_state name_state;]
-    [end_state name_state;]
-    [transitions{
-        name_state => name_state *[, name_state];
-        *[name_state => name_state *[, name_state];]
-    };]
-};]
-
------------------------------------------------------------------- */\n"""
 
 def generate_dummy_CDSL(path):
     if os.path.exists(path):
@@ -98,16 +57,6 @@ def generate_dummy_CDSL(path):
         name = path.split('/')[-1].split('.')[0]
         string = DUMMY_CDSL_STRING.replace('<CHANGETHECOMPONENTNAME>', name)
         open(path, "w").write(string)
-
-
-def generate_dummy_SMDSL(path):
-    if os.path.exists(path):
-        console.print(f"File {path} already exists.\nNot overwritting.", style='yellow')
-    else:
-        console.print(f"Generating dummy SMDSL file: {path}", style='green')
-
-        open(path, "w").write(DUMMY_SMDSL_STRING)
-
 
 @app.command()
 def generate(
@@ -127,7 +76,6 @@ def generate(
     if output_path is None:
         if input_file.endswith(".cdsl"):
             generate_dummy_CDSL(input_file)
-            generate_dummy_SMDSL("statemachine.smdsl")
             sys.exit(0)
         else:
             print(output_path, input_file)

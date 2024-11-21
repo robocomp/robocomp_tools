@@ -37,11 +37,6 @@ ${gui_includes}
 ${interfaces_includes}
 ${agm_includes}
 
-${need_gui}
-
-#define PROGRAM_NAME    "${component_name}"
-#define SERVER_FULL_NAME   "RoboComp ${component_name}::${component_name}"
-
 #define BASIC_PERIOD 100
 
 ${ice_proxies_map}

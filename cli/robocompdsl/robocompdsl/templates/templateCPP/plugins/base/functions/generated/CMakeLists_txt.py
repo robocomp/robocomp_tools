@@ -37,10 +37,10 @@ class generated_CMakeLists_txt(TemplateDict):
                 name = im.split('/')[-1].split('.')[0]
                 interface_names.append(name)
 
-        result = "ROBOCOMP_IDSL_TO_ICE( CommonBehavior "
+        result = "ROBOCOMP_IDSL_TO_ICE("
         result += ' '.join(interface_names)
         result += ")\n"
-        result += "ROBOCOMP_ICE_TO_SRC( CommonBehavior "
+        result += "ROBOCOMP_ICE_TO_SRC("
         result += ' '.join(interface_names)
         result += ")\n"
 

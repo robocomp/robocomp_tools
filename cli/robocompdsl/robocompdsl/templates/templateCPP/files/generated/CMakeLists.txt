@@ -29,6 +29,8 @@ INCLUDE($$ENV{ROBOCOMP}/cmake/modules/qt.cmake)
 INCLUDE (../src/CMakeLists.txt)
 
 ${dsr_find_eigen}
+ADD_DEFINITIONS ("-DICE_CPP11_MAPPING")
+FIND_PACKAGE( Ice REQUIRED COMPONENTS Ice++11 IceStorm++11)
 
 # Sources set
 SET (SOURCES
@@ -42,15 +44,12 @@ SET (SOURCES
   ${interface_sources}
 )
 
-${cpp11_ice_packages}
-
 ${agm_includes}
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $$ENV{ROBOCOMP}/ )
 ${wrap_ice}
 SET (EXECUTABLE_OUTPUT_PATH $${RC_COMPONENT_DEVEL_PATH}/bin)
-
 ${wrap_ui}
 
 # Specify construction and link process

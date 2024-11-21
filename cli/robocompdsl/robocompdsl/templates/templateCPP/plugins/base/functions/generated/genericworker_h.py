@@ -46,15 +46,12 @@ class genericworker_h(TemplateDict):
 
     def ice_proxies_map(self):
         result = ""
-        if self.component.language.lower() == 'cpp':
-            result += "typedef map <string,::IceProxy::Ice::Object*> MapPrx;\n"
-        else:
-            proxy_list = []
-            for name in sorted(self.component.requires) + sorted(self.component.publishes):
-                while not isinstance(name, str):
-                    name = name[0]
-                proxy_list.append("RoboComp{name}::{name}PrxPtr".format(name=name))
-            result += "using TuplePrx = std::tuple<" + ",".join(proxy_list) + ">;\n"
+        proxy_list = []
+        for name in sorted(self.component.requires) + sorted(self.component.publishes):
+            while not isinstance(name, str):
+                name = name[0]
+            proxy_list.append("RoboComp{name}::{name}PrxPtr".format(name=name))
+        result += "using TuplePrx = std::tuple<" + ",".join(proxy_list) + ">;\n"
         return result
 
 
@@ -66,10 +63,7 @@ class genericworker_h(TemplateDict):
                 proxy_type = iface.name
                 if module is not None:
                     proxy_type = f"{module['name']}::{iface.name}"
-                if self.component.language.lower() == "cpp":
-                    result += f"{proxy_type}Prx {iface.name.lower()}{num}_proxy;\n"
-                else:
-                    result += f"{proxy_type}PrxPtr {iface.name.lower()}{num}_proxy;\n"
+                result += f"{proxy_type}PrxPtr {iface.name.lower()}{num}_proxy;\n"
 
         for iface, num in get_name_number(self.component.publishes):
             if communication_is_ice(iface):
@@ -77,10 +71,7 @@ class genericworker_h(TemplateDict):
                 proxy_type = iface.name
                 if module is not None:
                     proxy_type = f"{module['name']}::{iface.name}"
-                if self.component.language.lower() == "cpp":
-                    result += f"{proxy_type}Prx {iface.name.lower()}{num}_pubproxy;\n"
-                else:
-                    result += f"{proxy_type}PrxPtr {iface.name.lower()}{num}_pubproxy;\n"
+                result += f"{proxy_type}PrxPtr {iface.name.lower()}{num}_pubproxy;\n"
         return result
 
     #TODO: check if it can be mixed with the subscribes methodd. Are too similar.
@@ -95,7 +86,7 @@ class genericworker_h(TemplateDict):
                         method = interface['methods'][mname]
                         param_str_a = ''
                         if communication_is_ice(iface):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
+                            param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
                             result += f"virtual {return_type} {interface['name']}_{method['name']}({param_str_a}) = 0;\n"
                         else:
@@ -115,7 +106,7 @@ class genericworker_h(TemplateDict):
                         method = interface['methods'][mname]
                         param_str_a = ''
                         if communication_is_ice(iface):
-                            param_str_a = utils.get_parameters_string(method, module['name'], self.component.language)
+                            param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
                             result += f"virtual {return_type} {interface['name']}_{method['name']} ({param_str_a}) = 0;\n"
                         else:
@@ -125,29 +116,22 @@ class genericworker_h(TemplateDict):
 
     def constructor_proxies(self):
         result = ""
-        if self.component.language.lower() == 'cpp':
-            result += "MapPrx& mprx"
-        else:
-            result += "TuplePrx tprx"
+        result += "TuplePrx tprx"
         return result
     
 
     def virtual_statemachine(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += "virtual void initialize() = 0;\n"
-            result += "virtual void compute() = 0;\n"
-            result += "virtual void emergency() = 0;\n"
-            result += "virtual void restore() = 0;\n"
+        result += "virtual void initialize() = 0;\n"
+        result += "virtual void compute() = 0;\n"
+        result += "virtual void emergency() = 0;\n"
+        result += "virtual void restore() = 0;\n"
         return result
     
     def signal_statemachine(self):
         result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += "void goToEmergency();\n"
-            result += "void goToRestore();\n"
+        result += "void goToEmergency();\n"
+        result += "void goToRestore();\n"
         return result
 
 
