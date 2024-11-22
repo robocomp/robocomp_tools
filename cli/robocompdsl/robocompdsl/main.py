@@ -44,7 +44,7 @@ Component <CHANGETHECOMPONENTNAME>
     };
     language Cpp11//python;
     gui Qt(QWidget//QDialog//QMainWindow);
-    //options dsr, agmagent;
+    //options dsr;
 
 };\n\n"""
 

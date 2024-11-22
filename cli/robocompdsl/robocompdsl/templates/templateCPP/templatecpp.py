@@ -11,7 +11,7 @@ class TemplatesManagerCpp(ComponentTemplatesManager):
     def __init__(self, component):
         self.files = {
             'regular': [
-                'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'etc/config.toml',
+                'CMakeLists.txt', 'DoxyFile', 'README.md', 'etc/config', 'etc/config.toml',
                 'generated/main.cpp', 'generated/CMakeLists.txt', 'src/CMakeLists.txt',
                 'generated/genericworker.h', 'generated/genericworker.cpp', 'src/specificworker.h',
                 'src/specificworker.cpp', 'src/mainUI.ui'

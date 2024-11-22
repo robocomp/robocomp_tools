@@ -1,7 +1,7 @@
 import os
 
 from robocompdsl.dsl_parsers.dsl_parser_abstract import DSLParserTemplate
-from robocompdsl.dsl_parsers.parsing_utils import is_agm2_agent_ROS, communication_is_ice, is_agm_agent
+from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.componentinspections import ComponentInspections
 from robocompdsl.dsl_parsers.specific_parsers.cdsl.ply_parser.ply_parser_yacc import CCDSLPlyParser
 
@@ -33,9 +33,6 @@ class CDSLParser(DSLParserTemplate):
             imprts = component.imports
         else:
             imprts = []
-        if component.is_agm_agent():
-            imprts.extend(
-                ['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
         iD = self._include_directories + ['/opt/robocomp/interfaces/IDSLs/',
                                           os.path.expanduser('~/robocomp/interfaces/IDSLs/')]
 
@@ -68,13 +65,5 @@ class CDSLParser(DSLParserTemplate):
                         component.rosInterfaces.append(interface)
                         component.usingROS = True
         # Handle options for communications
-        if is_agm_agent(component):
-            component.iceInterfaces += ['AGMCommonBehavior', 'AGMExecutive', 'AGMExecutiveTopic', 'AGMWorldModel']
-            if not 'AGMCommonBehavior' in component.implements:
-                component.implements = ['AGMCommonBehavior'] + component.implements
-            if not 'AGMExecutive' in component.requires:
-                component.requires = ['AGMExecutive'] + component.requires
-            if not 'AGMExecutiveTopic' in component.subscribesTo:
-                component.subscribesTo = ['AGMExecutiveTopic'] + component.subscribesTo
         self.struct = component
         return component

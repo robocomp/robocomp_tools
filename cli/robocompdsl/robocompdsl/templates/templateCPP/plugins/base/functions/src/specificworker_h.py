@@ -4,6 +4,30 @@ import robocompdsl.dsl_parsers.parsing_utils as p_utils
 from robocompdsl.templates.templateCPP.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 
+
+
+STATEMACHINE_METHODS = r"""
+/**
+    * \brief Initializes the worker one time.
+    */
+void initialize();
+
+/**
+    * \brief Main compute loop of the worker.
+    */
+void compute();
+
+/**
+    * \brief Handles the emergency state loop.
+    */
+void emergency();
+
+/**
+    * \brief Restores the component from an emergency state.
+    */
+void restore();
+"""
+
 class specificworker_h(TemplateDict):
     def __init__(self, component):
         super(specificworker_h, self).__init__()
@@ -70,11 +94,7 @@ class specificworker_h(TemplateDict):
         return result
 
     def state_machine_method(self):
-        result = ""
-        result += "void initialize();\n"
-        result += "void compute();\n"
-        result += "void emergency();\n"
-        result += "void restore();\n"
+        result = STATEMACHINE_METHODS
         return result
 
 

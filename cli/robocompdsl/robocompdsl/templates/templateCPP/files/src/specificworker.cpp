@@ -18,12 +18,8 @@
  */
 #include "specificworker.h"
 
-/**
-* \brief Default constructor
-*/
 SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_type} ${proxy_map_name}, bool startup_check) : GenericWorker(configLoader, ${proxy_map_name})
 {
-	${agmagent_attributes}
 
 	this->startup_check_flag = startup_check;
 	if(this->startup_check_flag)
@@ -52,14 +48,8 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 		}
 		
 	}
-	// Uncomment if there's too many debug messages
-	// but it removes the possibility to see the messages
-	// shown in the console with qDebug()
 }
 
-/**
-* \brief Default destructor
-*/
 SpecificWorker::~SpecificWorker()
 {
 	std::cout << "Destroying SpecificWorker" << std::endl;
@@ -85,6 +75,5 @@ int SpecificWorker::startup_check()
 ${implements}
 ${subscribes}
 
-${agm_specific_code}
 
 ${interface_specific_comment}

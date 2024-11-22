@@ -110,25 +110,6 @@ class CCDSLPlyParser(object):
         else:
             p[0] = {'options': []}
 
-    def p_optionsopt(self, p):
-        '''
-        optionsopt	: INNERMODELVIEWER
-                    | AGMAGENT
-                    | AGM2AGENT
-                    | AGM2AGENTICE
-                    | AGM2AGENTROS
-        '''
-        p[0] = p[1].lower()
-
-    def p_statemachine(self, p):
-        '''
-        statemachine    : STATEMACHINE QUOTE PATH QUOTE stmvisual SEMI
-        '''
-        if len(p) > 1:
-            p[0] = {'statemachine': [p[3], p[5]]}
-        else:
-            p[0] = {'statemachine': None}
-
     def p_stmvisual(self, p):
         '''
         stmvisual   : VISUAL

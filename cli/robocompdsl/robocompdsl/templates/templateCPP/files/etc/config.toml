@@ -1,7 +1,15 @@
+[Proxys]
 ${config_requires_proxies}
-${config_implements_endpoints}
-${config_subscribes_endpoints}
+
 ${storm_topic_manager}
+
+
+[Endpoints]
+${config_implements_endpoints}
+
+${config_subscribes_endpoints}
+
+
 ${dsr_config}
 
 [Period]

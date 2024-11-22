@@ -44,7 +44,6 @@ SET (SOURCES
   ${interface_sources}
 )
 
-${agm_includes}
 
 #ROBOCOMP
 ROBOCOMP_INITIALIZE( $$ENV{ROBOCOMP}/ )

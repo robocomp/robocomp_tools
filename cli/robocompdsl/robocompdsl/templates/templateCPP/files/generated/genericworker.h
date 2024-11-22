@@ -35,13 +35,11 @@ ${gui_includes}
 
 
 ${interfaces_includes}
-${agm_includes}
 
 #define BASIC_PERIOD 100
 
 ${ice_proxies_map}
 
-${agm_behaviour_parameter_struct}
 
 class GenericWorker : ${inherited_object}
 {
@@ -58,7 +56,6 @@ public:
 	QTimer hibernationChecker;
 	std::atomic_bool hibernation = false;
 
-	${agm_methods}
 
 	${create_proxies}
 
@@ -69,7 +66,6 @@ protected:
 	std::unordered_map<std::string, std::unique_ptr<GRAFCETStep>> states;
 	ConfigLoader configLoader;
 
-	${agm_attributes_creation}
 
 
 private:

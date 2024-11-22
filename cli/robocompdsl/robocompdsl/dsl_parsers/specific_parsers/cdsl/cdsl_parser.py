@@ -32,12 +32,12 @@ class CDSLParser(DSLParserTemplate):
         QUOTE = Suppress(Word("\""))
 
         # keywords
-        (IMPORT, COMMUNICATIONS, LANGUAGE, COMPONENT, CPP, CPP11, GUI, QWIDGET, QMAINWINDOW, QDIALOG, QT,
+        (IMPORT, COMMUNICATIONS, LANGUAGE, COMPONENT, CPP11, GUI, QWIDGET, QMAINWINDOW, QDIALOG, QT,
          PYTHON, REQUIRES, IMPLEMENTS, SUBSCRIBESTO, PUBLISHES, OPTIONS, TRUE, FALSE,
-         INNERMODELVIEWER, STATEMACHINE, VISUAL, AGMAGENT, AGM2AGENT, AGM2AGENTICE, DSR, ICE, ROS) = list(map(CaselessKeyword, """
-        import communications language component cpp cpp11 gui QWidget QMainWindow QDialog Qt 
+         VISUAL, DSR, ICE, ROS) = list(map(CaselessKeyword, """
+        import communications language component cpp11 gui QWidget QMainWindow QDialog Qt 
         python requires implements subscribesTo publishes options true false
-        InnerModelViewer statemachine visual agmagent agm2agent agm2agentice dsr ice ros""".split()))
+        visual dsr ice ros""".split()))
 
         identifier = Word(alphas + "_", alphanums + "_")
         PATH = CharsNotIn("\";")
@@ -70,21 +70,19 @@ class CDSLParser(DSLParserTemplate):
         communications = COMMUNICATIONS.suppress() - OBRACE + communicationList + CBRACE + SEMI
 
         # Language
-        language_options = (CPP | CPP11 | PYTHON).setResultsName('language')
+        language_options = (CPP11 | PYTHON).setResultsName('language')
         language = LANGUAGE.suppress() - language_options - SEMI
 
         # GUI
         gui_options = (QWIDGET | QMAINWINDOW | QDIALOG)
         gui = Group(Optional(GUI.suppress() - QT('type') + OPAR - gui_options('widget') - CPAR + SEMI))
         # additional options
-        valid_options = INNERMODELVIEWER | AGMAGENT | DSR
+        valid_options = DSR
         options = Group(Optional(OPTIONS.suppress() - delimitedList(valid_options)) + SEMI)
-        statemachine = Group(
-            Optional(STATEMACHINE.suppress() - QUOTE + CharsNotIn("\";").setResultsName('machine_path') + QUOTE + Optional(VISUAL.setResultsName('visual').setParseAction(lambda t: True)) + SEMI))
-
+       
         # Component definition
         componentContents = Group(
-            communications - language + Optional(gui('gui')) + Optional(options('options')) + Optional(statemachine('statemachine'))).setResultsName(
+            communications - language + Optional(gui('gui')) + Optional(options('options'))).setResultsName(
             "content")
         component = Group(
             COMPONENT.suppress() - identifier("name") + OBRACE + componentContents + CBRACE + SEMI).setResultsName(
@@ -123,8 +121,6 @@ class CDSLParser(DSLParserTemplate):
         logger.debug(f"Imports in cdsl: {imprts}")
         component.dsr = False
         component.dsr = 'dsr' in [x.lower() for x in component.options]
-        if component.is_agm_agent():
-            imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
         component.imports.extend(list(map(os.path.basename, sorted(imprts))))
         from robocompdsl.dsl_parsers.idslpool import idsl_pool
         component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports))
@@ -182,14 +178,6 @@ class CDSLParser(DSLParserTemplate):
                         component.rosInterfaces.append(interface)
                         component.usingROS = True
         # Handle options for communications
-        if component.is_agm_agent():
-            component.iceInterfaces += [['AGMCommonBehavior', 'ice'], ['AGMExecutive', 'ice'], ['AGMExecutiveTopic', 'ice'], ['AGMWorldModel', 'ice']]
-            if 'AGMCommonBehavior' not in component.implements:
-                component.implements = [['AGMCommonBehavior', 'ice']] + component.implements
-            if 'AGMExecutive' not in component.requires:
-                component.requires = [['AGMExecutive', 'ice']] + component.requires
-            if 'AGMExecutiveTopic' not in component.subscribesTo:
-                component.subscribesTo = [['AGMExecutiveTopic', 'ice']] + component.subscribesTo
         self.struct = component
         logger.debug(f"Component created: {component.name}")
         return component

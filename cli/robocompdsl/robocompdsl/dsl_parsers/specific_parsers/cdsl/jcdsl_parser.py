@@ -31,13 +31,7 @@ class CDSLJsonParser(DSLParserTemplate):
             imprts = component.imports
         else:
             imprts = []
-        if component.is_agm_agent():
-            imprts.extend(['AGMExecutive.idsl', 'AGMCommonBehavior.idsl', 'AGMWorldModel.idsl', 'AGMExecutiveTopic.idsl'])
-        if component.is_agm_agent():
-            imprts.extend(['AGM2.idsl'])
-        iD = self._include_directories + ['/opt/robocomp/interfaces/IDSLs/',
-                                   os.path.expanduser('~/robocomp/interfaces/IDSLs/')]
-
+        
         component.imports = list(map(os.path.basename, imprts))
         from robocompdsl.dsl_parsers.idslpool import idsl_pool
         component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports), self._include_directories)
@@ -66,14 +60,6 @@ class CDSLJsonParser(DSLParserTemplate):
                         component.rosInterfaces.append(interface)
                         component.usingROS = True
         # Handle options for communications
-        if component.is_agm_agent():
-            component.iceInterfaces += ['AGMCommonBehavior', 'AGMExecutive', 'AGMExecutiveTopic', 'AGMWorldModel']
-            if not 'AGMCommonBehavior' in component.implements:
-                component.implements = ['AGMCommonBehavior'] + component.implements
-            if not 'AGMExecutive' in component.requires:
-                component.requires = ['AGMExecutive'] + component.requires
-            if not 'AGMExecutiveTopic' in component.subscribesTo:
-                component.subscribesTo = ['AGMExecutiveTopic'] + component.subscribesTo
         self.struct = component
         return component
 

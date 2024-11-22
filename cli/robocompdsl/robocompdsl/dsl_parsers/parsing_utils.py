@@ -44,16 +44,6 @@ def is_valid_rpc_idsl(idsl):
     return False
 
 
-def is_agm_agent(component):
-    assert isinstance(component, (dict, OrderedDict)), \
-        "Component parameter is expected to be a dict or OrderedDict but %s" % str(type(component))
-    options = component.options
-    return 'agmagent' in [x.lower() for x in options]
-
-
-
-
-
 def get_name_number(names_list):
     """
     Used to add a number in case of multiple equal names

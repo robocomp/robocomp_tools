@@ -14,7 +14,6 @@ class CDSLLexer(object):
               "LANGUAGE",
               "COMPONENT",
               "PYTHON",
-              "CPP",
               'CPP11',
               "GUI",
               "QWIDGET",
@@ -26,13 +25,7 @@ class CDSLLexer(object):
               "SUBSCRIBESTO",
               "PUBLISHES",
               "OPTIONS",
-              "INNERMODELVIEWER",
-              "STATEMACHINE",
               "VISUAL",
-              "AGMAGENT",
-              "AGM2AGENT",
-              "AGM2AGENTROS",
-              "AGM2AGENTICE",
               "ICE",
               "ROS",
               "IDENTIFIER",
@@ -72,10 +65,6 @@ class CDSLLexer(object):
 
     def t_CPP11(self, t):
         r'(?i)CPP11'
-        return t
-
-    def t_CPP(self, t):
-        r'(?i)CPP'
         return t
 
     def t_GUI(self, t):
@@ -118,34 +107,10 @@ class CDSLLexer(object):
         r'(?i)OPTIONS'
         return t
 
-    def t_INNERMODELVIEWER(self, t):
-        r'(?i)INNERMODELVIEWER'
-        return t
-
-    def t_STATEMACHINE(self, t):
-        r'(?i)STATEMACHINE'
-        return t
-
     def t_VISUAL(self, t):
         r'(?i)VISUAL'
         return t
-
-    def t_AGM2AGENTICE(self, t):
-        r'(?i)AGM2AGENTICE'
-        return t
-
-    def t_AGM2AGENTROS(self, t):
-        r'(?i)AGM2AGENTROS'
-        return t
-
-    def t_AGM2AGENT(self, t):
-        r'(?i)AGM2AGENT'
-        return t
-
-    def t_AGMAGENT(self, t):
-        r'(?i)AGMAGENT'
-        return t
-
+    
     def t_ICE(self, t):
         r'(?i)ICE'
         return t

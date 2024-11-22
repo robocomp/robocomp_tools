@@ -22,7 +22,6 @@
 	@author authorname
 */
 
-${agmagent_comment}
 
 
 #ifndef SPECIFICWORKER_H
@@ -33,12 +32,27 @@ ${agmagent_comment}
 #include <genericworker.h>
 ${dsr_includes}
 
+
+/**
+ * \brief Class SpecificWorker implements the core functionality of the component.
+ */
 class SpecificWorker : public GenericWorker
 {
 Q_OBJECT
 public:
+    /**
+     * \brief Constructor for SpecificWorker.
+     * \param configLoader Configuration loader for the component.
+     * \param tprx Tuple of proxies required for the component.
+     * \param startup_check Indicates whether to perform startup checks.
+     */
 	SpecificWorker(const ConfigLoader& configLoader, ${constructor_proxies}, bool startup_check);
+
+	/**
+     * \brief Destructor for SpecificWorker.
+     */
 	~SpecificWorker();
+
 
 	${implements_method_definitions}
 
@@ -46,13 +60,21 @@ public:
 
 public slots:
 	${state_machine_method}
+
+    /**
+     * \brief Performs startup checks for the component.
+     * \return An integer representing the result of the checks.
+     */
 	int startup_check();
+
 	${dsr_slots}
 private:
-	${agm_attributes}
 	${dsr_attributes}
-	bool startup_check_flag;
 
+	/**
+     * \brief Flag indicating whether startup checks are enabled.
+     */
+	bool startup_check_flag;
 };
 
 #endif

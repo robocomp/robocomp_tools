@@ -116,4 +116,3 @@ void GenericWorker::hibernationCheck()
     }
 }
 
-${agm_methods}

@@ -85,49 +85,6 @@ class specificworker_cpp(TemplateDict):
         self['interface_specific_comment'] = self.interface_specific_comment()
 
 
-
-    # TODO: Extract pieces of code to strings and refactor
-    def body_code_from_name(self, name):
-        body_code = ""
-        if self.component.is_agm_agent():
-            #######################################################
-            # code to implement subscription to AGMExecutiveTopic #
-            #######################################################
-            if name == 'symbolUpdated':
-                body_code = "\tQMutexLocker locker(mutex);\n\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n"
-            elif name == 'symbolsUpdated':
-                body_code = "\tQMutexLocker l(mutex);\n\tfor (auto modification : modifications)\n\t\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n"
-            elif name == 'edgeUpdated':
-                body_code = "\tQMutexLocker locker(mutex);\n\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\t//TODOAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n"
-            elif name == 'edgesUpdated':
-                body_code = "\tQMutexLocker lockIM(mutex);\n\tfor (auto modification : modifications)\n\t{\n\t\tAGMModelConverter::includeIceModificationInInternalModel(modification, worldModel);\n\t\t//TODOAGMInner::updateImNodeFromEdge(worldModel, modification, innerModel.get());\n\t}\n"
-            elif name == 'structuralChange':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \tAGMModelConverter::fromIceToInternal(w, worldModel);\n "
-            elif name == 'selfEdgeAdded':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->addEdgeByIdentifiers(nodeid, nodeid, edgeType, attributes); } catch(...){ printf(\"Couldn't add an edge. Duplicate?\\n\"); }\n"
-            elif name == 'selfEdgeDeleted':
-                body_code = "\tQMutexLocker lockIM(mutex);\n \ttry { worldModel->removeEdgeByIdentifiers(nodeid, nodeid, edgeType); } catch(...) { printf(\"Couldn't remove an edge\\n\"); }\n "
-            #######################################
-            # code to implement AGMCommonBehavior #
-            #######################################
-            elif name == 'activateAgent':
-                body_code = "\tbool activated = false;\n\tif (setParametersAndPossibleActivation(prs, activated))\n\t{\n\t\tif (not activated)\n\t\t{\n\t\t\treturn activate(p);\n\t\t}\n\t}\n\telse\n\t{\n\t\treturn false;\n\t}\n\treturn true;"
-            elif name == 'deactivateAgent':
-                body_code = "\treturn deactivate();"
-            elif name == 'getAgentState':
-                body_code = "\tRoboCompAGMCommonBehavior::StateStruct s;\n\tif (isActive())\n\t{\n\t\ts.state = RoboCompAGMCommonBehavior::StateEnum::Running;\n\t}\n\telse\n\t{\n\t\ts.state = RoboCompAGMCommonBehavior::StateEnum::Stopped;\n\t}\n\ts.info = p.action.name;\n\treturn s;"
-            elif name == 'getAgentParameters':
-                body_code = "\treturn params;"
-            elif name == 'setAgentParameters':
-                body_code = "\tbool activated = false;\n\treturn setParametersAndPossibleActivation(prs, activated);"
-            elif name == 'uptimeAgent':
-                body_code = "\treturn 0;"
-            elif name == 'reloadConfigAgent':
-                body_code = "\treturn true;"
-        return body_code
-
-
-
     def initialize_method(self):
         result = ""
 
@@ -164,7 +121,7 @@ class specificworker_cpp(TemplateDict):
                     for mname in interface['methods']:
                         method = interface['methods'][mname]
                         param_str_a = ''
-                        body_code = self.body_code_from_name(method['name'])
+                        body_code = ""
                         if p_utils.communication_is_ice(impa):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
@@ -186,7 +143,7 @@ class specificworker_cpp(TemplateDict):
                     for mname in interface['methods']:
                         method = interface['methods'][mname]
                         param_str_a = ''
-                        body_code = self.body_code_from_name(method['name'])
+                        body_code = ""
                         if p_utils.communication_is_ice(subscribes):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             result += "//SUBSCRIPTION to " + method['name'] + " method from " + interface[

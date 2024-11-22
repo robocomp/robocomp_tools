@@ -15,7 +15,7 @@ TOPIC_MANAGER_STR = """
 IceStorm::TopicManagerPrx${ptr} topicManager;
 try
 {
-	topicManager = ${type}(communicator()->stringToProxy(configLoader.get<std::string>("TopicManager.Proxy")));
+	topicManager = ${type}(communicator()->stringToProxy(configLoader.get<std::string>("Proxys.TopicManager")));
 	if (!topicManager)
 	{
 	    std::cout << "[" << PROGRAM_NAME << "]: TopicManager.Proxy not defined in config file."<<std::endl;
@@ -67,7 +67,7 @@ SUBSCRIBESTO_STR = """
 try
 {
 
-    tmp = configLoader.get<std::string>("<NORMAL>Topic.Endpoints");
+    tmp = configLoader.get<std::string>("Endpoints.<NORMAL>Topic");
 	Ice::ObjectAdapterPtr <NORMAL>_adapter = communicator()->createObjectAdapterWithEndpoints("<LOWER>", tmp);
 	<PTR_TYPE>Ptr <LOWER>I_ = <CHANGE3>(worker);
 	<CHANGE4> <PROXYNAME> = <NORMAL>_adapter->addWithUUID(<LOWER>I_)->ice_oneway();
@@ -111,7 +111,7 @@ IMPLEMENTS_STR = """
 try
 {
 	// Server adapter creation and publication
-    tmp = configLoader.get<std::string>("<NORMAL>.Endpoints");
+    tmp = configLoader.get<std::string>("Endpoints.<NORMAL>");
     Ice::ObjectAdapterPtr adapter<NORMAL> = communicator()->createObjectAdapterWithEndpoints("<NORMAL>", tmp);
 	<C++_VERSION>
 	adapter<NORMAL>->add(<LOWER>, Ice::stringToIdentity("<LOWER>"));
@@ -128,7 +128,7 @@ catch (const IceStorm::TopicExists&){
 REQUIRE_STR = """
 try
 {
-    proxy = configLoader.get<std::string>("<NORMAL><PROXYNUMBER>Proxy");
+    proxy = configLoader.get<std::string>("Proxys.<NORMAL><PROXYNUMBER>");
 	<C++_VERSION>
 }
 catch(const Ice::Exception& ex)

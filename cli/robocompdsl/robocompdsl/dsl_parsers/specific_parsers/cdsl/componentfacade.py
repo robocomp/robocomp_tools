@@ -129,7 +129,6 @@ from robocompdsl.logger import logger
 #     name: str
 #     state_machine: bool
 #     idsl_pool: list[str]
-#     agm_agent: bool
 #     ice_interfaces: list[Interface]
 
 
@@ -237,10 +236,6 @@ class ComponentFacade:
             from ...dsl_factory import DSLFactory
             self.__statemachine = DSLFactory().from_file(self.statemachine_path)
         return self.__statemachine
-
-    def is_agm_agent(self):
-        #TODO: check if options exists
-        return self.options.agmagent
 
     @property
     def ice_interfaces_names(self):
