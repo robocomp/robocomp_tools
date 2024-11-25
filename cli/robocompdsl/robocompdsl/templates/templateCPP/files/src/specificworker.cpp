@@ -20,7 +20,6 @@
 
 SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_type} ${proxy_map_name}, bool startup_check) : GenericWorker(configLoader, ${proxy_map_name})
 {
-
 	this->startup_check_flag = startup_check;
 	if(this->startup_check_flag)
 	{
@@ -34,9 +33,22 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 
 		${dsr_set_params}
 		${dsr_initialize}
+		
+		// Example statemachine:
+		/***
+		//Your definition for the statesmachine (if you dont want use a execute function, use nullptr)
+		states["CustomState"] = std::make_unique<GRAFCETStep>("CustomState", period, 
+															std::bind(&SpecificWorker::customLoop, this),  // Cyclic function
+															std::bind(&SpecificWorker::customEnter, this), // On-enter function
+															std::bind(&SpecificWorker::customExit, this)); // On-exit function
 
+		//Add your definition of transitions (addTransition(originOfSignal, signal, dstState))
+		states["CustomState"]->addTransition(states["CustomState"].get(), SIGNAL(entered()), states["OtherState"].get());
+		states["Compute"]->addTransition(this, SIGNAL(customSignal()), states["CustomState"].get()); //Define your signal in the .h file under the "Signals" section.
 
-		//Your states for machine HERE EXAMPLE
+		//Add your custom state
+		statemachine.addState(states["CustomState"].get());
+		***/
 
 		statemachine.setChildMode(QState::ExclusiveStates);
 		statemachine.start();
@@ -46,7 +58,6 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 			qWarning() << error;
 			throw error;
 		}
-		
 	}
 }
 
@@ -55,7 +66,6 @@ SpecificWorker::~SpecificWorker()
 	std::cout << "Destroying SpecificWorker" << std::endl;
 	${dsr_destructor}
 }
-
 
 ${initialize_method}
 

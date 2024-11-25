@@ -10,7 +10,12 @@ INITIALIZE_METHOD_STR = """\
 void SpecificWorker::initialize()
 {
     std::cout << "initialize worker" << std::endl;
-	//computeCODE
+    //initializeCODE
+
+    /////////GET PARAMS, OPEND DEVICES....////////
+    //int period = configLoader.get<int>("Period.Compute") //NOTE: If you want get period of compute use getPeriod("compute")
+    //std::string device = configLoader.get<std::string>("Device.name") 
+
 }
 """
 
@@ -19,7 +24,6 @@ void SpecificWorker::compute()
 {
     std::cout << "Compute worker" << std::endl;
 	//computeCODE
-	//QMutexLocker locker(mutex);
 	//try
 	//{
 	//  camera_proxy->getYImage(0,img, cState, bState);
@@ -39,9 +43,9 @@ EMERGENCY_METHOD_STR = """\
 void SpecificWorker::emergency()
 {
     std::cout << "Emergency worker" << std::endl;
-	//computeCODE
-	//
-	//if (SUCCESSFUL)
+    //emergencyCODE
+    //
+    //if (SUCCESSFUL) //The componet is safe for continue
     //  emmit goToRestore()
 }
 """
@@ -51,8 +55,8 @@ RESTORE_METHOD_STR = """\
 void SpecificWorker::restore()
 {
     std::cout << "Restore worker" << std::endl;
-	//computeCODE
-	//Restore emergency component
+    //restoreCODE
+    //Restore emergency component
 
 }
 """

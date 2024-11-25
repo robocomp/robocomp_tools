@@ -8,23 +8,23 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 STATEMACHINE_METHODS = r"""
 /**
-    * \brief Initializes the worker one time.
-    */
+ * \brief Initializes the worker one time.
+ */
 void initialize();
 
 /**
-    * \brief Main compute loop of the worker.
-    */
+ * \brief Main compute loop of the worker.
+ */
 void compute();
 
 /**
-    * \brief Handles the emergency state loop.
-    */
+ * \brief Handles the emergency state loop.
+ */
 void emergency();
 
 /**
-    * \brief Restores the component from an emergency state.
-    */
+ * \brief Restores the component from an emergency state.
+ */
 void restore();
 """
 

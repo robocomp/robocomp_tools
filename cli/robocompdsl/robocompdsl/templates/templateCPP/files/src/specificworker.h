@@ -27,6 +27,8 @@
 #ifndef SPECIFICWORKER_H
 #define SPECIFICWORKER_H
 
+
+// If you want reduce compute period automaticaly for lack of use
 #define HIBERNATION_ENABLED
 
 #include <genericworker.h>
@@ -75,6 +77,9 @@ private:
      * \brief Flag indicating whether startup checks are enabled.
      */
 	bool startup_check_flag;
+
+signals:
+	//void customSignal();
 };
 
 #endif
