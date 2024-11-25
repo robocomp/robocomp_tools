@@ -1,10 +1,8 @@
-[Proxys]
 ${config_requires_proxies}
 
 ${storm_topic_manager}
 
 
-[Endpoints]
 ${config_implements_endpoints}
 
 ${config_subscribes_endpoints}

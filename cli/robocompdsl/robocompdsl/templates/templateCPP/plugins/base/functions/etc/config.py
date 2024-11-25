@@ -5,7 +5,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 STORM_TOPIC_MANAGER_STR = """\
 # This property is used by the clients to connect to IceStorm.
-Proxys.TopicManager = IceStorm/TopicManager:default -p 9999
+Proxies.TopicManager = IceStorm/TopicManager:default -p 9999
 """
 
 class etc_config(TemplateDict):
@@ -40,7 +40,7 @@ class etc_config(TemplateDict):
         for interface, num in get_name_number(self.component.requires):
             if communication_is_ice(interface):
                 port = 0
-                result += "Proxys." + interface.name + num + " = " + interface.name.lower() + ":tcp -h localhost -p " + str(
+                result += "Proxies." + interface.name + num + " = " + interface.name.lower() + ":tcp -h localhost -p " + str(
                     port) + "\n"
         if result != "":
             result = '# Proxies for required interfaces\n' + result

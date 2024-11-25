@@ -11,10 +11,13 @@ class etc_config_toml(TemplateDict):
     def __init__(self, component):
         super(etc_config_toml, self).__init__()
         self.component = component
+        self.hasProxies = False
+        self.hasEndpoints = False
         self['config_implements_endpoints'] = self.config_implements_endpoints()
         self['config_subscribes_endpoints'] = self.config_subscribes_endpoints()
         self['config_requires_proxies'] = self.config_requires_proxies()
         self['storm_topic_manager'] = self.storm_topic_manager()
+
 
     def config_implements_endpoints(self):
         result = ""
@@ -23,6 +26,9 @@ class etc_config_toml(TemplateDict):
                 result += f'{interface.name} = "tcp -p 0"\n\n'
         if result != "":
             result = '# Endpoints for implements interfaces\n' + result
+            if not self.hasEndpoints:
+                self.hasEndpoints = True
+                result = '[Endpoints]\n' + result
         return result
 
     def config_subscribes_endpoints(self):
@@ -32,6 +38,9 @@ class etc_config_toml(TemplateDict):
                 result += f'{interface.name}Topic = "tcp -p 0"\n\n'
         if result != "":
             result = '# Endpoints for subscriptions interfaces\n' + result
+            if not self.hasEndpoints:
+                self.hasEndpoints = True
+                result = '[Endpoints]\n' + result
         return result
 
     def config_requires_proxies(self):
@@ -42,10 +51,16 @@ class etc_config_toml(TemplateDict):
                 result += f'{interface.name}{num} = "{interface.name.lower()}:tcp -h localhost -p {port}"\n\n'
         if result != "":
             result = '# Proxies for required interfaces\n' + result
+            if not self.hasProxies:
+                self.hasProxies = True
+                result = '[Proxies]\n' + result
         return result
 
     def storm_topic_manager(self):
         result = ""
         if len(self.component.publishes + self.component.subscribesTo) > 0:
             result += STORM_TOPIC_MANAGER_TOML
+        if result != "" and not self.hasProxies:
+            self.hasProxies = True
+            result ='[Proxies]\n' + result
         return result

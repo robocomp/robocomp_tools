@@ -15,7 +15,7 @@ TOPIC_MANAGER_STR = """
 IceStorm::TopicManagerPrx${ptr} topicManager;
 try
 {
-	topicManager = ${type}(communicator()->stringToProxy(configLoader.get<std::string>("Proxys.TopicManager")));
+	topicManager = ${type}(communicator()->stringToProxy(configLoader.get<std::string>("Proxies.TopicManager")));
 	if (!topicManager)
 	{
 	    std::cout << "[" << PROGRAM_NAME << "]: TopicManager.Proxy not defined in config file."<<std::endl;
@@ -128,7 +128,7 @@ catch (const IceStorm::TopicExists&){
 REQUIRE_STR = """
 try
 {
-    proxy = configLoader.get<std::string>("Proxys.<NORMAL><PROXYNUMBER>");
+    proxy = configLoader.get<std::string>("Proxies.<NORMAL><PROXYNUMBER>");
 	<C++_VERSION>
 }
 catch(const Ice::Exception& ex)
