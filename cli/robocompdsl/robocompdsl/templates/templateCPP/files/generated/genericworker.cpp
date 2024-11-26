@@ -38,6 +38,12 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 	connect(&hibernationChecker, SIGNAL(timeout()), this, SLOT(hibernationCheck()));
 
 	${gui_setup}
+
+    ${dsr_set_params}
+
+    ${dsr_initialize}
+    
+    ${dsr_viewer}
 }
 
 /**
@@ -45,6 +51,7 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 */
 GenericWorker::~GenericWorker()
 {
+    ${dsr_delete}
 }
 void GenericWorker::killYourSelf()
 {

@@ -12,5 +12,5 @@ class generated_CMakeLists_txt(TemplateDict):
     def wrap_ui(self):
         result = ""
         if self.component.gui is not None:
-            result += "QT_WRAP_UI( UI_HEADERS mainUI.ui )\n"
+            result += "set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../src)\n"
         return result

@@ -30,9 +30,10 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 		#ifdef HIBERNATION_ENABLED
 			hibernationChecker.start(500);
 		#endif
-
-		${dsr_set_params}
-		${dsr_initialize}
+		
+		${dsr_connections}
+		
+		${dsr_custom_widget}
 		
 		// Example statemachine:
 		/***
@@ -64,7 +65,7 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 SpecificWorker::~SpecificWorker()
 {
 	std::cout << "Destroying SpecificWorker" << std::endl;
-	${dsr_destructor}
+	${dsr_save}
 }
 
 ${initialize_method}

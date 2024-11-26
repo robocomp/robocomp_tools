@@ -32,7 +32,7 @@ ${gui_includes}
 #include <variant>
 #include <unordered_map>
 
-
+${dsr_includes}
 
 ${interfaces_includes}
 
@@ -65,6 +65,9 @@ public:
 protected:
 	std::unordered_map<std::string, std::unique_ptr<GRAFCETStep>> states;
 	ConfigLoader configLoader;
+	${dsr_attributes}
+	${dsr_viewer_attributes}
+
 
 
 

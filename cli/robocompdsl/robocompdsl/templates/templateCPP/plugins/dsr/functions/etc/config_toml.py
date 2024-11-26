@@ -7,12 +7,8 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 DSR_CONFIG_STR = """\
 [Agent]
 id = 0 # Change id
-name = ${name}
-[ViewAgent]
-tree = true
-graph = true
-2d = true
-3d = true
+name = "${name}"
+configFile = ""
 """
 
 class etc_config_toml(TemplateDict):

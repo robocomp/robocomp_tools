@@ -10,6 +10,8 @@ ${config_subscribes_endpoints}
 
 ${dsr_config}
 
+${dsr_viewer_config}
+
 [Period]
 Compute=100
 Emergency=500

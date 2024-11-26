@@ -5,7 +5,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 STORM_TOPIC_MANAGER_STR = """\
 # This property is used by the clients to connect to IceStorm.
-Proxies.TopicManager = IceStorm/TopicManager:default -p 9999
+Proxies.TopicManager = "IceStorm/TopicManager:default -p 9999"
 """
 
 class etc_config(TemplateDict):
@@ -21,7 +21,7 @@ class etc_config(TemplateDict):
         result = ""
         for interface in self.component.implements:
             if communication_is_ice(interface):
-                result += "Endpoints." + interface.name + " = tcp -p 0\n"
+                result += 'Endpoints.' + interface.name + ' = "tcp -p 0"\n'
         if result != "":
             result = '# Endpoints for implements interfaces\n' + result
         return result
@@ -30,7 +30,7 @@ class etc_config(TemplateDict):
         result = ""
         for interface in self.component.subscribesTo:
             if communication_is_ice(interface):
-                result += "Endpoints." + interface.name + "Topic = tcp -p 0\n"
+                result += 'Endpoints.' + interface.name + 'Topic = "tcp -p 0"\n'
         if result != "":
             result = '# Endpoints for subscriptions interfaces\n' + result
         return result
@@ -40,8 +40,8 @@ class etc_config(TemplateDict):
         for interface, num in get_name_number(self.component.requires):
             if communication_is_ice(interface):
                 port = 0
-                result += "Proxies." + interface.name + num + " = " + interface.name.lower() + ":tcp -h localhost -p " + str(
-                    port) + "\n"
+                result += 'Proxies.' + interface.name + num + ' = "' + interface.name.lower() + ':tcp -h localhost -p ' + str(
+                    port) + '"\n'
         if result != "":
             result = '# Proxies for required interfaces\n' + result
         return result

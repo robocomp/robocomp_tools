@@ -32,7 +32,6 @@
 #define HIBERNATION_ENABLED
 
 #include <genericworker.h>
-${dsr_includes}
 
 
 /**
@@ -71,7 +70,6 @@ public slots:
 
 	${dsr_slots}
 private:
-	${dsr_attributes}
 
 	/**
      * \brief Flag indicating whether startup checks are enabled.
