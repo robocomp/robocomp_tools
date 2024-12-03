@@ -28,8 +28,8 @@
 #define SPECIFICWORKER_H
 
 
-// If you want reduce compute period automaticaly for lack of use
-#define HIBERNATION_ENABLED
+// If you want to reduce the period automatically due to lack of use, you must uncomment the following line
+//#define HIBERNATION_ENABLED
 
 #include <genericworker.h>
 
