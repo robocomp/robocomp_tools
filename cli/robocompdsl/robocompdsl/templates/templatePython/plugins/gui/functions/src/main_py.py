@@ -15,7 +15,7 @@ class src_main_py(TemplateDict):
     def import_qtwidgets(self):
         result = ""
         if self.component.gui is not None:
-            result += 'from PySide2 import QtWidgets\n'
+            result += 'from PySide6 import QtWidgets\n'
         return result
 
     def app_creation(self):
