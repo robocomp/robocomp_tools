@@ -13,6 +13,7 @@ from robocompdsl.templates.templateCPP.templatecpp import TemplatesManagerCpp
 from robocompdsl.templates.templateICE.templateice import TemplateManagerIce
 from robocompdsl.templates.templatePython.templatepython import TemplatesManagerPython
 from robocompdsl.dsl_parsers import dsl_factory
+from robocompUpdater import update
 
 LANG_TO_TEMPLATE = {
     'cpp': 'cpp',
@@ -81,11 +82,26 @@ class FilesGenerator:
     def __create_files(self, test=False):
         new_existing_files = {}
         if self.dsl_file.suffix in [".cdsl", ".jcdsl"]:
+            files = os.listdir(self.output_path)
+
             # Check output directory
             self.__create_component_directories(test)
 
             # Generate specific_component
             new_existing_files = self.__generate_component(test)
+
+
+            if not "generated" in files and  "src" in files:
+                console.log(text.Text("###########################################################################################"
+                                    "An old version of robocomp has been identified, do you want to perform an automatic update?[Y/n]"
+                                    "###########################################################################################", style='red'))
+                # Handle user input
+                user_input = input().strip().lower()
+                if user_input in ('', 'y', 'yes'):
+                    update(self.output_path)
+                    console.log("Update completed successfully", style='green')
+                else:
+                    console.log("Update skipped", style='yellow')
 
         elif self.dsl_file.suffix == ".idsl":
             new_existing_files = self.__generate_interface()
