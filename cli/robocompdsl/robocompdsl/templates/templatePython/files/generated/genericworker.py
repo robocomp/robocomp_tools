@@ -28,8 +28,6 @@ except KeyError:
     print('$$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
     ROBOCOMP = '/opt/robocomp'
 
-Ice.loadSlice("-I ./src/ --all ./src/CommonBehavior.ice")
-import RoboCompCommonBehavior
 
 ${ui_import}
 
@@ -38,7 +36,6 @@ ${ui_import}
 class GenericWorker(${qt_class_type}):
 
     kill = QtCore.Signal()
-    ${statemachine_signals}
 
     def __init__(self, mprx):
         super(GenericWorker, self).__init__()
@@ -51,9 +48,7 @@ class GenericWorker(${qt_class_type}):
         self.Period = 30
         self.timer = QtCore.QTimer(self)
 
-        ${statemachine_states_creation}
 
-    ${statemachine_slots_creation}
     @QtCore.Slot()
     def killYourSelf(self):
         rDebug("Killing myself")

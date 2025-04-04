@@ -76,10 +76,7 @@ class src_specificworker_py(TemplateDict):
         return t
 
     def compute_creation(self):
-        result = ""
-        statemachine = self.component.statemachine
-        if (statemachine is not None and statemachine['machine']['default'] is True) or self.component.statemachine_path is None:
-            result += COMPUTE_METHOD_STR
+        result = COMPUTE_METHOD_STR
         return result
 
     def methods(self, interfaces, subscribe=False):
@@ -157,9 +154,8 @@ class src_specificworker_py(TemplateDict):
 
     def timeout_compute_connect(self):
         result = ""
-        if self.component.statemachine is None:
-            result += "self.timer.timeout.connect(self.compute)\n"
-            result += "self.timer.start(self.Period)\n"
+        result += "self.timer.timeout.connect(self.compute)\n"
+        result += "self.timer.start(self.Period)\n"
         return result
 
     def interface_specific_comment(self):

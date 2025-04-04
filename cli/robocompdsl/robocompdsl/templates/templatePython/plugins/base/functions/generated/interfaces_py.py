@@ -7,7 +7,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
 
 SLICE_LOAD_STR = """\
-Ice.loadSlice("-I ./src/ --all ./src/${interface_name}.ice")
+Ice.loadSlice("-I ./generated/ --all ./generated/${interface_name}.ice")
 """
 
 # TODO: Check if this can be reduced to an abstract class and some inheriting from that.

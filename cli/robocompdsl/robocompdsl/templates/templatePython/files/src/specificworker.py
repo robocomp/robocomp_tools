@@ -45,7 +45,6 @@ class SpecificWorker(GenericWorker):
             self.startup_check()
         else:
             ${timeout_compute_connect}
-            ${statemachine_start_and_destroy}
 
     def __del__(self):
         """Destructor"""
@@ -64,7 +63,7 @@ class SpecificWorker(GenericWorker):
         ${startup_check_ice}
         QTimer.singleShot(200, QApplication.instance().quit)
 
-    ${statemachine_slots}
+
 
     ${subscription_methods}
 

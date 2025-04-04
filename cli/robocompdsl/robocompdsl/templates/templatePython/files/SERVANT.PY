@@ -29,7 +29,7 @@ if len(ROBOCOMP)<1:
     raise RuntimeError('ROBOCOMP environment variable not set! Exiting.')
 
 
-Ice.loadSlice("-I ./src/ --all ./src/${iface_name}.ice")
+Ice.loadSlice("-I ./generated/ --all ./generated/${iface_name}.ice")
 
 from ${module_name} import *
 

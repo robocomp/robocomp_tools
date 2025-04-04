@@ -64,7 +64,11 @@ console = Console()
 
 ${import_qtwidgets}
 import interfaces
-from specificworker import *
+
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from src.specificworker import *
 
 #SIGNALS handler
 def sigint_handler(*args):

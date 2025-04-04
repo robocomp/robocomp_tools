@@ -9,8 +9,8 @@ class TemplatesManagerPython(ComponentTemplatesManager):
     def __init__(self, component):
         self.files = {
                 'regular': [
-                    'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'src/main.py',
-                    'src/genericworker.py', 'src/specificworker.py', 'src/interfaces.py', 'src/mainUI.ui', 'src/CMakeLists.txt'
+                    'CMakeLists.txt', 'DoxyFile', 'README-RCNODE.txt', 'README.md', 'etc/config', 'generated/main.py',
+                    'generated/genericworker.py', 'src/specificworker.py', 'generated/interfaces.py', 'src/mainUI.ui', 'src/CMakeLists.txt'
                 ],
                 'avoid_overwrite': [
                     'src/specificworker.py', 'src/mainUI.ui', 'README.md', 'etc/config'
@@ -23,14 +23,14 @@ class TemplatesManagerPython(ComponentTemplatesManager):
 
 
     def _output_file_rename(self, output_path, template_file):
-        if self.component.language.lower() == 'python' and template_file == 'src/main.py':
-            ofile = os.path.join(output_path, 'src', self.component.name + '.py')
+        if self.component.language.lower() == 'python' and template_file == 'generated/main.py':
+            ofile = os.path.join(output_path, 'generated', self.component.name + '.py')
         else:
             ofile = os.path.join(output_path, template_file)
         return ofile
 
     def _post_generation_action(self, template_file, ofile):
-        if template_file == 'src/main.py' and self.component.language.lower() == 'python':
+        if template_file == 'generated/main.py' and self.component.language.lower() == 'python':
             os.chmod(ofile, os.stat(ofile).st_mode | 0o111)
 
 

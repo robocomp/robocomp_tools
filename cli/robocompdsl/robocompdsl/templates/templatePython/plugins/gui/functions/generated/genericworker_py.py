@@ -2,7 +2,9 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 GUI_IMPORT_STR = """
 try:
-    from ui_mainUI import *
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent.parent))
+    from src.ui_mainUI import *
 except:
     print("Can\'t import UI file. Did you run \'make\'?")
     sys.exit(-1)
