@@ -90,8 +90,7 @@ class FilesGenerator:
             # Generate specific_component
             new_existing_files = self.__generate_component(test)
 
-
-            if not "generated" in files and  "src" in files:
+            if not "generated" in files and  "src" in files and LANG_TO_TEMPLATE[self.ast.language.lower()] == "cpp":
                 console.log(text.Text("###########################################################################################"
                                     "An old version of robocomp has been identified, do you want to perform an automatic update?[Y/n]"
                                     "###########################################################################################", style='red'))
