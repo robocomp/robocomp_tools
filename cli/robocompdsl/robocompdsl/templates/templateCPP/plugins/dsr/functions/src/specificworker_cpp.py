@@ -28,6 +28,8 @@ The add_custom_widget_to_dock method is used. This widget can be defined like an
 either with a QtDesigner or directly from scratch in a class of its own.
 The add_custom_widget_to_dock method receives a name for the widget and a reference to the class instance.
 ***/
+
+graph_viewer = std::make_unique<DSR::DSRViewer>(this, G, current_opts, main);
 //graph_viewer->add_custom_widget_to_dock("CustomWidget", &custom_widget);
 
 """

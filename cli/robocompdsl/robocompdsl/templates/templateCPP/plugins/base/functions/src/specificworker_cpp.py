@@ -6,61 +6,6 @@ from robocompdsl.templates.templateCPP.plugins.base.functions import function_ut
 from robocompdsl.templates.common.templatedict import TemplateDict
 
 
-INITIALIZE_METHOD_STR = """\
-void SpecificWorker::initialize()
-{
-    std::cout << "initialize worker" << std::endl;
-    //initializeCODE
-
-    /////////GET PARAMS, OPEND DEVICES....////////
-    //int period = configLoader.get<int>("Period.Compute") //NOTE: If you want get period of compute use getPeriod("compute")
-    //std::string device = configLoader.get<std::string>("Device.name") 
-
-}
-"""
-
-COMPUTE_METHOD_STR = """\
-void SpecificWorker::compute()
-{
-    std::cout << "Compute worker" << std::endl;
-	//computeCODE
-	//try
-	//{
-	//  camera_proxy->getYImage(0,img, cState, bState);
-    //    if (img.empty())
-    //        emit goToEmergency()
-	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
-	//  searchTags(image_gray);
-	//}
-	//catch(const Ice::Exception &e)
-	//{
-	//  std::cout << "Error reading from Camera" << e << std::endl;
-	//}
-}
-"""
-
-EMERGENCY_METHOD_STR = """\
-void SpecificWorker::emergency()
-{
-    std::cout << "Emergency worker" << std::endl;
-    //emergencyCODE
-    //
-    //if (SUCCESSFUL) //The componet is safe for continue
-    //  emmit goToRestore()
-}
-"""
-
-RESTORE_METHOD_STR = """\
-//Execute one when exiting to emergencyState
-void SpecificWorker::restore()
-{
-    std::cout << "Restore worker" << std::endl;
-    //restoreCODE
-    //Restore emergency component
-
-}
-"""
-
 INTERFACE_TYPES_COMMENT_STR = """\
 /**************************************/
 // From the ${module_name} you can use this types:
@@ -80,36 +25,9 @@ class specificworker_cpp(TemplateDict):
         self['year'] = str(datetime.date.today().year)
         self['proxy_map_type'] = self.proxy_map_type()
         self['proxy_map_name'] = self.proxy_map_name()
-        self['initialize_method'] = self.initialize_method()
-        self['compute_method'] = self.compute_method()
-        self['emergency_method'] = self.emergency_method()
-        self['restore_method'] = self.restore_method()
         self['implements'] = self.implements()
         self['subscribes'] = self.subscribes()
         self['interface_specific_comment'] = self.interface_specific_comment()
-
-
-    def initialize_method(self):
-        result = ""
-
-        result += INITIALIZE_METHOD_STR
-        return result
-
-    def compute_method(self):
-        result = ""
-        result += COMPUTE_METHOD_STR
-        return result
-    
-    def emergency_method(self):
-        result = ""
-        result += EMERGENCY_METHOD_STR
-        return result
-    
-    def restore_method(self):
-        result = ""
-        result += RESTORE_METHOD_STR
-        return result
-
 
     def implements(self):
         result = ""

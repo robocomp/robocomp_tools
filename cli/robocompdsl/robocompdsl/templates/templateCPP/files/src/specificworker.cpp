@@ -31,10 +31,6 @@ SpecificWorker::SpecificWorker(const ConfigLoader& configLoader, ${proxy_map_typ
 			hibernationChecker.start(500);
 		#endif
 		
-		${dsr_connections}
-		
-		${dsr_custom_widget}
-		
 		// Example statemachine:
 		/***
 		//Your definition for the statesmachine (if you dont want use a execute function, use nullptr)
@@ -68,13 +64,63 @@ SpecificWorker::~SpecificWorker()
 	${dsr_save}
 }
 
-${initialize_method}
 
-${compute_method}
+void SpecificWorker::initialize()
+{
+    std::cout << "initialize worker" << std::endl;
+	${dsr_connections}
 
-${emergency_method}
+	${dsr_custom_widget}
+    //initializeCODE
 
-${restore_method}
+    /////////GET PARAMS, OPEND DEVICES....////////
+    //int period = configLoader.get<int>("Period.Compute") //NOTE: If you want get period of compute use getPeriod("compute")
+    //std::string device = configLoader.get<std::string>("Device.name") 
+
+}
+
+
+
+void SpecificWorker::compute()
+{
+    std::cout << "Compute worker" << std::endl;
+	//computeCODE
+	//try
+	//{
+	//  camera_proxy->getYImage(0,img, cState, bState);
+    //    if (img.empty())
+    //        emit goToEmergency()
+	//  memcpy(image_gray.data, &img[0], m_width*m_height*sizeof(uchar));
+	//  searchTags(image_gray);
+	//}
+	//catch(const Ice::Exception &e)
+	//{
+	//  std::cout << "Error reading from Camera" << e << std::endl;
+	//}
+}
+
+
+
+void SpecificWorker::emergency()
+{
+    std::cout << "Emergency worker" << std::endl;
+    //emergencyCODE
+    //
+    //if (SUCCESSFUL) //The componet is safe for continue
+    //  emmit goToRestore()
+}
+
+
+
+//Execute one when exiting to emergencyState
+void SpecificWorker::restore()
+{
+    std::cout << "Restore worker" << std::endl;
+    //restoreCODE
+    //Restore emergency component
+
+}
+
 
 int SpecificWorker::startup_check()
 {

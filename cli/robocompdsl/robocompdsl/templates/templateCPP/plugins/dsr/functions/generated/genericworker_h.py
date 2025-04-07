@@ -17,6 +17,8 @@ std::shared_ptr<DSR::DSRGraph> G;
 //DSR params
 std::string agent_name;
 int agent_id;
+int current_opts = 0;
+DSR::DSRViewer::view main = DSR::DSRViewer::view::none;
 """
 
 DSR_VIEWER_ATTRIBUTES = """\
