@@ -28,7 +28,9 @@ def get_parameters_string(method, module_name):
 
 def get_type_string(initial_type, module_name):
     type_string = initial_type
-    if type_string not in CPP_TYPES and '::' not in type_string:
+    if type_string.lower() in ['long', 'long int', 'signed long', 'signed long int']:
+        type_string = "Ice::Long" 
+    elif type_string not in CPP_TYPES and '::' not in type_string:
         if type_string == 'string':
             type_string = f"std::{type_string}"
         else:
