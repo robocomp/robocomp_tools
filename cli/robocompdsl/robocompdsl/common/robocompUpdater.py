@@ -9,7 +9,7 @@ from pathlib import Path
 def crear_copia_seguridad(directorio:str):
     """Crea una copia de seguridad comprimida del directorio completo"""
     fecha = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    nombre_zip = f"{directorio.replace("/", "-")}_{fecha}.zip"
+    nombre_zip = f"{directorio.replace('/', '-')}_{fecha}.zip"
     
     print(f"Creando copia de seguridad: {nombre_zip}")
     
