@@ -1,10 +1,13 @@
+${storm_topic_manager}
+
+${config_publishes_proxies}
+
 ${config_requires_proxies}
 
-${storm_topic_manager}
+${config_subscribes_endpoints}
 
 ${config_implements_endpoints}
 
-${config_subscribes_endpoints}
 
 ${dsr_config}
 

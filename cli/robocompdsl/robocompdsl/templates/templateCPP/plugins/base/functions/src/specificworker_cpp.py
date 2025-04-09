@@ -1,7 +1,7 @@
 import datetime
 from string import Template
 
-import robocompdsl.dsl_parsers.parsing_utils as p_utils
+from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
 from robocompdsl.templates.templateCPP.plugins.base.functions import function_utils as utils
 from robocompdsl.templates.common.templatedict import TemplateDict
 
@@ -32,7 +32,7 @@ class specificworker_cpp(TemplateDict):
     def implements(self):
         result = ""
         pool = self.component.idsl_pool
-        for impa in self.component.implements:
+        for impa, num in get_name_number(self.component.implements):
             if type(impa) == str:
                 imp = impa
             else:
@@ -44,11 +44,10 @@ class specificworker_cpp(TemplateDict):
                         method = interface['methods'][mname]
                         param_str_a = ''
                         body_code = ""
-                        if p_utils.communication_is_ice(impa):
+                        if communication_is_ice(impa):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
-                            result += return_type + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n\t#ifdef HIBERNATION_ENABLED\n\t\thibernation = true;\n\t#endif\n"
+                            result += f"{return_type} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n\t#ifdef HIBERNATION_ENABLED\n\t\thibernation = true;\n\t#endif\n"
                             if return_type != "void":
                                 result += "\t"+return_type+" ret{};\n\t//implementCODE\n" + body_code + "\n\treturn ret;\n}\n\n"
                             else:
@@ -60,7 +59,7 @@ class specificworker_cpp(TemplateDict):
     def subscribes(self):
         result = ""
         pool = self.component.idsl_pool
-        for subscribes in self.component.subscribesTo:
+        for subscribes, num in get_name_number(self.component.subscribesTo):
             module = pool.module_providing_interface(subscribes.name)
             if module is None:
                 raise ValueError('\nCan\'t find module providing %s\n' % subscribes.name)
@@ -70,12 +69,10 @@ class specificworker_cpp(TemplateDict):
                         method = interface['methods'][mname]
                         param_str_a = ''
                         body_code = ""
-                        if p_utils.communication_is_ice(subscribes):
+                        if communication_is_ice(subscribes):
                             param_str_a = utils.get_parameters_string(method, module['name'])
-                            result += "//SUBSCRIPTION to " + method['name'] + " method from " + interface[
-                                'name'] + " interface\n"
-                            result += method['return'] + ' SpecificWorker::' + interface['name'] + "_" + method[
-                                'name'] + '(' + param_str_a + ")\n{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//subscribesToCODE\n" + body_code + "\n}\n\n"
+                            result += f"//SUBSCRIPTION to {method['name']} method from {interface['name']} interface\n"
+                            result += f"{method['return']} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//subscribesToCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result
@@ -96,8 +93,8 @@ class specificworker_cpp(TemplateDict):
             "subscribesTo": self.component.subscribesTo
         }
         for interface_type, interfaces in interfaces_by_type.items():
-            for interface, num in p_utils.get_name_number(interfaces):
-                if p_utils.communication_is_ice(interface):
+            for interface, num in get_name_number(interfaces):
+                if communication_is_ice(interface):
                     proxy_methods_calls = ""
                     module = self.component.idsl_pool.module_providing_interface(interface.name)
                     if interface_type in ["publishes", "requires"]:

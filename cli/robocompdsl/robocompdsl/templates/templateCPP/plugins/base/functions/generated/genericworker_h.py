@@ -77,7 +77,7 @@ class genericworker_h(TemplateDict):
     #TODO: check if it can be mixed with the subscribes methodd. Are too similar.
     def implements(self):
         result = ""
-        for iface in self.component.implements:
+        for iface, num in get_name_number(self.component.implements):
             pool = self.component.idsl_pool
             module = pool.module_providing_interface(iface.name)
             for interface in module['interfaces']:
@@ -88,14 +88,14 @@ class genericworker_h(TemplateDict):
                         if communication_is_ice(iface):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
-                            result += f"virtual {return_type} {interface['name']}_{method['name']}({param_str_a}) = 0;\n"
+                            result += f"virtual {return_type} {interface['name']}{num}_{method['name']}({param_str_a}) = 0;\n"
                         else:
                             pass
         return result
 
     def subscribes(self):
         result = ""
-        for iface in self.component.subscribesTo:
+        for iface, num in get_name_number(self.component.subscribesTo):
             pool = self.component.idsl_pool
             module = pool.module_providing_interface(iface.name)
             if module is None:
@@ -108,7 +108,7 @@ class genericworker_h(TemplateDict):
                         if communication_is_ice(iface):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
-                            result += f"virtual {return_type} {interface['name']}_{method['name']} ({param_str_a}) = 0;\n"
+                            result += f"virtual {return_type} {interface['name']}{num}_{method['name']} ({param_str_a}) = 0;\n"
                         else:
                             pass
         return result

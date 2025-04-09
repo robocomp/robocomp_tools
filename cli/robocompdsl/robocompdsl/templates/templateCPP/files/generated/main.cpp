@@ -95,8 +95,7 @@ public:
 		this->prefix = prfx.toStdString();
 		this->startup_check_flag=startup_check; 
 
-		this->configLoader.load(this->configFile);
-		this->configLoader.printConfig();
+		initialize();
 		}
 
 	Ice::InitializationData getInitializationDataIce();
@@ -126,6 +125,7 @@ void ${component_name}::initialize()
 {
     this->configLoader.load(this->configFile);
 	this->configLoader.printConfig();
+	std::cout<<std::endl;
 }
 
 int ${component_name}::run(int argc, char* argv[])
@@ -154,8 +154,7 @@ int ${component_name}::run(int argc, char* argv[])
 	${publishes_proxy_ptr}
 	${requires_proxy_ptr}
 
-	std::string proxy, tmp;
-	initialize();
+	std::string proxy, tmp, name_topic;
 	${requires}
 	${topic_manager_creation}
 	${publish}

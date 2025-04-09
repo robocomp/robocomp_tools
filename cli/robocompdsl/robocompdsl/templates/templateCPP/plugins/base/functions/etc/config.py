@@ -12,27 +12,38 @@ class etc_config(TemplateDict):
     def __init__(self, component):
         super(etc_config, self).__init__()
         self.component = component
-        self['config_implements_endpoints'] = self.config_implements_endpoints()
-        self['config_subscribes_endpoints'] = self.config_subscribes_endpoints()
-        self['config_requires_proxies'] = self.config_requires_proxies()
         self['storm_topic_manager'] = self.storm_topic_manager()
+        self['config_publishes_proxies'] = self.config_publishes_proxies()
+        self['config_requires_proxies'] = self.config_requires_proxies()        
+        self['config_subscribes_endpoints'] = self.config_subscribes_endpoints()
+        self['config_implements_endpoints'] = self.config_implements_endpoints()
 
     def config_implements_endpoints(self):
         result = ""
-        for interface in self.component.implements:
+        for interface, num in get_name_number(self.component.implements):
             if communication_is_ice(interface):
-                result += 'Endpoints.' + interface.name + ' = "tcp -p 0"\n'
+                result += f'Endpoints.{interface.name}{num} = "tcp -p 0"\n'
         if result != "":
             result = '# Endpoints for implements interfaces\n' + result
         return result
 
     def config_subscribes_endpoints(self):
         result = ""
-        for interface in self.component.subscribesTo:
+        for interface, num in get_name_number(self.component.subscribesTo):
             if communication_is_ice(interface):
-                result += 'Endpoints.' + interface.name + 'Topic = "tcp -p 0"\n'
+                result += f'Endpoints.{interface.name}Topic{num} = "tcp -p 0"\n'
+                result += f'Endpoints.{interface.name}Prefix{num} = ""\n'
         if result != "":
             result = '# Endpoints for subscriptions interfaces\n' + result
+        return result
+    
+    def config_publishes_proxies(self):
+        result = ""
+        for interface, num in get_name_number(self.component.publishes):
+            if communication_is_ice(interface):
+                result += f'Proxies.{interface.name}Prefix{num} = ""\n'
+        if result != "":
+            result = '# Proxies for publishes interfaces\n' + result
         return result
 
     def config_requires_proxies(self):
@@ -40,8 +51,8 @@ class etc_config(TemplateDict):
         for interface, num in get_name_number(self.component.requires):
             if communication_is_ice(interface):
                 port = 0
-                result += 'Proxies.' + interface.name + num + ' = "' + interface.name.lower() + ':tcp -h localhost -p ' + str(
-                    port) + '"\n'
+                result += f'Proxies.{interface.name}{num} = "{interface.name.lower()}:tcp -h localhost -p {port}"\n'
+                    
         if result != "":
             result = '# Proxies for required interfaces\n' + result
         return result

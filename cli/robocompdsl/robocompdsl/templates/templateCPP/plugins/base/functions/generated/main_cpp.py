@@ -8,7 +8,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 INCLUDE_STR = '#include <${iface_name}${suffix}.h>\n'
 
 
-PROXY_PTR_STR = """${prx_type}Prx${ptr} ${lower}${num}_${prefix}proxy;\n"""
+PROXY_PTR_STR = """${prx_type}Prx${ptr} ${lower}_proxy${num};\n"""
 
 
 TOPIC_MANAGER_STR = """
@@ -32,111 +32,128 @@ catch (const Ice::Exception &ex)
 
 
 PUBLISHES_STR = """
-while (!<LOWER>_topic)
-{
-	try
-	{
-		<LOWER>_topic = topicManager->retrieve("<NORMAL>");
-	}
-	catch (const IceStorm::NoSuchTopic&)
-	{
-		std::cout << "[" << PROGRAM_NAME << "]: ERROR retrieving <NORMAL> topic. \\n";
-		try
-		{
-			<LOWER>_topic = topicManager->create("<NORMAL>");
-		}
-		catch (const IceStorm::TopicExists&){
-			// Another client created the topic.
-			std::cout << "[" << PROGRAM_NAME << "]: ERROR publishing the <NORMAL> topic. It's possible that other component have created\\n";
-		}
-	}
-	catch(const IceUtil::NullHandleException&)
-	{
-		std::cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
-		"\\t\\tTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\n";
-		return EXIT_FAILURE;
-	}
-}
+name_topic = configLoader.get<std::string>("Proxies.${name}Prefix${num}");
 
+if (not name_topic.empty()){name_topic+="/";};
+name_topic+="${name}";
+
+std::cout << "[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
+              << name_topic << " will be used for publication. \\033[0m\\n";
+
+while (!${lower}_topic${num})
+{
+    try
+    {
+        ${lower}_topic${num} = topicManager->retrieve(name_topic);
+    }
+    catch (const IceStorm::NoSuchTopic&)
+    {
+        std::cout << "\\n\\n[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
+          << name_topic << " topic did not create. \\033[32mCreating...\\033[0m\\n\\n";
+        try
+        {
+            ${lower}_topic${num} = topicManager->create(name_topic);
+
+        }
+        catch (const IceStorm::TopicExists&){
+            // Another client created the topic.
+            std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m publishing the " << name_topic << " topic. It's possible that other component have created\\n";
+        }
+    }
+    catch(const IceUtil::NullHandleException&)
+    {
+        std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null. Check that your configuration file contains an entry like:\\n"
+          << "\\t\\t\\033[34mTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\033[0m\\n";
+        return EXIT_FAILURE;
+    }
+}
 """
 
 SUBSCRIBESTO_STR = """
 // Server adapter creation and publication
-<CHANGE1> <LOWER>_topic;
-<CHANGE2> <PROXYNAME>;
+${typetopic} ${lower}_topic${num};
+${typeproxy} ${proxyname};
 try
 {
+    tmp = configLoader.get<std::string>("Endpoints.${name}Topic${num}");
+    name_topic = configLoader.get<std::string>("Endpoints.${name}Prefix${num}");
 
-    tmp = configLoader.get<std::string>("Endpoints.<NORMAL>Topic");
-	Ice::ObjectAdapterPtr <NORMAL>_adapter = communicator()->createObjectAdapterWithEndpoints("<LOWER>", tmp);
-	<PTR_TYPE>Ptr <LOWER>I_ = <CHANGE3>(worker);
-	<CHANGE4> <PROXYNAME> = <NORMAL>_adapter->addWithUUID(<LOWER>I_)->ice_oneway();
-	if(!<LOWER>_topic)
-	{
-		try {
-			<LOWER>_topic = topicManager->create("<NORMAL>");
-		}
-		catch (const IceStorm::TopicExists&) {
-			//Another client created the topic
-			try{
-				std::cout << "[" << PROGRAM_NAME << "]: Probably other client already opened the topic. Trying to connect.\\n";
-				<LOWER>_topic = topicManager->retrieve("<NORMAL>");
-			}
-			catch(const IceStorm::NoSuchTopic&)
-			{
-				std::cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\\n";
-				//Error. Topic does not exist
-			}
-		}
-		catch(const IceUtil::NullHandleException&)
-		{
-			std::cout << "[" << PROGRAM_NAME << "]: ERROR TopicManager is Null. Check that your configuration file contains an entry like:\\n"<<
-			"\\t\\tTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\n";
-			return EXIT_FAILURE;
-		}
-		IceStorm::QoS qos;
-		<LOWER>_topic->subscribeAndGetPublisher(qos, <PROXYNAME>);
-	}
-	<NORMAL>_adapter->activate();
+    if (not name_topic.empty()){name_topic+="/";};
+    name_topic+="${name}";
+
+    Ice::ObjectAdapterPtr ${name}_adapter${num} = communicator()->createObjectAdapterWithEndpoints(name_topic, tmp);
+    ${ptr_type}Ptr ${lower}I_${num} = std::make_shared <${name}I>(worker);
+    auto ${proxyname} = ${name}_adapter${num}->addWithUUID(${lower}I_${num})->ice_oneway();
+
+    std::cout << "[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
+              << name_topic << " will be used in subscription. \\033[0m\\n";
+
+    if(!${lower}_topic${num})
+    {
+        try {
+            ${lower}_topic${num} = topicManager->create(name_topic);
+            std::cout << "\\n\\n[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
+              << name_topic << " topic did not create. \\033[32mTopic created\\033[0m\\n\\n";
+        }
+        catch (const IceStorm::TopicExists&) {
+            //Another client created the topic
+            try{
+                std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m Probably other client already opened the topic. \\033[32mTrying to connect.\\033[0m\\n";
+                ${lower}_topic${num} = topicManager->retrieve(name_topic);
+            }
+            catch(const IceStorm::NoSuchTopic&)
+            {
+                std::cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\\n";
+                //Error. Topic does not exist
+            }
+        }
+        catch(const IceUtil::NullHandleException&)
+        {
+            std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null. Check that your configuration file contains an entry like:\\n"
+              << "\\t\\t\\033[34mTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\033[0m\\n";
+            return EXIT_FAILURE;
+        }
+        IceStorm::QoS qos;
+        ${lower}_topic${num}->subscribeAndGetPublisher(qos, ${proxyname});
+    }
+    ${name}_adapter${num}->activate();
 }
 catch(const IceStorm::NoSuchTopic&)
 {
-	std::cout << "[" << PROGRAM_NAME << "]: Error creating <NORMAL> topic.\\n";
-	//Error. Topic does not exist
+    std::cout << "[" << PROGRAM_NAME << "]: Error creating ${name} topic.\\n";
+    //Error. Topic does not exist
 }
-
 """
 
 IMPLEMENTS_STR = """
 try
 {
-	// Server adapter creation and publication
-    tmp = configLoader.get<std::string>("Endpoints.<NORMAL>");
-    Ice::ObjectAdapterPtr adapter<NORMAL> = communicator()->createObjectAdapterWithEndpoints("<NORMAL>", tmp);
-	<C++_VERSION>
-	adapter<NORMAL>->add(<LOWER>, Ice::stringToIdentity("<LOWER>"));
-	adapter<NORMAL>->activate();
-	std::cout << "[" << PROGRAM_NAME << "]: <NORMAL> adapter created in port " << tmp << std::endl;
+    // Server adapter creation and publication
+    tmp = configLoader.get<std::string>("Endpoints.${name}${num}");
+    Ice::ObjectAdapterPtr adapter${name}${num} = communicator()->createObjectAdapterWithEndpoints("${name}${num}", tmp);
+    ${cpp_version}
+    adapter${name}${num}->add(${lower}${num}, Ice::stringToIdentity("${lower}"));
+    adapter${name}${num}->activate();
+    std::cout << "[" << PROGRAM_NAME << "]: ${name} adapter created in port " << tmp << std::endl;
 }
 catch (const IceStorm::TopicExists&){
-	std::cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for <NORMAL>\\n";
+    std::cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for ${name}\\n";
 }
-
 """
 
 
 REQUIRE_STR = """
 try
 {
-    proxy = configLoader.get<std::string>("Proxies.<NORMAL><PROXYNUMBER>");
-	<C++_VERSION>
+    proxy = configLoader.get<std::string>("Proxies.${name}${proxynumber}");
+    ${cpp_version}
 }
 catch(const Ice::Exception& ex)
 {
-	std::cout << "[" << PROGRAM_NAME << "]: Exception creating proxy <NORMAL><PROXYNUMBER>: " << ex;
-	return EXIT_FAILURE;
+    std::cout << "[" << PROGRAM_NAME << "]: Exception creating proxy ${name}${proxynumber}: " << ex;
+    return EXIT_FAILURE;
 }
-qInfo("<NORMAL>Proxy<PROXYNUMBER> initialized Ok!");
+qInfo("${name}Proxy${proxynumber} initialized Ok!");
 
 """
 
@@ -202,7 +219,7 @@ class generated_main_cpp(TemplateDict):
         return result
 
     def topic_manager_creation(self):
-        result = ""
+        result = "\n//Topic Manager code"
         need_topic = False
         for pub in self.component.publishes:
             if communication_is_ice(pub):
@@ -217,71 +234,62 @@ class generated_main_cpp(TemplateDict):
         return result
 
     def publish(self):
-        result = ""
-        for pba in self.component.publishes:
+        result = "\n//Publish code\n"
+        for pba, num in get_name_number(self.component.publishes):
             if type(pba) == str:
                 pb = pba
             else:
                 pb = pba[0]
             if communication_is_ice(pba):
-                result += "std::shared_ptr<IceStorm::TopicPrx> " + pb.lower() + "_topic;\n"
-                result += PUBLISHES_STR.replace("<NORMAL>", pb).replace("<LOWER>", pb.lower())
+                result += f"std::shared_ptr<IceStorm::TopicPrx> {pb.lower()}_topic{num};\n"
+                result += Template(PUBLISHES_STR).substitute(name=pb, lower=pb.lower(), num=num)
                 module = self.component.idsl_pool.module_providing_interface(pb)
-                result += "auto " + pb.lower() + "_pub = " + pb.lower() + "_topic->getPublisher()->ice_oneway();\n"
-                result += "" + pb.lower() + "_pubproxy = Ice::uncheckedCast<RoboComp"+pb+"::" + pb + "Prx>(" + pb.lower() + "_pub);\n"
+                result += f"auto {pb.lower()}{num} = {pb.lower()}_topic{num}->getPublisher()->ice_oneway();\n"
+                result += f"{pb.lower()}_proxy{num} = Ice::uncheckedCast<RoboComp{pb}::{pb}Prx>({pb.lower()}{num});\n\n"
         return result
 
     def subscribes_to(self):
-        result = ""
+        result = "\n//Subscribe code"
         for interface, num in get_name_number(self.component.subscribesTo):
             name = interface.name
             if communication_is_ice(interface):
-                change1 = "std::shared_ptr<IceStorm::TopicPrx>"
-                change2 = "Ice::ObjectPrxPtr"
-                change3 = " std::make_shared <<NORMAL>I>"
-                change4 = "auto"
+                typeTopic = "std::shared_ptr<IceStorm::TopicPrx>"
+                typeProxy = "Ice::ObjectPrxPtr"
 
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
-                result += SUBSCRIBESTO_STR.replace("<CHANGE1>", change1).replace("<CHANGE2>", change2).replace(
-                    "<CHANGE3>",
-                    change3).replace(
-                    "<CHANGE4>", change4).replace("<NORMAL>", name).replace("<LOWER>", name.lower()).replace(
-                    "<PROXYNAME>", name.lower() + num).replace("<PROXYNUMBER>", num).replace("<PTR_TYPE>", proxy_type)
+                result += Template(SUBSCRIBESTO_STR).substitute(name=name, lower=name.lower(), typetopic=typeTopic, typeproxy=typeProxy,
+                                                               proxyname= f"{name.lower()}{num}", ptr_type=proxy_type, num=num)
         return result
 
     def implements(self):
-        result = ""
-        for ima in self.component.implements:
+        result = "\n//Implement code"
+        for ima, num in get_name_number(self.component.implements):
             if type(ima) == str:
                 im = ima
             else:
                 im = ima[0]
             if communication_is_ice(ima):
-                cpp = "auto <LOWER> = std::make_shared<<NORMAL>I>(worker);"
-                result += IMPLEMENTS_STR.replace("<C++_VERSION>", cpp).replace("<NORMAL>", im).replace("<LOWER>",
-                                                                                                       im.lower())
-
+                cpp = f"auto {im.lower()}{num} = std::make_shared<{im}I>(worker);"
+                result += Template(IMPLEMENTS_STR).substitute(name=im, lower=im.lower(), cpp_version=cpp, num=num)
         return result
 
     def requires(self):
-        result = ""
+        result = "\n//Require code"
         for interface, num in get_name_number(self.component.requires):
             name = interface.name
             if communication_is_ice(interface):
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
-                cpp = "<PROXYNAME>_proxy = Ice::uncheckedCast<<PROXY_TYPE>Prx>(communicator()->stringToProxy(proxy));"
-                result += REQUIRE_STR.replace("<C++_VERSION>", cpp).replace("<NORMAL>", name).replace("<LOWER>",
-                                                                                                      name.lower()).replace(
-                    "<PROXYNAME>", name.lower() + num).replace("<PROXYNUMBER>", num).replace('<PROXY_TYPE>', proxy_type)
+                cpp = f"{name.lower()}_proxy{num} = Ice::uncheckedCast<{proxy_type}Prx>(communicator()->stringToProxy(proxy));"
+                result += Template(REQUIRE_STR).substitute(name=name, lower=name.lower(), cpp_version=cpp, proxynumber=num)
         return result
 
     def specificworker_creation(self):
         result = ""
         var_name = 't'
-        proxy_list = [interface.name.lower() + num + "_proxy" for interface, num in get_name_number(self.component.requires)]
-        proxy_list += [interface.name.lower() + "_pubproxy" for interface in self.component.publishes]
+        proxy_list = [interface.name.lower() + "_proxy" + num  for interface, num in get_name_number(self.component.requires)]
+        proxy_list += [interface.name.lower() + "_proxy" + num for interface, num in get_name_number(self.component.publishes)]
         if proxy_list:
             result += "tprx = std::make_tuple(" + ",".join(proxy_list) + ");\n"
         else:
