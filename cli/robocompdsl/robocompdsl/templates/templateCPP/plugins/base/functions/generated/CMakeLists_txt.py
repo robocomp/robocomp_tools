@@ -13,29 +13,26 @@ class generated_CMakeLists_txt(TemplateDict):
 
     def interface_sources(self):
         result = ""
-        # TODO: refactor in one loop
-        for ima in self.component.implements:
-            if type(ima) == str:
-                im = ima
-            else:
-                im = ima[0]
-            if communication_is_ice(ima):
-                result += im.lower() + 'I.cpp\n'
-
-        for subscribe in self.component.subscribesTo:
-            interface_name = subscribe.name
-            if communication_is_ice(subscribe):
-                result += interface_name.lower() + 'I.cpp\n'
+        processed_interfaces = set()  
+        
+        for collection in [self.component.implements, self.component.subscribesTo]:
+            for item in collection:
+                im = item if isinstance(item, str) else item[0]
+                if communication_is_ice(item):
+                    interface_name = im.lower() + 'I.cpp'
+                    if interface_name not in processed_interfaces:
+                        result += interface_name + '\n'
+                        processed_interfaces.add(interface_name)
         return result
 
 
     def wrap_ice(self):
-        interface_names = []
+        interface_names = set()
         
         if self.component.recursiveImports is not None and self.component.ice_interfaces_names is not None:
             for im in sorted(self.component.recursiveImports + self.component.ice_interfaces_names):
                 name = im.split('/')[-1].split('.')[0]
-                interface_names.append(name)
+                if name not in interface_names: interface_names.add(name)
 
         result = "ROBOCOMP_IDSL_TO_ICE("
         result += ' '.join(interface_names)

@@ -54,9 +54,7 @@ public:
      */
 	~SpecificWorker();
 
-
 	${implements_method_definitions}
-
 	${subscribes_method_definitions}
 
 public slots:

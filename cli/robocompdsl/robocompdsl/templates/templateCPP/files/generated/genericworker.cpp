@@ -123,3 +123,7 @@ void GenericWorker::hibernationCheck()
     }
 }
 
+void GenericWorker::hibernationTick(){
+	hibernation = true;
+}
+

@@ -49,13 +49,14 @@ class specificworker_h(TemplateDict):
         module = pool.module_providing_interface(interface_name)
         for idsl_interface in module['interfaces']:
             if idsl_interface['name'] == interface_name:
-                for method_name, method in idsl_interface['methods'].items():
+                for method in idsl_interface['methods'].values():
                     if communication_is_ice(interface):
                         params_string = utils.get_parameters_string(method, module['name'])
                         return_type = utils.get_type_string(method['return'], module['name'])
                         result += f"{return_type} {idsl_interface['name']}{num}_{method['name']}({params_string});\n"
                     else:
                         pass
+                result +="\n"
         return result
 
     def implements_method_definitions(self):
@@ -84,6 +85,7 @@ class specificworker_h(TemplateDict):
                             result += f"{return_type} {interface['name']}{num}_{method['name']}({param_str_a});\n"
                         else:
                             pass
+                    result +="\n"
         return result
 
     def constructor_proxies(self):

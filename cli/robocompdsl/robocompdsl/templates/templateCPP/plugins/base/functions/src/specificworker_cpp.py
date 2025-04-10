@@ -47,7 +47,7 @@ class specificworker_cpp(TemplateDict):
                         if communication_is_ice(impa):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             return_type = utils.get_type_string(method['return'], module['name'])
-                            result += f"{return_type} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n\t#ifdef HIBERNATION_ENABLED\n\t\thibernation = true;\n\t#endif\n"
+                            result += f"{return_type} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n"
                             if return_type != "void":
                                 result += "\t"+return_type+" ret{};\n\t//implementCODE\n" + body_code + "\n\treturn ret;\n}\n\n"
                             else:
@@ -72,7 +72,7 @@ class specificworker_cpp(TemplateDict):
                         if communication_is_ice(subscribes):
                             param_str_a = utils.get_parameters_string(method, module['name'])
                             result += f"//SUBSCRIPTION to {method['name']} method from {interface['name']} interface\n"
-                            result += f"{method['return']} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n#ifdef HIBERNATION_ENABLED\n\thibernation = true;\n#endif\n//subscribesToCODE\n" + body_code + "\n}\n\n"
+                            result += f"{method['return']} SpecificWorker::{interface['name']}{num}_{method['name']}({param_str_a})\n{{\n//subscribesToCODE\n" + body_code + "\n}\n\n"
                         else:
                             pass
         return result

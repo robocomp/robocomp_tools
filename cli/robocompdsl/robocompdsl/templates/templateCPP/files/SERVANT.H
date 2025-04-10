@@ -23,7 +23,7 @@
 #include <Ice/Ice.h>
 #include <${filename_without_extension}.h>
 
-#include "genericworker.h"
+#include "../src/specificworker.h"
 
 
 class ${interface_name}I : public virtual ${module_name}::${interface_name}

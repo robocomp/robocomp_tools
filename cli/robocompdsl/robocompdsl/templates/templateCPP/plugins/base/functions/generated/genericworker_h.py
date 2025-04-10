@@ -28,13 +28,17 @@ class genericworker_h(TemplateDict):
     def interfaces_includes(self):
         result = ""
         pool = self.component.idsl_pool
+        interface_names = set()
+
 
         if self.component.recursiveImports is None or self.component.ice_interfaces_names is None:
             return ""
 
         for iface in sorted(list(set(self.component.recursiveImports + self.component.ice_interfaces_names))):
             name = iface.split('/')[-1].split('.')[0]
-            result += '#include <' + name + '.h>\n'
+            if name not in interface_names: 
+                interface_names.add(name)
+                result += '#include <' + name + '.h>\n'
         return result
 
     # def namespaces(self):
@@ -91,6 +95,7 @@ class genericworker_h(TemplateDict):
                             result += f"virtual {return_type} {interface['name']}{num}_{method['name']}({param_str_a}) = 0;\n"
                         else:
                             pass
+                    result +="\n"
         return result
 
     def subscribes(self):
@@ -111,6 +116,7 @@ class genericworker_h(TemplateDict):
                             result += f"virtual {return_type} {interface['name']}{num}_{method['name']} ({param_str_a}) = 0;\n"
                         else:
                             pass
+                    result +="\n"
         return result
 
 

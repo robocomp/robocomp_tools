@@ -194,16 +194,17 @@ class generated_main_cpp(TemplateDict):
     @staticmethod
     def interface_includes(interfaces, suffix='', lower=False):
         result = ""
-        if interfaces is None:
-            return ""
-
-        for interface in sorted(interfaces):
-            if communication_is_ice(interface):
-                name = interface if isinstance(interface, str) else interface.name
-                name = name.split('/')[-1].split('.')[0]
-                if lower:
-                    name = name.lower()
-                result += Template(INCLUDE_STR).substitute(iface_name=name, suffix=suffix)
+        if interfaces is not None:
+            interface_names = set()
+            for interface in sorted(interfaces):
+                if communication_is_ice(interface):
+                    name = interface if isinstance(interface, str) else interface.name
+                    name = name.split('/')[-1].split('.')[0]
+                    if lower:
+                        name = name.lower()
+                    if name not in interface_names: 
+                        interface_names.add(name)
+                        result += Template(INCLUDE_STR).substitute(iface_name=name, suffix=suffix)
         return result
 
     def proxy_ptr(self, interfaces, prefix=''):

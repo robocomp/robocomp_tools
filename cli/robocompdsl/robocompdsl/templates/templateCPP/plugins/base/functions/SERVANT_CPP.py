@@ -9,12 +9,15 @@ INTERFACE_METHOD_STR = """
 ${ret} ${interface_name}I::${method_name}(${input_params})
 {
 
+    #ifdef HIBERNATION_ENABLED
+		worker->hibernationTick();
+	#endif
+    
 	if (id < ${method_name}Handlers.size())
 		${to_return} ${method_name}Handlers[id](${param_str});
 	else
 		throw std::out_of_range("Invalid ${method_name} id: " + std::to_string(id));
 
-	//${to_return}worker->${interface_name}_${method_name}(${param_str});
 }
 """
 

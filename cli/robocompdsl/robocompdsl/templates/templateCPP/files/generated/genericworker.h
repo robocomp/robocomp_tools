@@ -76,6 +76,7 @@ private:
 public slots:
 	${virtual_statemachine}
 	void hibernationCheck();
+	void hibernationTick();
 	
 signals:
 	void kill();
