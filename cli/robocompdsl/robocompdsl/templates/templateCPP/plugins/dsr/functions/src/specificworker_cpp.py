@@ -57,7 +57,6 @@ class specificworker_cpp(TemplateDict):
     
     def dsr_custom_widget(self):
         result = ""
-        print(self.component.gui)
         if self.component.dsr and self.component.gui is not None and "QMainWindow" in self.component.gui:
             result += CUSTOM_WIDGET
         return result

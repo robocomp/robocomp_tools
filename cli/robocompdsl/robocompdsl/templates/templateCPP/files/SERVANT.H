@@ -29,7 +29,7 @@
 class ${interface_name}I : public virtual ${module_name}::${interface_name}
 {
 public:
-	${interface_name}I(GenericWorker *_worker);
+	${interface_name}I(GenericWorker *_worker, const size_t id);
 	~${interface_name}I();
 
 	${interface_methods_definition}
@@ -37,6 +37,9 @@ public:
 private:
 
 	GenericWorker *worker;
+	size_t id;
+
+	${array_handlers_definition}
 
 };
 

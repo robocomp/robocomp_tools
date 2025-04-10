@@ -82,7 +82,7 @@ try
     name_topic+="${name}";
 
     Ice::ObjectAdapterPtr ${name}_adapter${num} = communicator()->createObjectAdapterWithEndpoints(name_topic, tmp);
-    ${ptr_type}Ptr ${lower}I_${num} = std::make_shared <${name}I>(worker);
+    ${ptr_type}Ptr ${lower}I_${num} = std::make_shared <${name}I>(worker, ${id});
     auto ${proxyname} = ${name}_adapter${num}->addWithUUID(${lower}I_${num})->ice_oneway();
 
     std::cout << "[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
@@ -259,7 +259,7 @@ class generated_main_cpp(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
                 result += Template(SUBSCRIBESTO_STR).substitute(name=name, lower=name.lower(), typetopic=typeTopic, typeproxy=typeProxy,
-                                                               proxyname= f"{name.lower()}{num}", ptr_type=proxy_type, num=num)
+                                                               proxyname= f"{name.lower()}{num}", ptr_type=proxy_type, num=num, id=num if num!="" else "0")
         return result
 
     def implements(self):
@@ -270,7 +270,7 @@ class generated_main_cpp(TemplateDict):
             else:
                 im = ima[0]
             if communication_is_ice(ima):
-                cpp = f"auto {im.lower()}{num} = std::make_shared<{im}I>(worker);"
+                cpp = f"auto {im.lower()}{num} = std::make_shared<{im}I>(worker, {num if num!="" else "0"});"
                 result += Template(IMPLEMENTS_STR).substitute(name=im, lower=im.lower(), cpp_version=cpp, num=num)
         return result
 

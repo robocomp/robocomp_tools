@@ -18,9 +18,9 @@
  */
 #include "${interface_name_lower}I.h"
 
-${interface_name}I::${interface_name}I(GenericWorker *_worker)
+${interface_name}I::${interface_name}I(GenericWorker *_worker, const size_t id): worker(_worker), id(id)
 {
-	worker = _worker;
+	${array_handlers_creation}
 }
 
 

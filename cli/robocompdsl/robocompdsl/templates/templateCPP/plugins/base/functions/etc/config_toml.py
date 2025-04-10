@@ -56,7 +56,6 @@ class etc_config_toml(TemplateDict):
             result = '# Proxies for publishes interfaces\n' + result
             if not self.hasProxies:
                 self.hasProxies = True
-                print("c")
                 result = '[Proxies]\n' + result
         return result
 
@@ -69,7 +68,6 @@ class etc_config_toml(TemplateDict):
         if result != "":
             result = '# Proxies for required interfaces\n' + result
             if not self.hasProxies:
-                print("b")
                 self.hasProxies = True
                 result = '[Proxies]\n' + result
         return result
@@ -79,7 +77,6 @@ class etc_config_toml(TemplateDict):
         if len(self.component.publishes + self.component.subscribesTo) > 0:
             result += STORM_TOPIC_MANAGER_TOML
         if result != "" and not self.hasProxies:
-            print("a")
             self.hasProxies = True
             result ='[Proxies]\n' + result
         return result
