@@ -28,25 +28,22 @@ class ${list_type}(list):
     def insert(self, index, item):
         assert isinstance(item, ${item_type})
         super(${list_type}, self).insert(index, item)
-
 setattr(${module_name}, "${list_type}", ${list_type})
+
 """
 
 SUBSCRIBESTO_STR = """
-self.${iface_name} = self.create_adapter("${iface_name}Topic", ${iface_name_lower}I.${iface_name}I(default_handler))
-"""
+self.${iface_name}${num} = self.create_adapter("${iface_name}", parameters["Endpoints.${iface_name}Prefix${num}"], 
+                                        ${iface_name_lower}I.${iface_name}I(default_handler, "${num}"), parameters["Endpoints.${iface_name}Topic${num}"])"""
 
 REQUIRE_STR = """
-self.${iface_name}${num} = self.create_proxy("${iface_name}${num}Proxy", ${module_name}.${iface_name}Prx)
-"""
+self.${iface_name}${num} = self.create_proxy("${iface_name}${num}", ${module_name}.${iface_name}Prx, parameters["Proxies.${iface_name}${num}"])"""
 
 PUBLISHES_STR = """
-self.${iface_name_lower} = self.create_topic("${iface_name}", ${module_name}.${iface_name}Prx)
-"""
+self.${iface_name_lower}${num} = self.create_topic("${iface_name}${num}", "${iface_name}", parameters["Proxies.${iface_name}Prefix${num}"], ${module_name}.${iface_name}Prx)"""
 
-IMPLEMENTS_STR = """\
-self.${iface_name_lower} = self.create_adapter("${iface_name}", ${iface_name_lower}I.${iface_name}I(default_handler))
-"""
+IMPLEMENTS_STR = """
+self.${iface_name_lower}${num} = self.create_adapter("${iface_name}${num}", ${iface_name_lower}I.${iface_name}I(default_handler, "${num}"), parameters["Endpoints.${iface_name}${num}"])"""
 
 
 class src_interfaces_py(TemplateDict):
@@ -101,9 +98,14 @@ class src_interfaces_py(TemplateDict):
 
     def implements_and_subscribes_imports(self):
         result = ""
+        interface_names = set()
+
         for im in self.component.implements + self.component.subscribesTo:
             if communication_is_ice(im):
-                result += 'import ' + im.name.lower() + 'I\n'
+                name = im.name.lower()
+                if name not in interface_names: 
+                    interface_names.add(name)
+                    result += 'import ' + name + 'I\n'
         return result
 
     def require_proxy_creation(self):
@@ -124,23 +126,26 @@ class src_interfaces_py(TemplateDict):
                 module = self.component.idsl_pool.module_providing_interface(iface.name)
                 result += Template(PUBLISHES_STR).substitute(iface_name=name,
                                                              iface_name_lower=name.lower(),
-                                                             module_name=module['name'])
+                                                             module_name=module['name'],
+                                                             num=num)
         return result
 
     def implements_adapters_creation(self):
         result = ""
-        for iface in self.component.implements:
+        for iface, num in get_name_number(self.component.implements):
             if communication_is_ice(iface):
                 name = iface[0]
-                result += Template(IMPLEMENTS_STR).substitute(iface_name=name, iface_name_lower=name.lower())
+                result += Template(IMPLEMENTS_STR).substitute(iface_name=name, 
+                                                              iface_name_lower=name.lower(), num=num)
         return result
 
     def subscribes_adapters_creation(self):
         result = ""
-        for sut in self.component.subscribesTo:
+        for sut, num in get_name_number(self.component.subscribesTo):
             if communication_is_ice(sut):
                 name = sut[0]
-                result += Template(SUBSCRIBESTO_STR).substitute(iface_name=name, iface_name_lower=name.lower())
+                result += Template(SUBSCRIBESTO_STR).substitute(iface_name=name, 
+                                                                iface_name_lower=name.lower(), num=num)
         return result
 
     def needs_rcnode(self):

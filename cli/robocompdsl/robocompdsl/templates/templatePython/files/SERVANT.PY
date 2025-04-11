@@ -34,7 +34,8 @@ Ice.loadSlice("-I ./generated/ --all ./generated/${iface_name}.ice")
 from ${module_name} import *
 
 class ${iface_name}I(${iface_name}):
-    def __init__(self, worker):
+    def __init__(self, worker, id:str):
         self.worker = worker
+        self.id = id
 
     ${interface_methods}

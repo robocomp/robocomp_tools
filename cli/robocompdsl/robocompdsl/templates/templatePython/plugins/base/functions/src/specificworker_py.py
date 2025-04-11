@@ -81,7 +81,7 @@ class src_specificworker_py(TemplateDict):
 
     def methods(self, interfaces, subscribe=False):
         result = ""
-        for interface in interfaces:
+        for interface, num in get_name_number(interfaces):
             module = self.component.idsl_pool.module_providing_interface(interface.name)
             for module_interface in module['interfaces']:
                 if module_interface['name'] == interface.name:
@@ -126,7 +126,7 @@ class src_specificworker_py(TemplateDict):
                             method_str1 = "IMPLEMENTATION of"
                         result += Template(METHOD_STR).substitute(method_str1=method_str1,
                                                                   method_name=method['name'],
-                                                                  interface_name=module_interface['name'],
+                                                                  interface_name=module_interface['name']+num,
                                                                   param_str_a=param_str_a,
                                                                   return_creation=return_creation,
                                                                   return_str=return_str)
@@ -172,13 +172,23 @@ class src_specificworker_py(TemplateDict):
                     proxy_methods_calls = ""
                     module = self.component.idsl_pool.module_providing_interface(interface.name)
                     if interface_type in ["publishes", "requires"]:
-                        proxy_reference = "self." + interface.name.lower() + num + "_proxy."
                         if interface_type == 'publishes':
                             action = "publish calling"
                         else:
                             action = "call"
-                        for method in module['interfaces'][0]['methods']:
-                            proxy_methods_calls += f"# {proxy_reference}{method}(...)\n"
+                        proxy_reference = "self." + interface.name.lower() + num + "_proxy."
+
+                        for method_name, method_details in module['interfaces'][0]['methods'].items():
+                            return_type = f"{module['name']}.{method_details['return']}"
+                            method_signature = f"{return_type} {proxy_reference}{method_name}("
+                            params = []
+                            for param in method_details['params']:
+                                param_type = self.replace_type_cpp_to_python(param['type'])
+                                param_name = param['name']
+                                params.append(f"{param_type} {param_name}")
+                            method_signature += ", ".join(params) + ")"
+                            proxy_methods_calls += f"# {method_signature}\n"
+
                         if proxy_methods_calls:
                             result += Template(PROXY_METHODS_COMMENT_STR).substitute(module_name=module['name'],
                                                                                      methods=proxy_methods_calls,
@@ -192,6 +202,7 @@ class src_specificworker_py(TemplateDict):
         return result
     def startup_check_ice(self):
         result = ""
+        no_repetition = set()
         interfaces_by_type = {
             "requires": self.component.requires,
             "publishes":  self.component.publishes,
@@ -204,6 +215,8 @@ class src_specificworker_py(TemplateDict):
                     module = self.component.idsl_pool.module_providing_interface(interface.name)
                     for struct in module['structs']:
                         struct_str = f"{struct['name'].replace('/', '.')}"
-                        result += Template(INTERFACE_TYPES_TEST_STR).substitute(module_name=module['name'],
+                        if not struct_str in no_repetition:
+                            no_repetition.add(struct_str)
+                            result += Template(INTERFACE_TYPES_TEST_STR).substitute(module_name=module['name'],
                                                                                 type=struct_str)
         return result

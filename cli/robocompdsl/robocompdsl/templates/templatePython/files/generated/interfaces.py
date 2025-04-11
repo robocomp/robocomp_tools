@@ -4,41 +4,37 @@ import IceStorm
 from rich.console import Console, Text
 console = Console()
 
-
 ${load_slice_and_create_imports}
 
 ${create_lists_classes}
 
 ${implements_and_subscribes_imports}
 
-
-
 class Publishes:
-    def __init__(self, ice_connector, topic_manager):
+    def __init__(self, ice_connector:Ice.CommunicatorI, topic_manager, parameters):
         self.ice_connector = ice_connector
         self.mprx={}
         self.topic_manager = topic_manager
         ${publish_proxy_creation}
 
 
-    def create_topic(self, topic_name, ice_proxy):
-        # Create a proxy to publish a AprilBasedLocalization topic
+    def create_topic(self, property_name, topic_name, prefix, ice_proxy):
         topic = False
-        try:
-            topic = self.topic_manager.retrieve(topic_name)
-        except:
-            pass
+        topic_full_name = f"{prefix}/{topic_name}" if prefix else topic_name
+
         while not topic:
             try:
-                topic = self.topic_manager.retrieve(topic_name)
+                topic = self.topic_manager.retrieve(topic_full_name)
             except IceStorm.NoSuchTopic:
                 try:
-                    topic = self.topic_manager.create(topic_name)
+                    console.log(f"{Text("WARNING", style='yellow')} {topic_full_name} topic did not create. {Text("Creating...", style='green')}")
+                    topic = self.topic_manager.create(topic_full_name)
                 except:
-                    print(f'Another client created the {topic_name} topic? ...')
+                    console.log(f"{Text("WARNING", style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
+
         pub = topic.getPublisher().ice_oneway()
         proxy = ice_proxy.uncheckedCast(pub)
-        self.mprx[topic_name] = proxy
+        self.mprx[property_name] = proxy
         return proxy
 
     def get_proxies_map(self):
@@ -46,7 +42,7 @@ class Publishes:
 
 
 class Requires:
-    def __init__(self, ice_connector):
+    def __init__(self, ice_connector:Ice.CommunicatorI, parameters):
         self.ice_connector = ice_connector
         self.mprx={}
         ${require_proxy_creation}
@@ -54,50 +50,44 @@ class Requires:
     def get_proxies_map(self):
         return self.mprx
 
-    def create_proxy(self, property_name, ice_proxy):
-        # Remote object connection for
+    def create_proxy(self, property_name, ice_proxy, proxy_string):
         try:
-            proxy_string = self.ice_connector.getProperties().getProperty(property_name)
-            try:
-                base_prx = self.ice_connector.stringToProxy(proxy_string)
-                proxy = ice_proxy.uncheckedCast(base_prx)
-                self.mprx[property_name] = proxy
-                return True, proxy
-            except Ice.Exception:
-                print('Cannot connect to the remote object (CameraSimple)', proxy_string)
-                # traceback.print_exc()
-                return False, None
+            base_prx = self.ice_connector.stringToProxy(proxy_string)
+            proxy = ice_proxy.uncheckedCast(base_prx)
+            self.mprx[property_name] = proxy
+            return True, proxy
+        
         except Ice.Exception as e:
             console.print_exception(e)
             console.log(f'Cannot get {property_name} property.')
+            self.status = -1
             return False, None
 
 
 class Subscribes:
-    def __init__(self, ice_connector, topic_manager, default_handler):
+    def __init__(self, ice_connector:Ice.CommunicatorI, topic_manager, default_handler, parameters):
         self.ice_connector = ice_connector
         self.topic_manager = topic_manager
         ${subscribes_adapters_creation}
 
-    def create_adapter(self, property_name, interface_handler):
-        adapter = self.ice_connector.createObjectAdapter(property_name)
+    def create_adapter(self, topic_name, prefix, interface_handler, endpoint_string):
+        topic_full_name = f"{prefix}/{topic_name}" if prefix else topic_name
+
+        adapter = self.ice_connector.createObjectAdapterWithEndpoints(topic_full_name, endpoint_string)
         handler = interface_handler
         proxy = adapter.addWithUUID(handler).ice_oneway()
-        topic_name = property_name.replace('Topic','')
         subscribe_done = False
         while not subscribe_done:
             try:
-                topic = self.topic_manager.retrieve(topic_name)
+                topic = self.topic_manager.retrieve(topic_full_name)
                 subscribe_done = True
             except Ice.Exception as e:
-                console.log("Error. Topic does not exist (creating)", style="blue")
-                time.sleep(1)
                 try:
-                    topic = self.topic_manager.create(topic_name)
+                    console.log(f"{Text("WARNING", style='yellow')} {topic_full_name} topic did not create. {Text("Creating...", style='green')}")
+                    topic = self.topic_manager.create(topic_full_name)
                     subscribe_done = True
                 except:
-                    console.log(f"Error. Topic {Text(topic_name, style='red')} could not be created. Exiting")
-                    status = 0
+                    print(f"{Text("WARNING", style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
         qos = {}
         topic.subscribeAndGetPublisher(qos, proxy)
         adapter.activate()
@@ -105,14 +95,19 @@ class Subscribes:
 
 
 class Implements:
-    def __init__(self, ice_connector, default_handler):
+    def __init__(self, ice_connector:Ice.CommunicatorI, default_handler, parameters):
         self.ice_connector = ice_connector
         ${implements_adapters_creation}
 
-    def create_adapter(self, property_name, interface_handler):
-        adapter = self.ice_connector.createObjectAdapter(property_name)
-        adapter.add(interface_handler, self.ice_connector.stringToIdentity(property_name.lower()))
-        adapter.activate()
+    def create_adapter(self, property_name, interface_handler, endpoint_string):
+        try:
+            adapter = self.ice_connector.createObjectAdapterWithEndpoints(property_name, endpoint_string)
+            adapter.add(interface_handler, self.ice_connector.stringToIdentity(property_name.lower()))
+            adapter.activate()
+            console.log(f"{property_name} adapter created in port {endpoint_string}")
+        except:
+            console.log(f"{Text("ERROR", style='red')} creating or activating adapter for{property_name}")
+            self.status = -1
 
 
 class InterfaceManager:
@@ -120,33 +115,32 @@ class InterfaceManager:
         # TODO: Make ice connector singleton
         self.ice_config_file = ice_config_file
         self.ice_connector = Ice.initialize(self.ice_config_file)
-        needs_rcnode = ${needs_rcnode}
-        self.topic_manager = self.init_topic_manager() if needs_rcnode else None
 
         self.status = 0
         self.parameters = {}
         for i in self.ice_connector.getProperties():
-            self.parameters[str(i)] = str(self.ice_connector.getProperties().getProperty(i))
-        self.requires = Requires(self.ice_connector)
-        self.publishes = Publishes(self.ice_connector, self.topic_manager)
+            self.parameters[str(i)] = str(self.ice_connector.getProperties().getProperty(i)).strip('\'"')
+
+        needs_rcnode = ${needs_rcnode}
+        self.topic_manager = self.init_topic_manager() if needs_rcnode else None
+
+        self.requires = Requires(self.ice_connector, self.parameters)
+        self.publishes = Publishes(self.ice_connector, self.topic_manager, self.parameters)
         self.implements = None
         self.subscribes = None
 
-
-
     def init_topic_manager(self):
-        # Topic Manager
-        proxy = self.ice_connector.getProperties().getProperty("TopicManager.Proxy")
-        obj = self.ice_connector.stringToProxy(proxy)
+        obj = self.ice_connector.stringToProxy(self.parameters["Proxies.TopicManager"])
         try:
             return IceStorm.TopicManagerPrx.checkedCast(obj)
         except Ice.ConnectionRefusedException as e:
             console.log(Text('Cannot connect to rcnode! This must be running to use pub/sub.', 'red'))
+            self.status = -1
             exit(-1)
 
     def set_default_hanlder(self, handler):
-        self.implements = Implements(self.ice_connector, handler)
-        self.subscribes = Subscribes(self.ice_connector, self.topic_manager, handler)
+        self.implements = Implements(self.ice_connector, handler, self.parameters)
+        self.subscribes = Subscribes(self.ice_connector, self.topic_manager, handler, self.parameters)
 
     def get_proxies_map(self):
         result = {}

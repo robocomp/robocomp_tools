@@ -25,7 +25,7 @@ class src_genericworker_py(TemplateDict):
             else:
                 rq = req[0]
             if communication_is_ice(req):
-                result += "self." + rq.lower() + num + "_proxy = mprx[\"" + rq + "Proxy" + num + "\"]\n"
+                result += "self." + rq.lower() + num + "_proxy = mprx[\"" + rq  + num + "\"]\n"
             else:
                 result += "self." + rq.lower() + "_proxy = ServiceClient" + rq + "()\n"
         return result
