@@ -86,6 +86,8 @@ ${need_gui}
 #define PROGRAM_NAME    "${component_name}"
 #define SERVER_FULL_NAME   "RoboComp ${component_name}::${component_name}"
 
+${add_templates}
+
 
 class ${component_name} : public Ice::Application
 {
@@ -154,7 +156,6 @@ int ${component_name}::run(int argc, char* argv[])
 	${publishes_proxy_ptr}
 	${requires_proxy_ptr}
 
-	std::string proxy, tmp, name_topic;
 	${requires}
 	${topic_manager_creation}
 	${publish}

@@ -11,6 +11,157 @@ INCLUDE_STR = '#include <${iface_name}${suffix}.h>\n'
 PROXY_PTR_STR = """${prx_type}Prx${ptr} ${lower}_proxy${num};\n"""
 
 
+REQUIRE_TEMPLATE_STR = """
+template <typename ProxyType, typename ProxyPointer>
+void require(const Ice::CommunicatorPtr& communicator,
+             const std::string& proxyConfig, 
+             const std::string& proxyName,
+             ProxyPointer proxy)
+{
+    try
+    {
+        proxy = Ice::uncheckedCast<ProxyType>(communicator->stringToProxy(proxyConfig));
+        std::cout << proxyName << " initialized Ok!\\n";
+    }
+    catch(const Ice::Exception& ex)
+    {
+        std::cout << "[" << PROGRAM_NAME << "]: Exception creating proxy " << proxyName << ": " << ex;
+        throw;
+    }
+}
+"""
+
+IMPLMENTS_TEMPLATE_STR = """
+template <typename InterfaceType>
+void implement( const Ice::CommunicatorPtr& communicator,
+                const std::string& endpointConfig,
+                const std::string& adapterName,
+                SpecificWorker* worker,
+                int index)
+{
+    try
+    {
+        Ice::ObjectAdapterPtr adapter = communicator->createObjectAdapterWithEndpoints(adapterName, endpointConfig);
+        auto servant = std::make_shared<InterfaceType>(worker, index);
+        adapter->add(servant, Ice::stringToIdentity(adapterName));
+        adapter->activate();
+        std::cout << "[" << PROGRAM_NAME << "]: " << adapterName << " adapter created in port " << endpointConfig << std::endl;
+    }
+    catch (const IceStorm::TopicExists&)
+    {
+        std::cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for " << adapterName << std::endl;
+    }
+}
+"""
+
+PUBLISH_TEMPLATE_STR = """
+template <typename PubProxyType, typename PubProxyPointer>
+void publish(const IceStorm::TopicManagerPrxPtr& topicManager,
+             std::string name_topic,
+             const std::string& topicBaseName,
+             PubProxyPointer& pubProxy,
+             const std::string& programName)
+{
+    if (!name_topic.empty()) name_topic += "/";
+    name_topic += topicBaseName;
+
+    std::cout << "[\\033[1;36m" << programName << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
+              << name_topic << " will be used for publication. \\033[0m\\n";
+
+    std::shared_ptr<IceStorm::TopicPrx> topic;
+    while (!topic)
+    {
+        try
+        {
+            topic = topicManager->retrieve(name_topic);
+        }
+        catch (const IceStorm::NoSuchTopic&)
+        {
+            std::cout << "\\n\\n[\\033[1;36m" << programName << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
+                      << name_topic << " topic did not create. \\033[32mCreating...\\033[0m\\n\\n";
+            try
+            {
+                topic = topicManager->create(name_topic);
+            }
+            catch (const IceStorm::TopicExists&)
+            {
+                std::cout << "[\\033[31m" << programName << "\\033[0m]: \\033[1;33mWARNING\\033[0m publishing the " 
+                          << name_topic << " topic. It's possible that other component have created\\n";
+            }
+        }
+        catch(const IceUtil::NullHandleException&)
+        {
+            std::cout << "[\\033[31m" << programName << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null.\\n";
+            throw;
+        }
+    }
+    auto publisher = topic->getPublisher()->ice_oneway();
+    pubProxy = Ice::uncheckedCast<PubProxyType>(publisher);
+}
+"""
+
+
+SUBCRIBE_TEMPLATE_STR = """
+template <typename SubInterfaceType>
+void subscribe( const Ice::CommunicatorPtr& communicator,
+                const IceStorm::TopicManagerPrxPtr& topicManager,
+                const std::string& endpointConfig,
+                std::string name_topic,
+                const std::string& topicBaseName,
+                SpecificWorker* worker,
+                int index,
+                std::shared_ptr<IceStorm::TopicPrx> topic,
+                Ice::ObjectPrxPtr& proxy, 
+                const std::string& programName)
+{
+    try   
+    {  
+        if (!name_topic.empty()) name_topic += "/";
+        name_topic += topicBaseName;
+
+        Ice::ObjectAdapterPtr adapter = communicator->createObjectAdapterWithEndpoints(name_topic, endpointConfig);
+        auto servant = std::make_shared<SubInterfaceType>(worker, index);
+        auto proxy = adapter->addWithUUID(servant)->ice_oneway();
+
+        std::cout << "[\\033[1;36m" << programName << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
+                  << name_topic << " will be used in subscription. \\033[0m\\n";
+
+        std::shared_ptr<IceStorm::TopicPrx> topic;
+        if(!topic)
+        {
+            try {
+                topic = topicManager->create(name_topic);
+                std::cout << "\\n\\n[\\033[1;36m" << programName << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
+                          << name_topic << " topic did not create. \\033[32mTopic created\\033[0m\\n\\n";
+            }
+            catch (const IceStorm::TopicExists&) {
+                try{
+                    std::cout << "[\\033[31m" << programName << "\\033[0m]: \\033[1;33mWARNING\\033[0m Probably other client already opened the topic. \\033[32mTrying to connect.\\033[0m\\n";
+                    topic = topicManager->retrieve(name_topic);
+                }
+                catch(const IceStorm::NoSuchTopic&)
+                {
+                    std::cout << "[" << programName << "]: Topic doesn't exists and couldn't be created.\\n";
+                    return;
+                }
+            }
+            catch(const IceUtil::NullHandleException&)
+            {
+                std::cout << "[\\033[31m" << programName << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null.\\n";
+                throw;
+            }
+            IceStorm::QoS qos;
+            topic->subscribeAndGetPublisher(qos, proxy);
+        }
+        adapter->activate();
+    }
+    catch(const IceStorm::NoSuchTopic&)
+    {
+        std::cout << "[" << PROGRAM_NAME << "]: Error creating topic.\\n";
+    }
+}
+"""
+
 TOPIC_MANAGER_STR = """
 IceStorm::TopicManagerPrx${ptr} topicManager;
 try
@@ -30,142 +181,14 @@ catch (const Ice::Exception &ex)
 }
 """
 
-
-PUBLISHES_STR = """
-name_topic = configLoader.get<std::string>("Proxies.${name}Prefix${num}");
-
-if (not name_topic.empty()){name_topic+="/";};
-name_topic+="${name}";
-
-std::cout << "[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
-              << name_topic << " will be used for publication. \\033[0m\\n";
-
-while (!${lower}_topic${num})
-{
-    try
-    {
-        ${lower}_topic${num} = topicManager->retrieve(name_topic);
-    }
-    catch (const IceStorm::NoSuchTopic&)
-    {
-        std::cout << "\\n\\n[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
-          << name_topic << " topic did not create. \\033[32mCreating...\\033[0m\\n\\n";
-        try
-        {
-            ${lower}_topic${num} = topicManager->create(name_topic);
-
-        }
-        catch (const IceStorm::TopicExists&){
-            // Another client created the topic.
-            std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m publishing the " << name_topic << " topic. It's possible that other component have created\\n";
-        }
-    }
-    catch(const IceUtil::NullHandleException&)
-    {
-        std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null. Check that your configuration file contains an entry like:\\n"
-          << "\\t\\t\\033[34mTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\033[0m\\n";
-        return EXIT_FAILURE;
-    }
-}
-"""
-
-SUBSCRIBESTO_STR = """
-// Server adapter creation and publication
-${typetopic} ${lower}_topic${num};
-${typeproxy} ${proxyname};
-try
-{
-    tmp = configLoader.get<std::string>("Endpoints.${name}Topic${num}");
-    name_topic = configLoader.get<std::string>("Endpoints.${name}Prefix${num}");
-
-    if (not name_topic.empty()){name_topic+="/";};
-    name_topic+="${name}";
-
-    Ice::ObjectAdapterPtr ${name}_adapter${num} = communicator()->createObjectAdapterWithEndpoints(name_topic, tmp);
-    ${ptr_type}Ptr ${lower}I_${num} = std::make_shared <${name}I>(worker, ${id});
-    auto ${proxyname} = ${name}_adapter${num}->addWithUUID(${lower}I_${num})->ice_oneway();
-
-    std::cout << "[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[32mINFO\\033[0m Topic: " 
-              << name_topic << " will be used in subscription. \\033[0m\\n";
-
-    if(!${lower}_topic${num})
-    {
-        try {
-            ${lower}_topic${num} = topicManager->create(name_topic);
-            std::cout << "\\n\\n[\\033[1;36m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m " 
-              << name_topic << " topic did not create. \\033[32mTopic created\\033[0m\\n\\n";
-        }
-        catch (const IceStorm::TopicExists&) {
-            //Another client created the topic
-            try{
-                std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[1;33mWARNING\\033[0m Probably other client already opened the topic. \\033[32mTrying to connect.\\033[0m\\n";
-                ${lower}_topic${num} = topicManager->retrieve(name_topic);
-            }
-            catch(const IceStorm::NoSuchTopic&)
-            {
-                std::cout << "[" << PROGRAM_NAME << "]: Topic doesn't exists and couldn't be created.\\n";
-                //Error. Topic does not exist
-            }
-        }
-        catch(const IceUtil::NullHandleException&)
-        {
-            std::cout << "[\\033[31m" << PROGRAM_NAME << "\\033[0m]: \\033[31mERROR\\033[0m TopicManager is Null. Check that your configuration file contains an entry like:\\n"
-              << "\\t\\t\\033[34mTopicManager.Proxy=IceStorm/TopicManager:default -p <port>\\033[0m\\n";
-            return EXIT_FAILURE;
-        }
-        IceStorm::QoS qos;
-        ${lower}_topic${num}->subscribeAndGetPublisher(qos, ${proxyname});
-    }
-    ${name}_adapter${num}->activate();
-}
-catch(const IceStorm::NoSuchTopic&)
-{
-    std::cout << "[" << PROGRAM_NAME << "]: Error creating ${name} topic.\\n";
-    //Error. Topic does not exist
-}
-"""
-
-IMPLEMENTS_STR = """
-try
-{
-    // Server adapter creation and publication
-    tmp = configLoader.get<std::string>("Endpoints.${name}${num}");
-    Ice::ObjectAdapterPtr adapter${name}${num} = communicator()->createObjectAdapterWithEndpoints("${name}${num}", tmp);
-    ${cpp_version}
-    adapter${name}${num}->add(${lower}${num}, Ice::stringToIdentity("${lower}"));
-    adapter${name}${num}->activate();
-    std::cout << "[" << PROGRAM_NAME << "]: ${name} adapter created in port " << tmp << std::endl;
-}
-catch (const IceStorm::TopicExists&){
-    std::cout << "[" << PROGRAM_NAME << "]: ERROR creating or activating adapter for ${name}\\n";
-}
-"""
-
-
-REQUIRE_STR = """
-try
-{
-    proxy = configLoader.get<std::string>("Proxies.${name}${proxynumber}");
-    ${cpp_version}
-}
-catch(const Ice::Exception& ex)
-{
-    std::cout << "[" << PROGRAM_NAME << "]: Exception creating proxy ${name}${proxynumber}: " << ex;
-    return EXIT_FAILURE;
-}
-qInfo("${name}Proxy${proxynumber} initialized Ok!");
-
-"""
-
 UNSUBSCRIBE_STR = """
 try
 {
-	std::cout << \"Unsubscribing topic: ${name} \" <<std::endl;
-	${name}_topic->unsubscribe( ${name} );
+${unsubscribe}
 }
 catch(const Ice::Exception& ex)
 {
-	std::cout << \"ERROR Unsubscribing topic: $name \" << ex.what()<<std::endl;
+	std::cout << \"ERROR Unsubscribing\" << ex.what()<<std::endl;
 }
 """
 
@@ -190,6 +213,7 @@ class generated_main_cpp(TemplateDict):
         self['implements'] = self.implements()
         self['subscribes_to'] = self.subscribes_to()
         self['unsubscribe_code'] = self.unsubscribe_code()
+        self['add_templates'] = self.add_templates()
 
     @staticmethod
     def interface_includes(interfaces, suffix='', lower=False):
@@ -217,10 +241,22 @@ class generated_main_cpp(TemplateDict):
                 proxy_type = utils.get_type_string(name, module['name'])
                 result += Template(PROXY_PTR_STR).substitute(prx_type=proxy_type, ptr=ptr, lower=name.lower(), num=num,
                                                              prefix=prefix)
+        if prefix == "pub":        
+            for pba, num in get_name_number(self.component.publishes):
+                if type(pba) == str:
+                    name = pba
+                else:
+                    name = pba[0]
+                if communication_is_ice(pba):
+                    module = self.component.idsl_pool.module_providing_interface(name)
+                    proxy_type = utils.get_type_string(name, module['name'])
+                    result+=f'std::shared_ptr<IceStorm::TopicPrx> {name.lower()}_topic{num};\nIce::ObjectPrxPtr {name.lower()}{num};\n'
+            result+='\n'
+
         return result
 
     def topic_manager_creation(self):
-        result = "\n//Topic Manager code"
+        result = "\n//Topic Manager code\n"
         need_topic = False
         for pub in self.component.publishes:
             if communication_is_ice(pub):
@@ -233,57 +269,72 @@ class generated_main_cpp(TemplateDict):
             manager_type = "Ice::checkedCast<IceStorm::TopicManagerPrx>"
             result += Template(TOPIC_MANAGER_STR).substitute(ptr=ptr, type=manager_type)
         return result
+    
+
+    #Todo
+    def add_templates(self):
+        result = ""
+        if len(self.component.implements) > 0:
+            result+=IMPLMENTS_TEMPLATE_STR
+        if len(self.component.requires) > 0:
+            result+=REQUIRE_TEMPLATE_STR
+        if len(self.component.publishes) > 0:
+            result+=PUBLISH_TEMPLATE_STR
+        if len(self.component.subscribesTo) > 0:
+            result+=SUBCRIBE_TEMPLATE_STR
+        return result
+
 
     def publish(self):
         result = "\n//Publish code\n"
         for pba, num in get_name_number(self.component.publishes):
             if type(pba) == str:
-                pb = pba
+                name = pba
             else:
-                pb = pba[0]
+                name = pba[0]
             if communication_is_ice(pba):
-                result += f"std::shared_ptr<IceStorm::TopicPrx> {pb.lower()}_topic{num};\n"
-                result += Template(PUBLISHES_STR).substitute(name=pb, lower=pb.lower(), num=num)
-                module = self.component.idsl_pool.module_providing_interface(pb)
-                result += f"auto {pb.lower()}{num} = {pb.lower()}_topic{num}->getPublisher()->ice_oneway();\n"
-                result += f"{pb.lower()}_proxy{num} = Ice::uncheckedCast<RoboComp{pb}::{pb}Prx>({pb.lower()}{num});\n\n"
+                module = self.component.idsl_pool.module_providing_interface(name)
+                proxy_type = utils.get_type_string(name, module['name'])
+                result += f'''publish<{proxy_type}Prx, {proxy_type}PrxPtr>(topicManager,
+                    configLoader.get<std::string>("Proxies.{name}Prefix{num}"),
+                    "{name}", {name.lower()}_proxy{num}, PROGRAM_NAME);\n'''
+
         return result
 
     def subscribes_to(self):
-        result = "\n//Subscribe code"
+        result = "\n//Subscribe code\n"
         for interface, num in get_name_number(self.component.subscribesTo):
             name = interface.name
-            if communication_is_ice(interface):
-                typeTopic = "std::shared_ptr<IceStorm::TopicPrx>"
-                typeProxy = "Ice::ObjectPrxPtr"
-
-                module = self.component.idsl_pool.module_providing_interface(name)
-                proxy_type = utils.get_type_string(name, module['name'])
-                result += Template(SUBSCRIBESTO_STR).substitute(name=name, lower=name.lower(), typetopic=typeTopic, typeproxy=typeProxy,
-                                                               proxyname= f"{name.lower()}{num}", ptr_type=proxy_type, num=num, id=num if num!="" else "0")
+            if communication_is_ice(interface):                
+                result += f'''subscribe<{name}I>(communicator(),
+                    topicManager, configLoader.get<std::string>("Endpoints.{name}Topic{num}"),
+				    configLoader.get<std::string>("Endpoints.{name}Prefix{num}"), "{name}", worker,  {num if num!="" else "0"},
+				    {name.lower()}_topic, {name.lower()}, PROGRAM_NAME);\n'''
         return result
 
     def implements(self):
-        result = "\n//Implement code"
+        result = "\n//Implement code\n"
         for ima, num in get_name_number(self.component.implements):
             if type(ima) == str:
-                im = ima
+                name = ima
             else:
-                im = ima[0]
+                name = ima[0]
             if communication_is_ice(ima):
-                cpp = f"auto {im.lower()}{num} = std::make_shared<{im}I>(worker, {num if num!="" else "0"});"
-                result += Template(IMPLEMENTS_STR).substitute(name=im, lower=im.lower(), cpp_version=cpp, num=num)
+                result += f'''implement<{name}I>(communicator(),
+                    configLoader.get<std::string>("Endpoints.{name}{num}"), 
+                    "{name}{num}", worker,  {num if num!="" else "0"});\n'''
+
         return result
 
     def requires(self):
-        result = "\n//Require code"
+        result = "\n//Require code\n"
         for interface, num in get_name_number(self.component.requires):
             name = interface.name
             if communication_is_ice(interface):
                 module = self.component.idsl_pool.module_providing_interface(name)
                 proxy_type = utils.get_type_string(name, module['name'])
-                cpp = f"{name.lower()}_proxy{num} = Ice::uncheckedCast<{proxy_type}Prx>(communicator()->stringToProxy(proxy));"
-                result += Template(REQUIRE_STR).substitute(name=name, lower=name.lower(), cpp_version=cpp, proxynumber=num)
+                result += f'''require<{proxy_type}Prx, {proxy_type}PrxPtr>(communicator(),
+                    configLoader.get<std::string>("Proxies.{name}{num}"), "{name}Proxy{num}", {name.lower()}_proxy{num});\n'''
         return result
 
     def specificworker_creation(self):
@@ -300,9 +351,13 @@ class generated_main_cpp(TemplateDict):
 
     def unsubscribe_code(self):
         result = "\n"
-        for interface in self.component.subscribesTo:
+        unsubscribe = ""
+        for interface, num in get_name_number(self.component.publishes):
             if communication_is_ice(interface):
-                result = Template(UNSUBSCRIBE_STR).substitute(name=interface.name.lower())
+                name = interface.name.lower()
+                unsubscribe += f'\tstd::cout << \"Unsubscribing topic: {name}{num} " <<std::endl;\n\t{name}_topic{num}->unsubscribe({name}{num});\n'
+
+                result = Template(UNSUBSCRIBE_STR).substitute(unsubscribe=unsubscribe)
         return result
 
     def proxies_map_creation(self):
