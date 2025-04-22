@@ -37,8 +37,8 @@ ${dsr_import}
 
 
 class SpecificWorker(GenericWorker):
-    def __init__(self, proxy_map, startup_check=False):
-        super(SpecificWorker, self).__init__(proxy_map)
+    def __init__(self, proxy_map, configData, startup_check=False):
+        super(SpecificWorker, self).__init__(proxy_map, configData)
         self.Period = 2000
         ${dsr_init}
         if startup_check:

@@ -111,26 +111,28 @@ class Implements:
 
 
 class InterfaceManager:
-    def __init__(self, ice_config_file):
-        # TODO: Make ice connector singleton
-        self.ice_config_file = ice_config_file
-        self.ice_connector = Ice.initialize(self.ice_config_file)
+    def __init__(self, configData):
+
+        init_data = Ice.InitializationData()
+        init_data.properties = Ice.createProperties()
+        init_data.properties.setProperty("Ice.Warn.Connections", configData["Ice"]["Warn"]["Connections"])
+        init_data.properties.setProperty("Ice.Trace.Network", configData["Ice"]["Trace"]["Network"])
+        init_data.properties.setProperty("Ice.Trace.Protocol", configData["Ice"]["Trace"]["Protocol"])
+        init_data.properties.setProperty("Ice.MessageSizeMax", configData["Ice"]["MessageSizeMax"])
+        self.ice_connector = Ice.initialize(init_data)
 
         self.status = 0
-        self.parameters = {}
-        for i in self.ice_connector.getProperties():
-            self.parameters[str(i)] = str(self.ice_connector.getProperties().getProperty(i)).strip('\'"')
 
         needs_rcnode = ${needs_rcnode}
-        self.topic_manager = self.init_topic_manager() if needs_rcnode else None
+        self.topic_manager = self.init_topic_manager(configData) if needs_rcnode else None
 
-        self.requires = Requires(self.ice_connector, self.parameters)
-        self.publishes = Publishes(self.ice_connector, self.topic_manager, self.parameters)
+        self.requires = Requires(self.ice_connector, configData)
+        self.publishes = Publishes(self.ice_connector, self.topic_manager, configData)
         self.implements = None
         self.subscribes = None
 
-    def init_topic_manager(self):
-        obj = self.ice_connector.stringToProxy(self.parameters["Proxies.TopicManager"])
+    def init_topic_manager(self, configData):
+        obj = self.ice_connector.stringToProxy(configData["Proxies"]["TopicManager"])
         try:
             return IceStorm.TopicManagerPrx.checkedCast(obj)
         except Ice.ConnectionRefusedException as e:
@@ -138,9 +140,9 @@ class InterfaceManager:
             self.status = -1
             exit(-1)
 
-    def set_default_hanlder(self, handler):
-        self.implements = Implements(self.ice_connector, handler, self.parameters)
-        self.subscribes = Subscribes(self.ice_connector, self.topic_manager, handler, self.parameters)
+    def set_default_hanlder(self, handler, configData):
+        self.implements = Implements(self.ice_connector, handler, configData)
+        self.subscribes = Subscribes(self.ice_connector, self.topic_manager, handler, configData)
 
     def get_proxies_map(self):
         result = {}

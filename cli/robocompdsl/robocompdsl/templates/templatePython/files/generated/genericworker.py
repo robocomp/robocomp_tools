@@ -21,30 +21,21 @@
 import sys, Ice, os
 from PySide6 import QtWidgets, QtCore
 
-ROBOCOMP = ''
-try:
-    ROBOCOMP = os.environ['ROBOCOMP']
-except KeyError:
-    print('$$ROBOCOMP environment variable not set, using the default value /opt/robocomp')
-    ROBOCOMP = '/opt/robocomp'
-
-
 ${ui_import}
-
-
 
 class GenericWorker(${qt_class_type}):
 
     kill = QtCore.Signal()
 
-    def __init__(self, mprx):
+    def __init__(self, mprx, configData):
         super(GenericWorker, self).__init__()
 
         ${requires_proxies}
         ${publishes_proxies}
         ${gui_setup}
 
-        self.mutex = QtCore.QMutex()
+        self.configData = configData
+
         self.Period = 30
         self.timer = QtCore.QTimer(self)
 
