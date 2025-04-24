@@ -37,7 +37,8 @@ from pydsr import *
 DSR_INIT_STR = """\
 
 # YOU MUST SET AN UNIQUE ID FOR THIS AGENT IN YOUR DEPLOYMENT. "_CHANGE_THIS_ID_" for a valid unique integer
-self.agent_id = "_CHANGE_THIS_ID_"
+#self.agent_id = "_CHANGE_THIS_ID_"
+self.agent_id = 4095
 self.g = DSRGraph(0, "pythonAgent", self.agent_id)
 
 try:

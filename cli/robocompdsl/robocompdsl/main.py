@@ -11,7 +11,8 @@ import typer
 import os
 import sys
 import pyparsing
-import rich
+from rich.text import Text
+
 from rich.console import Console
 
 from robocompdsl.common.filesgenerator import FilesGenerator
@@ -95,7 +96,7 @@ def generate(
                 logger.debug(f"Idsl pool: {idsl_pool}")
             FilesGenerator().generate(Path(input_file), output_path, diff, test)
         except pyparsing.ParseException as pe:
-            console.log(f"Error generating files for {rich.Text(input_file, style='red')}")
+            console.log(f"Error generating files for {Text(input_file, style='red')}")
             console.log(pe.line)
             console.log(' ' * (pe.col - 1) + '^')
             console.log(pe)
