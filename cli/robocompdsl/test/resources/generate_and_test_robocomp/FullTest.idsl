@@ -1,0 +1,40 @@
+module RoboCompFullTest
+{
+    // Tipos básicos
+    struct Primitives {
+        bool booleanValue;
+        byte byteValue;
+        short shortValue;
+        int intValue;
+        long longValue;
+        float floatValue;
+        double doubleValue;
+        string stringValue;
+    };
+    
+    // Enumeraciones
+    enum Days { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday };
+    
+    // Secuencias
+    sequence<int> IntSeq;
+    sequence<float> FloatSeq;
+    
+    // Diccionarios
+    dictionary<string, int> StringIntDict;
+    
+    // Estructuras complejas
+    struct ComplexType {
+        Primitives primitive_values;
+        Days currentDay;
+        IntSeq numberSequence;
+        StringIntDict keyValueMapping;
+    };
+    
+    // Interfaces para pruebas
+    interface FullTest {
+        void testOperation(Primitives input, out ComplexType result);
+        void testCallback(int callbackValue);
+        bool verifyData(ComplexType dataToVerify);
+        int processSequence(IntSeq inputSequence);
+    };
+};

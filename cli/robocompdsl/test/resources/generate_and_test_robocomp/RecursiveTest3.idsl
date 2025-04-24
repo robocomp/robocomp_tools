@@ -1,0 +1,11 @@
+module RoboCompRecursiveTest3
+{
+    struct three {
+        int intValue;
+    };
+
+    interface RecursiveTest3 {
+        three testOperation3(three p, out three result);
+    };
+    
+};

@@ -1,0 +1,15 @@
+import "RecursiveTest2.idsl";
+
+module RoboCompRecursiveTest1
+{
+    struct one {
+        bool booleanValue;
+    };
+
+    interface RecursiveTest1 {
+        one testOperation(one p, out one result);
+        void testRecursiveOperation(one a, two b, three c);
+
+    };
+    
+};

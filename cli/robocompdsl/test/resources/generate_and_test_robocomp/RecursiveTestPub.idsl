@@ -1,0 +1,8 @@
+import "RecursiveTest1.idsl";
+
+module RoboCompRecursiveTestPub
+{
+    interface RecursiveTestPub {
+        void testRecursiveOperationPub(one a, two b, three c)
+    };
+};

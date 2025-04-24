@@ -1,0 +1,7 @@
+import "FullTest.idsl";
+module RoboCompFullTestPub
+{
+    interface FullTestPub {
+        void newDataAvailable(ComplexType data);
+    };
+};
