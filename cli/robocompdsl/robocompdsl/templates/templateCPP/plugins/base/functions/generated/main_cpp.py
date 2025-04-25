@@ -205,6 +205,7 @@ class generated_main_cpp(TemplateDict):
         self['interface_includes'] = self.interface_includes(self.component.recursiveImports)
         self['proxies_map_creation'] = self.proxies_map_creation()
         self['publishes_proxy_ptr'] = self.proxy_ptr(self.component.publishes, 'pub')
+        self['subscription_proxy_ptr'] = self.proxy_ptr(self.component.subscribesTo, 'sub')
         self['requires'] = self.requires()
         self['requires_proxy_ptr'] = self.proxy_ptr(self.component.requires)
         self['topic_manager_creation'] = self.topic_manager_creation()
@@ -233,16 +234,8 @@ class generated_main_cpp(TemplateDict):
 
     def proxy_ptr(self, interfaces, prefix=''):
         result = ""
-        for interface, num in get_name_number(interfaces):
-            if communication_is_ice(interface):
-                ptr = "Ptr"
-                name = interface.name
-                module = self.component.idsl_pool.module_providing_interface(name)
-                proxy_type = utils.get_type_string(name, module['name'])
-                result += Template(PROXY_PTR_STR).substitute(prx_type=proxy_type, ptr=ptr, lower=name.lower(), num=num,
-                                                             prefix=prefix)
-        if prefix == "pub":        
-            for pba, num in get_name_number(self.component.publishes):
+        if prefix == "sub":
+            for pba, num in get_name_number(interfaces):
                 if type(pba) == str:
                     name = pba
                 else:
@@ -252,7 +245,15 @@ class generated_main_cpp(TemplateDict):
                     proxy_type = utils.get_type_string(name, module['name'])
                     result+=f'std::shared_ptr<IceStorm::TopicPrx> {name.lower()}_topic{num};\nIce::ObjectPrxPtr {name.lower()}{num};\n'
             result+='\n'
-
+        else:
+            for interface, num in get_name_number(interfaces):
+                if communication_is_ice(interface):
+                    ptr = "Ptr"
+                    name = interface.name
+                    module = self.component.idsl_pool.module_providing_interface(name)
+                    proxy_type = utils.get_type_string(name, module['name'])
+                    result += Template(PROXY_PTR_STR).substitute(prx_type=proxy_type, ptr=ptr, lower=name.lower(), num=num,
+                                                                prefix=prefix)
         return result
 
     def topic_manager_creation(self):
@@ -352,7 +353,7 @@ class generated_main_cpp(TemplateDict):
     def unsubscribe_code(self):
         result = "\n"
         unsubscribe = ""
-        for interface, num in get_name_number(self.component.publishes):
+        for interface, num in get_name_number(self.component.subscribesTo):
             if communication_is_ice(interface):
                 name = interface.name.lower()
                 unsubscribe += f'\tstd::cout << \"Unsubscribing topic: {name}{num} " <<std::endl;\n\t{name}_topic{num}->unsubscribe({name}{num});\n'

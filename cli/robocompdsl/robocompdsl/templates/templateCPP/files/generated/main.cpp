@@ -154,6 +154,7 @@ int ${component_name}::run(int argc, char* argv[])
 	int status=EXIT_SUCCESS;
 
 	${publishes_proxy_ptr}
+	${subscription_proxy_ptr}
 	${requires_proxy_ptr}
 
 	${requires}
