@@ -16,6 +16,9 @@ from rich.live import Live
 from rich.progress import Progress
 import time
 
+import re
+import random
+from typing import Tuple
 
 # Configuración
 TMP_DIR = "/tmp/robocomp_test"
@@ -53,6 +56,13 @@ TESTS ={
         "subscribesTo": "",
         "publishes": "",
     },
+    "hetereogeneous":{
+        "imports": [f"CameraSimple.idsl", f"Lidar3D.idsl", "JoystickAdapter.idsl", "CameraRGBDSimpleYoloPub.idsl"],
+        "implements": "implements Lidar3D;",
+        "requires": "requires CameraSimple;",
+        "subscribesTo": "subscribesTo JoystickAdapter;",
+        "publishes": "publishes CameraRGBDSimpleYoloPub;",
+    },
     "simpleAll":{
         "imports": [f"FullTest.idsl", f"FullTestPub.idsl"],
         "implements": "implements FullTest;",
@@ -60,20 +70,20 @@ TESTS ={
         "subscribesTo": "subscribesTo FullTestPub;",
         "publishes": "publishes FullTestPub;",
     },
-    # "MultipleAll":{
-    #     "imports": ["FullTest.idsl", "FullTestPub.idsl"],
-    #     "implements": "implements FullTest, FullTest, FullTest;",
-    #     "requires": "requires FullTest, FullTest, FullTest;",
-    #     "subscribesTo": "subscribesTo FullTestPub, FullTestPub, FullTestPub;",
-    #     "publishes": "publishes FullTestPub, FullTestPub, FullTestPub;",
-    # },
-    # "recursiveImplementation":{
-    #     "imports": ["RecursiveTest1.idsl", "RecursiveTestPub.idsl"],
-    #     "implements": "implements RecursiveTest1;",
-    #     "requires": "requires RecursiveTest1;",
-    #     "subscribesTo": "subscribesTo RecursiveTestPub;",
-    #     "publishes": "publishes RecursiveTestPub;",
-    # }
+    "MultipleAll":{
+        "imports": ["FullTest.idsl", "FullTestPub.idsl"],
+        "implements": "implements FullTest, FullTest, FullTest;",
+        "requires": "requires FullTest, FullTest, FullTest;",
+        "subscribesTo": "subscribesTo FullTestPub, FullTestPub, FullTestPub;",
+        "publishes": "publishes FullTestPub, FullTestPub, FullTestPub;",
+    },
+    "recursiveImplementation":{
+        "imports": ["RecursiveTest1.idsl", "RecursiveTestPub.idsl"],
+        "implements": "implements RecursiveTest1;",
+        "requires": "requires RecursiveTest1;",
+        "subscribesTo": "subscribesTo RecursiveTestPub;",
+        "publishes": "publishes RecursiveTestPub;",
+    }
 }
 
 
@@ -165,6 +175,52 @@ def compile_component(name, path):
     return True
 
 
+def configure_component(config_path: str) -> bool:
+    """
+    Modifica puertos y prefixes en el texto de configuración.
+    Devuelve el texto modificado y un diccionario con los cambios realizados.
+    """
+
+     # Leer el archivo original
+    try:
+        with open(config_path, 'r') as f:
+            config_text = f.read()
+    except Exception as e:
+        return False
+    
+    puertos_usados = set()
+    prefix_usados = set()
+
+    def generar_puerto_unico(match):
+        if "TopicManager" in match.string.split('\n')[match.string.count('\n', 0, match.start())]:
+            return match.group(0)
+        while True:
+            puerto = random.randint(10000, 65535)
+            if puerto not in puertos_usados:
+                puertos_usados.add(puerto)
+                return f"{match.group(1)}{puerto}{match.group(3)}"
+    
+    patron_puerto = re.compile(r'(-p\s+)(\d{1,5})(\b|$)')
+    config_text = patron_puerto.sub(generar_puerto_unico, config_text)
+    
+    # Expresión regular para prefixes
+    def reemplazar_prefix(match):
+        while True:
+            prefix = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(1, 9)))
+            if prefix not in prefix_usados:
+                prefix_usados.add(prefix)
+                return f"{match.group(1)}{match.group(2)}{prefix}{match.group(4)}"
+    
+    patron_prefix = re.compile(r'((PubPrefix|Prefix)\d*\s*=\s*["\']?)([a-zA-Z]?)(["\']?)', re.IGNORECASE)
+    config_text = patron_prefix.sub(reemplazar_prefix, config_text)
+
+    try:
+        with open(config_path, 'w') as f:
+            f.write(config_text)
+    except Exception as e:
+        return False
+    
+    return True
 
 def test_component(name, path):
     # Iniciar el proceso (sin shell=True por seguridad)
@@ -256,6 +312,12 @@ def run_single_test(name: str, config: dict, lang: str, gui: str, option: str, u
             update_status('Falló', 'Compilación fallida', False)
             return False
         
+        update_status('Configurando', 'Editando el config')
+        ok = configure_component(os.path.join(component_path, "etc/config"))
+        if not ok:
+            update_status('Falló', 'Configuración fallida', False)
+            return False
+        
         # 4. Probar componente
         update_status('Ejecutando', 'Verificando funcionamiento')
         ok = test_component(full_name, component_path)
@@ -291,13 +353,15 @@ def main():
     # Inicializar estado de pruebas
     test_status = {}
 
+    subprocess.run(args=["rcnode"], shell=True, capture_output=True)
+
     # Ejecutar pruebas en paralelo con visualización en tiempo real
     with Live(console=console, refresh_per_second=4) as live:
         def update_display():
             """Función para actualizar la visualización"""
             live.update(generate_test_status_table())
         
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=12) as executor:
             futures = []
             
             # Enviar todas las pruebas al executor

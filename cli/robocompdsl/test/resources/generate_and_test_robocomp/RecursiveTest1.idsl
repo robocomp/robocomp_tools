@@ -8,7 +8,7 @@ module RoboCompRecursiveTest1
 
     interface RecursiveTest1 {
         one testOperation(one p, out one result);
-        void testRecursiveOperation(one a, two b, three c);
+        void testRecursiveOperation(one a, RoboCompRecursiveTest2::two b, RoboCompRecursiveTest3::three c);
 
     };
     

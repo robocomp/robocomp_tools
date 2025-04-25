@@ -24,7 +24,7 @@ module RoboCompFullTest
     
     // Estructuras complejas
     struct ComplexType {
-        Primitives primitive_values;
+        Primitives primitiveValues;
         Days currentDay;
         IntSeq numberSequence;
         StringIntDict keyValueMapping;
