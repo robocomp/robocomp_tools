@@ -41,7 +41,6 @@ class ComponentInspections:
                             'name',
                             'subscribesTo',
                             'options',
-                            'recursiveImports',
                             'rosInterfaces',
                             'iceInterfaces',
                             'implements',

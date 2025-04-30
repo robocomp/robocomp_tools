@@ -28,9 +28,9 @@ class generated_CMakeLists_txt(TemplateDict):
 
     def wrap_ice(self):
         interface_names = set()
-        
-        if self.component.recursiveImports is not None and self.component.ice_interfaces_names is not None:
-            for im in sorted(self.component.recursiveImports + self.component.ice_interfaces_names):
+        print(self.component.imports)
+        if self.component.imports is not None and self.component.ice_interfaces_names is not None:
+            for im in sorted(self.component.imports + self.component.ice_interfaces_names):
                 name = im.split('/')[-1].split('.')[0]
                 if name not in interface_names: interface_names.add(name)
 

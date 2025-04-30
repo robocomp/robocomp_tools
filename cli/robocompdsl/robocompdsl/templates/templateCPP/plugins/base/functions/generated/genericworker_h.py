@@ -31,10 +31,10 @@ class genericworker_h(TemplateDict):
         interface_names = set()
 
 
-        if self.component.recursiveImports is None or self.component.ice_interfaces_names is None:
+        if self.component.imports is None or self.component.ice_interfaces_names is None:
             return ""
 
-        for iface in sorted(list(set(self.component.recursiveImports + self.component.ice_interfaces_names))):
+        for iface in sorted(list(set(self.component.imports + self.component.ice_interfaces_names))):
             name = iface.split('/')[-1].split('.')[0]
             if name not in interface_names: 
                 interface_names.add(name)
@@ -43,7 +43,7 @@ class genericworker_h(TemplateDict):
 
     # def namespaces(self):
     #     result = ""
-    #     for imp in sorted(list(set(self.component.recursiveImports + self.component.ice_interfaces_names))):
+    #     for imp in sorted(list(set(self.component.imports + self.component.ice_interfaces_names))):
     #         name = imp.split('/')[-1].split('.')[0]
     #         result += "using namespace RoboComp" + name + ";\n"
     #     return result

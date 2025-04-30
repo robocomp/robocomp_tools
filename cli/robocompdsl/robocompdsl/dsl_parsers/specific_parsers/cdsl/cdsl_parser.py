@@ -112,7 +112,6 @@ class CDSLParser(DSLParserTemplate):
         component.name = parsing_result['component']['name']
         # Imports
         component.imports = []
-        component.recursiveImports = []
         try:
             imprts = [path['idsl_path'] for path in parsing_result.asDict()["imports"]]
         except KeyError:
@@ -123,7 +122,9 @@ class CDSLParser(DSLParserTemplate):
         component.dsr = 'dsr' in [x.lower() for x in component.options]
         component.imports.extend(list(map(os.path.basename, sorted(imprts))))
         from robocompdsl.dsl_parsers.idslpool import idsl_pool
-        component.recursiveImports = idsl_pool.update_with_idsls(list(component.imports))
+        print("aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        component.imports = idsl_pool.update_with_idsls(list(component.imports))
+        print("BBBBBBBBBBBBBBBBBbb", component.imports)
         # Language
         component.language = parsing_result['component']['content']['language']
         # Statemachine

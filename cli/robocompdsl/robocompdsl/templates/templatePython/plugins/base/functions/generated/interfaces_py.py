@@ -63,9 +63,9 @@ class src_interfaces_py(TemplateDict):
     def load_slice_and_create_imports(self, includeDirectories=None):
         result = ""
         import os
-        if self.component.recursiveImports is not None and self.component.imports is not None:
-            logger.debug(f"Loading slice files: {self.component.recursiveImports + self.component.imports}")
-            for imp in sorted(set(self.component.recursiveImports + self.component.imports)):
+        if self.component.imports is not None:
+            logger.debug(f"Loading slice files: {self.component.imports}")
+            for imp in sorted(self.component.imports):
                 file_name = os.path.basename(imp)
                 name = os.path.splitext(file_name)[0]
                 result += Template(SLICE_LOAD_STR).substitute(interface_name=name)
@@ -79,8 +79,8 @@ class src_interfaces_py(TemplateDict):
 
     def create_lists_classes(self):
         result = ""
-        if self.component.recursiveImports is not None and self.component.imports is not None:
-            for idsl in sorted(set(self.component.recursiveImports + self.component.imports)):
+        if self.component.imports is not None:
+            for idsl in sorted(self.component.imports):
                 try:
                     module = self.component.idsl_pool.module_providing_interface(idsl.split('.')[0])
                 except Exception as e:

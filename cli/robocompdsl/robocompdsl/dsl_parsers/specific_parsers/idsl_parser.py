@@ -83,14 +83,13 @@ class IDSLParser(DSLParserTemplate):
         logger.debug(f"\twith name: {result_dict['name']}")
 
         result_dict['imports'] = []
-        result_dict['recursive_imports'] = []
         if 'imports' in parsing_result:
             # print result_dict['name'], parsing_result['imports']
             result_dict['imports'] = parsing_result['imports'].asList()
-            logger.debug(f"\twith imports: {result_dict['imports']}")
             from robocompdsl.dsl_parsers.idslpool import idsl_pool
-            result_dict['recursive_imports'] = idsl_pool.update_with_idsls(list(parsing_result['imports']))
-            logger.debug(f"\twith recursive_imports: {result_dict['recursive_imports']}")
+            result_dict['imports'] = idsl_pool.update_with_idsls(list(parsing_result['imports']))
+            logger.debug(f"\twith imports: {result_dict['imports']}")
+
         # INTERFACES DEFINED IN THE MODULE
         result_dict['interfaces'] = []
 

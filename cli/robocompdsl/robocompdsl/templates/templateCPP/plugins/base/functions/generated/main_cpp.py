@@ -201,8 +201,8 @@ class generated_main_cpp(TemplateDict):
         self['component_name'] = component.name
         self['implements_interface_includes'] = self.interface_includes(self.component.implements, 'I', True)
         self['subscribes_interface_includes'] = self.interface_includes(self.component.subscribesTo, 'I', True)
-        self['imports_interface_includes'] = self.interface_includes(self.component.recursiveImports)
-        self['interface_includes'] = self.interface_includes(self.component.recursiveImports)
+        self['imports_interface_includes'] = self.interface_includes(self.component.imports)
+        self['interface_includes'] = self.interface_includes(self.component.imports)
         self['proxies_map_creation'] = self.proxies_map_creation()
         self['publishes_proxy_ptr'] = self.proxy_ptr(self.component.publishes, 'pub')
         self['subscription_proxy_ptr'] = self.proxy_ptr(self.component.subscribesTo, 'sub')

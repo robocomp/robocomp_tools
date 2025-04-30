@@ -8,6 +8,8 @@ import pyparsing
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice
 from robocompdsl.dsl_parsers.dsl_factory import DSLFactory
 from robocompdsl.logger import logger
+import collections
+
 
 
 FILE_PATH_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -47,57 +49,65 @@ class IDSLPool(OrderedDict):
     @classmethod
     def get_comidsl_dirs(cls):
         return cls.common_idsl_dirs
-
+    
     def add_idsl(self, filename: str) -> None:
+        """Add an IDSL file to the pool with proper dependency handling."""
         logger.debug(f"Adding idsl {filename} to the pool")
         module_name = filename.split('.')[0]
-        if module_name not in self:
-            for p in self.include_directories:
-                try:
-                    path = p / filename
-                    logger.debug(f"Trying with {path}")
-
-                    # if found, load the module from the file
-                    module = DSLFactory().from_file(path)
-                    # store the module
-                    self[module_name] = module
-                    # try to add the modules that this one imports
-                    aux_imports = []
-                    for i_import in module['imports']:
-                        if i_import != '' and i_import not in self:
-                            if communication_is_ice(i_import):
-                                aux_imports.append(i_import)
-                    self.update_with_idsls(aux_imports)
-                    return module
-                except IOError as e:
-                    logger.debug(f"File {filename} not found in {p} with error {e}")
-                    pass
-            if module_name not in self:
-                raise ValueError('Couldn\'t locate %s ' % filename)
-            logger.debug(f"Tryied to add {filename} to the pool but not found in {self.include_directories}")
-
-        else:
+        
+        if module_name in self:
+            logger.debug(f"Module {module_name} already loaded")
             return self[module_name]
+        
+        # Try to find and load the file
+        for p in self.include_directories:
+            try:
+                path = p / filename
+                logger.debug(f"Trying with {path}")
+                
+                # Load the module
+                module = DSLFactory().from_file(path)
+                self[module_name] = module
 
-    def update_with_idsls(self, files: List[str]):
-        """
-        Recursively add the already loaded idsl modules to the pool.
+                return module
+                
+            except IOError as e:
+                logger.debug(f"File {filename} not found in {p}: {e}")
+                continue
+        
+        raise ValueError(f'Could not locate {filename} in include directories')
 
-        :param files: list of idsl files to be included in the pool (file.idsl)
-        """
-        if len(files) == 0:
+    def update_with_idsls(self, files: List[str]) -> None:
+        """Process multiple IDSL files with proper dependency resolution."""
+        if not files:
             return
-        logger.debug(f"Looking for {files} in {self.include_directories}")
-        recursive_imports = []
-        for f in files:
-            if f not in self:
-                module = self.add_idsl(f)
-                for i_import in module['imports']:
-                    if i_import != '' and i_import not in self:
-                        if communication_is_ice(i_import):
-                            recursive_imports.append(i_import)
-        return recursive_imports
-
+        
+        logger.debug(f"Processing initial files: {files}")
+        
+        queue = collections.deque(files)
+        processed = set()
+        
+        while queue:
+            current_file = queue.popleft()
+            
+            if current_file in processed:
+                continue
+                
+            processed.add(current_file)
+            
+            try:
+                module = self.add_idsl(current_file)
+                if module['imports'] is None:
+                    continue
+                # Add dependencies to the queue
+                new_imports = [
+                    imp for imp in module['imports']
+                    if imp and communication_is_ice(imp)
+                ]
+                queue.extend(new_imports)
+            except ValueError as e:
+                logger.warning(f"Failed to process file {current_file}: {e}")
+        return list(processed)
 
     def idsl_file_for_module(self, idsl_name):
         """

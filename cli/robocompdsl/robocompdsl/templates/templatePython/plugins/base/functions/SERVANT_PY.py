@@ -7,7 +7,7 @@ Ice.loadSlice("-I ./generated/ --all ./generated/${interface_name}.ice")
 
 
 INTERFACE_METHOD_STR = """
-def ${method_name}(self, ${params_str_a}c):
+def ${method_name}(self, ${params_str_a}):
     return getattr(self.worker, f"${interface_name}{self.id}_${method_name}")(${params_str_b})
 """
 

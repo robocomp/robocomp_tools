@@ -50,7 +50,7 @@ METHOD_STR = """\
 # ${method_str1} ${method_name} method from ${interface_name} interface
 #
 def ${interface_name}_${method_name}(self${param_str_a}):
-    ${return_creation}
+${return_creation}
     #
     # write your CODE here
     #
@@ -87,9 +87,11 @@ class src_specificworker_py(TemplateDict):
                 if module_interface['name'] == interface.name:
                     for mname in module_interface['methods']:
                         method = module_interface['methods'][mname]
+                        
                         out_values = []
                         if method['return'] != 'void':
                             out_values.append([method['return'], 'ret'])
+
                         param_str_a = ''
                         for p in method['params']:
                             if p['decorator'] == 'out':
@@ -97,15 +99,16 @@ class src_specificworker_py(TemplateDict):
                             else:
                                 param_str_a += ', ' + p['name']
 
-                        if method['return'] != 'void':
+                        return_creation = ''
+                        for out in out_values:
                             returned_type = ""
-                            if method['return'] in [struct['name'].split('/')[1] for struct in module['structs']+module['sequences']] or \
-                                method['return'] in [struct['strName'] for struct in module['simpleSequences']]:
+                            simple_type = out[0]
+                            if simple_type in [struct['name'].split('/')[1] for struct in module['structs']+module['sequences']] or \
+                                simple_type in [struct['strName'] for struct in module['simpleSequences']]:
                                 returned_type= "ifaces."
-                            returned_type += utils.get_type_string(method['return'], module['name'])
-                            return_creation = f'ret = {returned_type}()'
-                        else:
-                            return_creation = ''
+                            returned_type += utils.get_type_string(simple_type, module['name'])
+                            return_creation += f'    {out[1]} = {returned_type}()\n'
+                                                    
 
                         return_str = "pass\n\n"
                         if len(out_values) == 1:
@@ -119,7 +122,7 @@ class src_specificworker_py(TemplateDict):
                                 if v[1] != 'ret':
                                     return_str += "    " + v[1] + " = " + self.replace_type_cpp_to_python(v[0]) + "()\n"
                             vector_str = ", ".join([v[1] for v in out_values])
-                            return_str = f"    return [{vector_str}]"
+                            return_str = f"return [{vector_str}]"
                         if subscribe:
                             method_str1 = "SUBSCRIPTION to"
                         else:
