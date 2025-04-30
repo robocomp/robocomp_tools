@@ -353,7 +353,8 @@ def main():
     # Inicializar estado de pruebas
     test_status = {}
 
-    subprocess.run(args=["rcnode"], shell=True, capture_output=True)
+
+    subprocess.Popen(args=["bash", os.path.join(ROBOCOMP, "tools/rcnode/rcnode.sh"), "&"])
 
     # Ejecutar pruebas en paralelo con visualización en tiempo real
     with Live(console=console, refresh_per_second=4) as live:
