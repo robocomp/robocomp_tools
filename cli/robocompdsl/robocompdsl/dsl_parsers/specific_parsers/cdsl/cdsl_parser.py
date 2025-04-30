@@ -122,9 +122,7 @@ class CDSLParser(DSLParserTemplate):
         component.dsr = 'dsr' in [x.lower() for x in component.options]
         component.imports.extend(list(map(os.path.basename, sorted(imprts))))
         from robocompdsl.dsl_parsers.idslpool import idsl_pool
-        print("aAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         component.imports = idsl_pool.update_with_idsls(list(component.imports))
-        print("BBBBBBBBBBBBBBBBBbb", component.imports)
         # Language
         component.language = parsing_result['component']['content']['language']
         # Statemachine
