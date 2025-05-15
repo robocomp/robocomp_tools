@@ -27,10 +27,10 @@ class Publishes:
                 topic = self.topic_manager.retrieve(topic_full_name)
             except IceStorm.NoSuchTopic:
                 try:
-                    console.log(f"{Text("WARNING", style='yellow')} {topic_full_name} topic did not create. {Text("Creating...", style='green')}")
+                    console.log(f"{Text('WARNING', style='yellow')} {topic_full_name} topic did not create. {Text('Creating...', style='green')}")
                     topic = self.topic_manager.create(topic_full_name)
                 except:
-                    console.log(f"{Text("WARNING", style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
+                    console.log(f"{Text('WARNING', style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
 
         pub = topic.getPublisher().ice_oneway()
         proxy = ice_proxy.uncheckedCast(pub)
@@ -83,11 +83,11 @@ class Subscribes:
                 subscribe_done = True
             except Ice.Exception as e:
                 try:
-                    console.log(f"{Text("WARNING", style='yellow')} {topic_full_name} topic did not create. {Text("Creating...", style='green')}")
+                    console.log(f"{Text('WARNING', style='yellow')} {topic_full_name} topic did not create. {Text('Creating...', style='green')}")
                     topic = self.topic_manager.create(topic_full_name)
                     subscribe_done = True
                 except:
-                    print(f"{Text("WARNING", style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
+                    print(f"{Text('WARNING', style='yellow')}publishing the {topic_full_name} topic. It is possible that other component have created")
         qos = {}
         topic.subscribeAndGetPublisher(qos, proxy)
         adapter.activate()
@@ -106,7 +106,7 @@ class Implements:
             adapter.activate()
             console.log(f"{property_name} adapter created in port {endpoint_string}")
         except:
-            console.log(f"{Text("ERROR", style='red')} creating or activating adapter for{property_name}")
+            console.log(f"{Text('ERROR', style='red')} creating or activating adapter for{property_name}")
             self.status = -1
 
 
