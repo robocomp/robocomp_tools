@@ -5,7 +5,8 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 
 DSR_CONFIG_STR = """\
-Agent.id = 0 # Change id
+# Change id
+Agent.id = 0
 Agent.name = "${name}"
 Agent.configFile = ""
 """

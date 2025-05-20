@@ -20,6 +20,8 @@
 
 import sys, Ice, os
 from PySide6 import QtWidgets, QtCore
+${import_dsr}
+
 
 ${ui_import}
 
@@ -38,7 +40,7 @@ class GenericWorker(${qt_class_type}):
 
         self.Period = 30
         self.timer = QtCore.QTimer(self)
-
+        ${insert_dsr}
 
     @QtCore.Slot()
     def killYourSelf(self):

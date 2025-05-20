@@ -36,11 +36,6 @@ from pydsr import *
 
 DSR_INIT_STR = """\
 
-# YOU MUST SET AN UNIQUE ID FOR THIS AGENT IN YOUR DEPLOYMENT. "_CHANGE_THIS_ID_" for a valid unique integer
-#self.agent_id = "_CHANGE_THIS_ID_"
-self.agent_id = 4095
-self.g = DSRGraph(0, "pythonAgent", self.agent_id)
-
 try:
     signals.connect(self.g, signals.UPDATE_NODE_ATTR, self.update_node_att)
     signals.connect(self.g, signals.UPDATE_NODE, self.update_node)
@@ -51,7 +46,7 @@ try:
     console.print("signals connected")
 except RuntimeError as e:
     print(e)
-
+    
 """
 
 class src_specificworker_py(TemplateDict):

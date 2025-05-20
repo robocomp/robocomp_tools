@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     if interface_manager.status == 0:
         worker = SpecificWorker(interface_manager.get_proxies_map(), configData, args.startup_check)
-        worker.setParams(configData)
+        if hasattr(worker, "setParams"): worker.setParams(configData)
     else:
         print("Error getting required connections, check config file")
         sys.exit(-1)

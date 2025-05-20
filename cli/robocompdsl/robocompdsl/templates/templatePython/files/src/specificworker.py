@@ -30,16 +30,10 @@ console = Console(highlight=False)
 
 ${dsr_import}
 
-# If RoboComp was compiled with Python bindings you can use InnerModel in Python
-# import librobocomp_qmat
-# import librobocomp_osgviewer
-# import librobocomp_innermodel
-
-
 class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map, configData, startup_check=False):
         super(SpecificWorker, self).__init__(proxy_map, configData)
-        self.Period = 2000
+        self.Period = configData["Period"]["Compute"]
         ${dsr_init}
         if startup_check:
             self.startup_check()
@@ -48,14 +42,6 @@ class SpecificWorker(GenericWorker):
 
     def __del__(self):
         """Destructor"""
-
-    def setParams(self, params):
-        # try:
-        #	self.innermodel = InnerModel(params["InnerModelPath"])
-        # except:
-        #	traceback.print_exc()
-        #	print("Error reading config params")
-        return True
 
     ${compute_creation}
 
