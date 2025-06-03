@@ -1,5 +1,6 @@
 import datetime
 from string import Template
+import re
 
 from robocompdsl.dsl_parsers.parsing_utils import communication_is_ice, get_name_number
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
@@ -78,11 +79,30 @@ class src_specificworker_py(TemplateDict):
     def compute_creation(self):
         result = COMPUTE_METHOD_STR
         return result
+    
+    def is_ifaces(self, type_data, module, import_modules):
+        if type_data in [struct['name'].split('/')[1] for struct in module['structs']+module['sequences']] or \
+                                    type_data in [struct['strName'] for struct in module['simpleSequences']]:
+            return True
+
+        for mod in import_modules:
+            patron = fr'RoboComp{mod}::(\w+)'
+            match = re.fullmatch(patron, type_data)
+            if match:
+                return True
+        return False
+        
 
     def methods(self, interfaces, subscribe=False):
         result = ""
         for interface, num in get_name_number(interfaces):
             module = self.component.idsl_pool.module_providing_interface(interface.name)
+            if module.get("imports") is not None:
+                import_modules = [mod.split('.')[0] for mod in module['imports']]
+            else:
+                import_modules = []
+
+
             for module_interface in module['interfaces']:
                 if module_interface['name'] == interface.name:
                     for mname in module_interface['methods']:
@@ -100,27 +120,23 @@ class src_specificworker_py(TemplateDict):
                                 param_str_a += ', ' + p['name']
 
                         return_creation = ''
-                        for out in out_values:
-                            returned_type = ""
-                            simple_type = out[0]
-                            if simple_type in [struct['name'].split('/')[1] for struct in module['structs']+module['sequences']] or \
-                                simple_type in [struct['strName'] for struct in module['simpleSequences']]:
-                                returned_type= "ifaces."
-                            returned_type += utils.get_type_string(simple_type, module['name'])
-                            return_creation += f'    {out[1]} = {returned_type}()\n'
-                                                    
-
                         return_str = "pass\n\n"
                         if len(out_values) == 1:
                             if method['return'] != 'void':
                                 return_str = "return ret"
                             else:
-                                return_str = out_values[0][1] + " = " + self.replace_type_cpp_to_python(out_values[0][0]) + "()\n"
-                                return_str += "    return " + out_values[0][1]
+                                ifaces = ""
+                                if self.is_ifaces(type_data=out_values[0][0], module=module, import_modules=import_modules):
+                                    ifaces = "ifaces."
+                                return_creation = "    " + out_values[0][1] + " = " + ifaces + self.replace_type_cpp_to_python(out_values[0][0]) + "()\n"
+                                return_str = "return " + out_values[0][1]
                         elif len(out_values) > 1:
                             for v in out_values:
+                                ifaces = ""
+                                if self.is_ifaces(type_data=v[0], module=module, import_modules=import_modules):
+                                    ifaces = "ifaces."
                                 if v[1] != 'ret':
-                                    return_str += "    " + v[1] + " = " + self.replace_type_cpp_to_python(v[0]) + "()\n"
+                                    return_creation += "    " + v[1] + " = " + ifaces + self.replace_type_cpp_to_python(v[0]) + "()\n"
                             vector_str = ", ".join([v[1] for v in out_values])
                             return_str = f"return [{vector_str}]"
                         if subscribe:
@@ -198,7 +214,7 @@ class src_specificworker_py(TemplateDict):
                                                                                      action=action)
                     structs_str = ""
                     for struct in module['structs']:
-                        structs_str += f"# {struct['name'].replace('/', '.')}\n"
+                        structs_str += f"# ifaces.{struct['name'].replace('/', '.')}\n"
                     if structs_str:
                         result += Template(INTERFACE_TYPES_COMMENT_STR).substitute(module_name=module['name'],
                                                                                    types=structs_str)

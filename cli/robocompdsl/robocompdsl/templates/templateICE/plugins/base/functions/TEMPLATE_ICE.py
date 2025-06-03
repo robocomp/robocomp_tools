@@ -59,7 +59,6 @@ class TEMPLATE_ICE(TemplateDict):
     def ice_imports(self):
         result = ""
         if 'imports' in self.module and self.module["imports"]:
-            print("\n\n", self.module['interfaces'], "\n\n")
             for imp in self.module['imports']:
                 if imp != '':
                     result += "#include <" + os.path.basename(imp).split('.')[0] + ".ice>\n"
