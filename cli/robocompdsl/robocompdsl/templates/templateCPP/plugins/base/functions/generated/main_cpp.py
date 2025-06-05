@@ -16,7 +16,7 @@ template <typename ProxyType, typename ProxyPointer>
 void require(const Ice::CommunicatorPtr& communicator,
              const std::string& proxyConfig, 
              const std::string& proxyName,
-             ProxyPointer proxy)
+             ProxyPointer& proxy)
 {
     try
     {
@@ -257,7 +257,7 @@ class generated_main_cpp(TemplateDict):
         return result
 
     def topic_manager_creation(self):
-        result = "\n//Topic Manager code\n"
+        result = ""
         need_topic = False
         for pub in self.component.publishes:
             if communication_is_ice(pub):
@@ -269,6 +269,8 @@ class generated_main_cpp(TemplateDict):
             ptr = "Ptr"
             manager_type = "Ice::checkedCast<IceStorm::TopicManagerPrx>"
             result += Template(TOPIC_MANAGER_STR).substitute(ptr=ptr, type=manager_type)
+        if len(result)!=0:
+            result = "\n//Topic Manager code\n" + result
         return result
     
 
@@ -287,7 +289,7 @@ class generated_main_cpp(TemplateDict):
 
 
     def publish(self):
-        result = "\n//Publish code\n"
+        result = ""
         for pba, num in get_name_number(self.component.publishes):
             if type(pba) == str:
                 name = pba
@@ -299,11 +301,12 @@ class generated_main_cpp(TemplateDict):
                 result += f'''publish<{proxy_type}Prx, {proxy_type}PrxPtr>(topicManager,
                     configLoader.get<std::string>("Proxies.{name}Prefix{num}"),
                     "{name}", {name.lower()}_proxy{num}, PROGRAM_NAME);\n'''
-
+        if len(result)!=0:
+            result = "\n//Publish code\n" + result
         return result
 
     def subscribes_to(self):
-        result = "\n//Subscribe code\n"
+        result = ""
         for interface, num in get_name_number(self.component.subscribesTo):
             name = interface.name
             if communication_is_ice(interface):                
@@ -311,10 +314,12 @@ class generated_main_cpp(TemplateDict):
                     topicManager, configLoader.get<std::string>("Endpoints.{name}Topic{num}"),
 				    configLoader.get<std::string>("Endpoints.{name}Prefix{num}"), "{name}", worker,  {num if num!="" else "0"},
 				    {name.lower()}_topic, {name.lower()}, PROGRAM_NAME);\n'''
+        if len(result)!=0:
+            result = "\n//Subscribe code\n" + result
         return result
 
     def implements(self):
-        result = "\n//Implement code\n"
+        result = ""
         for ima, num in get_name_number(self.component.implements):
             if type(ima) == str:
                 name = ima
@@ -323,12 +328,13 @@ class generated_main_cpp(TemplateDict):
             if communication_is_ice(ima):
                 result += f'''implement<{name}I>(communicator(),
                     configLoader.get<std::string>("Endpoints.{name}{num}"), 
-                    "{name}{num}", worker,  {num if num!="" else "0"});\n'''
-
+                    "{name.lower()}{num}", worker,  {num if num!="" else "0"});\n'''
+        if len(result)!=0:
+            result = "\n//Implement code\n" + result
         return result
 
     def requires(self):
-        result = "\n//Require code\n"
+        result = ""
         for interface, num in get_name_number(self.component.requires):
             name = interface.name
             if communication_is_ice(interface):
@@ -336,6 +342,8 @@ class generated_main_cpp(TemplateDict):
                 proxy_type = utils.get_type_string(name, module['name'])
                 result += f'''require<{proxy_type}Prx, {proxy_type}PrxPtr>(communicator(),
                     configLoader.get<std::string>("Proxies.{name}{num}"), "{name}Proxy{num}", {name.lower()}_proxy{num});\n'''
+        if len(result)!=0:
+            result = "\n//Require code\n" + result
         return result
 
     def specificworker_creation(self):
