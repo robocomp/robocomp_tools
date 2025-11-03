@@ -7,6 +7,7 @@ GUI_INCLUDE_STR = """
 	#include <QtGui>
 #endif
 #include <ui_mainUI.h>
+#define USE_QTGUI\n
 """
 
 
