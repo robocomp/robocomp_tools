@@ -2,7 +2,7 @@ import unittest
 
 from typer.testing import CliRunner
 
-from rcbuild.rcbuild import app
+from rcbuild.main import app
 
 runner = CliRunner()
 

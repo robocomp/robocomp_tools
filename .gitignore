@@ -1,3 +1,5 @@
 __pycache__
 cli/build/
-cli/robocompcli.egg-info/
+cli/src/robocompdsl.egg-info/
+.vscode
+.cache
