@@ -1,20 +1,15 @@
 ${storm_topic_manager}
-
 ${config_publishes_proxies}
-
 ${config_requires_proxies}
-
 ${config_subscribes_endpoints}
-
 ${config_implements_endpoints}
-
 
 ${dsr_config}
 
-${dsr_viewer_config}
-
 Period.Compute = 100
 Period.Emergency = 500
+
+Component.Debug.Verbose = true
 
 Ice.Warn.Connections = "0"
 Ice.Trace.Network = "0"

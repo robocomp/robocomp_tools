@@ -5,8 +5,36 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 
 DSR_INIT_STR = """\
-self.agent_id = configData["Agent"]["id"]
-self.g = DSRGraph(0, configData["Agent"]["name"], self.agent_id, configData["Agent"]["configFile"])
+agent_name = configData.get("Agent", {}).get("name")
+agent_id = configData.get("Agent", {}).get("id")
+
+# Initialize DSR
+sur_names = ConfigLoader.get_sur_names(configData, "Agent")
+
+self.graphs = {}
+self.g = None
+if not sur_names:
+    domain = configData.get("Agent", {}).get("domain", 0)
+    config_file = configData.get("Agent", {}).get("configFile")
+    
+    new_graph = DSRGraph(0, agent_name, agent_id, config_file, True, domain)
+    self.g = new_graph
+    
+    print("Graph loaded")
+    self.graphs[""] = self.g
+else:
+    print(f"Multiple graphs found: {len(sur_names)}")
+    
+    for name in sur_names:
+        prefix_data = configData["Agent"][name]
+        
+        config_file = prefix_data.get("configFile")
+        domain = prefix_data.get("domain", 0)
+
+        self.graphs[name] = DSRGraph(0, agent_name, agent_id, config_file, True, domain)
+        print(f"Graph {name} loaded")
+
+    self.g = self.graphs[sur_names[0]]
 """
 
 
@@ -15,8 +43,6 @@ class src_genericworker_py(TemplateDict):
         super(src_genericworker_py, self).__init__()
         self.component = component
         self['year'] = str(datetime.date.today().year)
-        self['requires_proxies'] = self.requires_proxies()
-        self['publishes_proxies'] = self.publishes_proxies()
         self['insert_dsr'] = self.insert_dsr()
         self['import_dsr'] = self.import_dsr()
 
@@ -24,7 +50,7 @@ class src_genericworker_py(TemplateDict):
 
     def import_dsr(self):
         if self.component.dsr:
-            return "from pydsr import DSRGraph"
+            return "from pydsr import DSRGraph\nfrom ConfigLoader import ConfigLoader"
         else:
             return ""
 
@@ -33,30 +59,3 @@ class src_genericworker_py(TemplateDict):
             return DSR_INIT_STR
         else:
             return ""
-
-    # TODO: Refactor this and publishes with a zip?
-    def requires_proxies(self):
-        result = ""
-        for req, num in get_name_number(self.component.requires):
-            if isinstance(req, str):
-                rq = req
-            else:
-                rq = req[0]
-            if communication_is_ice(req):
-                result += "self." + rq.lower() + num + "_proxy = mprx[\"" + rq  + num + "\"]\n"
-            else:
-                result += "self." + rq.lower() + "_proxy = ServiceClient" + rq + "()\n"
-        return result
-
-    def publishes_proxies(self):
-        result = ""
-        for pb, num in get_name_number(self.component.publishes):
-            if isinstance(pb, str):
-                pub = pb
-            else:
-                pub = pb[0]
-            if communication_is_ice(pb):
-                result += "self." + pub.lower() + num + "_proxy = mprx[\"" + pub + num + "\"]\n"
-            else:
-                result += "self." + pub.lower() + "_proxy = Publisher" + pub + "()\n"
-        return result
