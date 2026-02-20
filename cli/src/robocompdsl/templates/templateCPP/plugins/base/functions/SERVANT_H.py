@@ -54,7 +54,7 @@ class SERVANT_H(TemplateDict):
             # Build parameter types only (without names)
             param_types = []
             for p in method['params']:
-                type_str = utils.get_type_string(p['type'], module['name'])
+                type_str = utils.get_type_string(p['type'], module['name'])+"&"
                 param_types.append(type_str)
             param_list = ", ".join(param_types)
             if param_list:
