@@ -29,9 +29,7 @@ either with a QtDesigner or directly from scratch in a class of its own.
 The add_custom_widget_to_dock method receives a name for the widget and a reference to the class instance.
 ***/
 
-graph_viewer = std::make_unique<DSR::DSRViewer>(this, G, current_opts, main);
-//graph_viewer->add_custom_widget_to_dock("CustomWidget", &custom_widget);
-
+//graph_viewers.at("")->add_custom_widget_to_dock("CustomWidget", &custom_widget);
 """
 
 class specificworker_cpp(TemplateDict):
@@ -57,7 +55,7 @@ class specificworker_cpp(TemplateDict):
     
     def dsr_custom_widget(self):
         result = ""
-        if self.component.dsr and self.component.gui is not None and "QMainWindow" in self.component.gui:
+        if self.component.dsr:
             result += CUSTOM_WIDGET
         return result
 

@@ -68,17 +68,17 @@ SpecificWorker::~SpecificWorker()
 void SpecificWorker::initialize()
 {
     std::cout << "initialize worker" << std::endl;
+	GenericWorker::initialize();
+
 	${dsr_connections}
 
 	${dsr_custom_widget}
-    //initializeCODE
 
+    //initializeCODE
     /////////GET PARAMS, OPEND DEVICES....////////
     //int period = configLoader.get<int>("Period.Compute") //NOTE: If you want get period of compute use getPeriod("compute")
     //std::string device = configLoader.get<std::string>("Device.name") 
-
 }
-
 
 
 void SpecificWorker::compute()
@@ -100,7 +100,6 @@ void SpecificWorker::compute()
 }
 
 
-
 void SpecificWorker::emergency()
 {
     std::cout << "Emergency worker" << std::endl;
@@ -109,7 +108,6 @@ void SpecificWorker::emergency()
     //if (SUCCESSFUL) //The componet is safe for continue
     //  emmit goToRestore()
 }
-
 
 
 //Execute one when exiting to emergencyState

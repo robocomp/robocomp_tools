@@ -13,7 +13,7 @@ class generated_main_cpp(TemplateDict):
 
     def need_gui(self):
         result = ""
-        if self.component.gui is not None:
+        if self.component.gui is not None or self.component.dsr:
             result += "#define USE_QTGUI\n\n"
         else:
             result += "//#define USE_QTGUI\n\n"

@@ -8,23 +8,24 @@ DSR_INCLUDES_STR = """\
 #include "dsr/api/dsr_api.h"
 #include "dsr/gui/dsr_gui.h"
 #include <doublebuffer/DoubleBuffer.h>
+#include <memory>
 """
 
 DSR_ATTRIBUTES = """\
-// DSR graph
-std::shared_ptr<DSR::DSRGraph> G;
-
 //DSR params
 std::string agent_name;
 int agent_id;
-int current_opts = 0;
-DSR::DSRViewer::view main = DSR::DSRViewer::view::none;
+
+// DSR graph
+std::unordered_map<std::string, std::shared_ptr<DSR::DSRGraph>> Graphs;
+std::shared_ptr<DSR::DSRGraph> G;
 """
 
 DSR_VIEWER_ATTRIBUTES = """\
 // DSR graph viewer
-std::unique_ptr<DSR::DSRViewer> graph_viewer;
-QHBoxLayout mainLayout;
+std::unordered_map<std::string, std::shared_ptr<DSR::DSRViewer>> graph_viewers;
+std::unordered_map<std::string, std::unique_ptr<QMainWindow>> windows;
+std::shared_ptr<DSR::DSRViewer> setupViewer(std::shared_ptr<DSR::DSRGraph> graph, const std::string& prefix, QMainWindow* parent);
 """
 
 class genericworker_h(TemplateDict):
@@ -50,6 +51,6 @@ class genericworker_h(TemplateDict):
 
     def dsr_viewer_attributes(self):
         result = ""
-        if self.component.dsr and self.component.gui is not None and "QMainWindow" in self.component.gui:
+        if self.component.dsr:
             result = DSR_VIEWER_ATTRIBUTES
         return result

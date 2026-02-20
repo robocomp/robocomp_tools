@@ -24,7 +24,9 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 {
 
 	this->configLoader = configLoader;
-	
+    if (!this->configLoader.get<bool>("Component.Debug.Verbose")) {
+        qInstallMessageHandler([](QtMsgType, const QMessageLogContext&, const QString&) {});
+    }
 	${require_and_publish_proxies_creation}
 
 	${state_statemachine}
@@ -40,10 +42,6 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
 	${gui_setup}
 
     ${dsr_set_params}
-
-    ${dsr_initialize}
-    
-    ${dsr_viewer}
 }
 
 /**
@@ -127,3 +125,8 @@ void GenericWorker::hibernationTick(){
 	hibernation = true;
 }
 
+${dsr_viewer}
+
+void GenericWorker::initialize(){
+    ${dsr_initialize}
+};
