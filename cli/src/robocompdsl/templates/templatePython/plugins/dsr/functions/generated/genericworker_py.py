@@ -5,8 +5,8 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 
 
 DSR_INIT_STR = """\
-agent_name = configData.get("Agent", {}).get("name")
-agent_id = configData.get("Agent", {}).get("id")
+self.agent_name = configData.get("Agent", {}).get("name")
+self.agent_id = configData.get("Agent", {}).get("id")
 
 # Initialize DSR
 sur_names = ConfigLoader.get_sur_names(configData, "Agent")
@@ -17,7 +17,7 @@ if not sur_names:
     domain = configData.get("Agent", {}).get("domain", 0)
     config_file = configData.get("Agent", {}).get("configFile")
     
-    new_graph = DSRGraph(0, agent_name, agent_id, config_file, True, domain)
+    new_graph = DSRGraph(0, self.agent_name, self.agent_id, config_file, True, domain)
     self.g = new_graph
     
     print("Graph loaded")
@@ -31,7 +31,7 @@ else:
         config_file = prefix_data.get("configFile")
         domain = prefix_data.get("domain", 0)
 
-        self.graphs[name] = DSRGraph(0, agent_name, agent_id, config_file, True, domain)
+        self.graphs[name] = DSRGraph(0, self.agent_name, self.agent_id, config_file, True, domain)
         print(f"Graph {name} loaded")
 
     self.g = self.graphs[sur_names[0]]

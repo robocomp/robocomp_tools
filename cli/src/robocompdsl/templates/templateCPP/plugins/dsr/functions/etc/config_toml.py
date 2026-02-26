@@ -20,7 +20,7 @@ graph = true
 3d = true
 
 # --- Multiple Instance Template ---
-# If you define sub-instances, the single instance config above will be ignored.
+# If you define multiple instances, the single instance config above will be ignored.
 # [Agent.instance_name]
 # configFile = ""
 # domain = 1
