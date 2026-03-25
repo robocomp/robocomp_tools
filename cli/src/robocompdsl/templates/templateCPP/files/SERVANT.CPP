@@ -23,10 +23,7 @@ ${interface_name}I::${interface_name}I(GenericWorker *_worker, const size_t id):
 	${array_handlers_creation}
 }
 
-
 ${interface_name}I::~${interface_name}I()
 {
 }
-
 ${interface_methods_creation}
-

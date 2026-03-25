@@ -8,16 +8,14 @@ from robocompdsl.templates.templateCPP.plugins.base.functions import function_ut
 INTERFACE_METHOD_STR = """
 ${ret} ${interface_name}I::${method_name}(${input_params})
 {
-
+    if (!worker)
+        throw std::runtime_error("Worker is null");
+        
     #ifdef HIBERNATION_ENABLED
 		worker->hibernationTick();
 	#endif
     
-	if (id < ${method_name}Handlers.size())
-		${to_return} ${method_name}Handlers[id](${param_str});
-	else
-		throw std::out_of_range("Invalid ${method_name} id: " + std::to_string(id));
-
+	${to_return}${method_name}Handlers.at(id)(${param_str});
 }
 """
 
@@ -78,12 +76,13 @@ class SERVANT_CPP(TemplateDict):
         if module is None:
             return result
 
-
         for interface in module['interfaces']:
             if interface['name'] != interface_name:
                 continue
-
+            
             for mname, method in interface['methods'].items():
+                ret = utils.get_type_string(method['return'], module['name'])
+                to_return = True if ret != 'void' else False
                 handler_block = f"{mname}Handlers = {{\n"
 
                 for i in range(interfaces_number):
@@ -95,7 +94,7 @@ class SERVANT_CPP(TemplateDict):
                     lambda_args = ", ".join(param_names)
                     call_args = ", ".join([p.split()[-1][1:] for p in param_names])  # solo a, b, c...
 
-                    handler_block += f"\t[this]({lambda_args}) {{ return worker->{interface_name}{'' if i==0 else i}_{mname}({call_args}); }},\n"
+                    handler_block += f"\t[this]({lambda_args}){f' -> {ret}' if to_return else ''} {{if (worker != nullptr) {'return ' if to_return else ''}worker->{interface_name}{'' if i==0 else i}_{mname}({call_args}); else throw std::runtime_error(\"Worker is null\");}},\n"
 
                 handler_block = handler_block.rstrip(",\n") + "\n};\n\n"
                 result += handler_block

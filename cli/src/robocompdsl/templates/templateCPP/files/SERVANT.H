@@ -22,6 +22,7 @@
 // Ice includes
 #include <Ice/Ice.h>
 #include <${filename_without_extension}.h>
+#include <QPointer>
 
 #include "../src/specificworker.h"
 
@@ -36,7 +37,7 @@ public:
 
 private:
 
-	GenericWorker *worker;
+	QPointer<GenericWorker> worker;
 	size_t id;
 
 	${array_handlers_definition}
