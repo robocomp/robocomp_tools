@@ -83,7 +83,8 @@ void SpecificWorker::initialize()
 
 void SpecificWorker::compute()
 {
-    std::cout << "Compute worker" << std::endl;
+    fps.print("Compute worker", 3000);
+
 	//computeCODE
 	//try
 	//{
@@ -102,7 +103,7 @@ void SpecificWorker::compute()
 
 void SpecificWorker::emergency()
 {
-    std::cout << "Emergency worker" << std::endl;
+    fps.print("Emergency worker", 3000);
     //emergencyCODE
     //
     //if (SUCCESSFUL) //The componet is safe for continue

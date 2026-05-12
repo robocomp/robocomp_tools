@@ -31,6 +31,7 @@ ${gui_includes}
 #include <QtCore>
 #include <variant>
 #include <unordered_map>
+#include <fps/fps.h>
 
 ${dsr_includes}
 
@@ -65,6 +66,7 @@ public:
 protected:
 	std::unordered_map<std::string, std::unique_ptr<GRAFCETStep>> states;
 	ConfigLoader configLoader;
+	FPSCounter fps;
 	${dsr_attributes}
 	${dsr_viewer_attributes}
 
