@@ -24,9 +24,14 @@ from PySide6.QtWidgets import QApplication
 from rich.console import Console
 from genericworker import *
 import interfaces as ifaces
-
-sys.path.append('/opt/robocomp/lib')
+import os
 console = Console(highlight=False)
+
+try:
+    import setproctitle
+    setproctitle.setproctitle(os.path.basename(os.getcwd()))
+except:
+    pass
 
 ${dsr_import}
 
