@@ -7,7 +7,6 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 DSR_INCLUDES_STR = """\
 #include "dsr/api/dsr_api.h"
 #include "dsr/gui/dsr_gui.h"
-#include <doublebuffer/DoubleBuffer.h>
 #include <memory>
 """
 
