@@ -5,7 +5,7 @@ DSR_FIND_EIGEN = """\
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 """
 
-DSR_LIBS = " dsr_core dsr_gui dsr_api fastcdr fastdds osgDB OpenThreads Eigen3::Eigen QGLViewer-qt6 Qt6OpenGLWidgets"
+DSR_LIBS = " dsr_core dsr_gui dsr_api fastcdr fastdds OpenThreads Eigen3::Eigen QGLViewer-qt6 Qt6OpenGLWidgets"
 
 
 class generated_CMakeLists_txt(TemplateDict):
