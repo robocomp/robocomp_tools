@@ -32,7 +32,7 @@ GenericWorker::GenericWorker(const ConfigLoader& configLoader, ${constructor_pro
                     case QtInfoMsg:    qInfo().noquote() << msg; break;
                     case QtWarningMsg: qWarning().noquote() << msg; break;
                     case QtCriticalMsg: qCritical().noquote() << msg; break;
-                    case QtFatalMsg:   qFatal(msg.toUtf8().constData()); break;
+                    case QtFatalMsg:   qFatal("%s", msg.toUtf8().constData()); break;
                     default: qInfo().noquote() << msg; break;
                 }});
     }
