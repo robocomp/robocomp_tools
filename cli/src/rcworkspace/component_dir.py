@@ -9,7 +9,7 @@ from pathlib import Path
 import typer
 from robocomp import execute_command
 try:
-    from pyaku.pyaku import Yaku
+    from pyaku._main import Yaku
 except ModuleNotFoundError:
     Yaku = False
 

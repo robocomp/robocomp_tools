@@ -12,7 +12,7 @@ import typer
 sys.path.append('/opt/robocomp/python')
 from rcworkspace.workspace import Workspace
 try:
-    from pyaku.pyaku import Yaku
+    from pyaku._main import Yaku
 except ModuleNotFoundError:
     Yaku = False
 

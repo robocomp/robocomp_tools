@@ -9,6 +9,7 @@ import dbus
 import os
 import shlex
 import subprocess
+import xml.etree.ElementTree as ET
 
 from pyaku import get_logger
 
@@ -19,10 +20,8 @@ TAB_SHELL_CODE = """
 qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.addSession
 #get id of open session
 sess0=`qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.activeSessionId`
-#run command on active session
+#change to the saved working directory
 qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand " cd %s"
-#run command on active session
-qdbus org.kde.yakuake /yakuake/sessions org.kde.yakuake.runCommand "%s"
 #change the title of session
 qdbus org.kde.yakuake /yakuake/tabs org.kde.yakuake.setTabTitle $sess0 "%s"
 """
@@ -69,6 +68,7 @@ def get_last_child(pid):
 
 class YakuakeDBus(object):
     __instance = None
+    _konsole_session_map = None
 
     def __new__(cls):
         if YakuakeDBus.__instance is None:
@@ -92,11 +92,66 @@ class YakuakeDBus(object):
             )
         return self.konsole_sessions[session_id]
 
+    def available_konsole_session_ids(self) -> list:
+        """Konsole session numbers actually exported under /Sessions.
+
+        Discovered by D-Bus introspection rather than assumed, so we never
+        build a path to a /Sessions/N object that does not exist.
+        """
+        try:
+            node = self.s_dbus.get_object("org.kde.yakuake", "/Sessions")
+            xml_data = node.Introspect(
+                dbus_interface="org.freedesktop.DBus.Introspectable"
+            )
+            ids = [
+                int(child.get("name"))
+                for child in ET.fromstring(xml_data).findall("node")
+                if child.get("name") and child.get("name").isdigit()
+            ]
+            return sorted(ids)
+        except Exception as e:
+            logger.debug("Could not introspect /Sessions: %s" % e)
+            return []
+
+    def konsole_session_map(self, refresh: bool = False) -> dict:
+        """Map every yakuake terminal_id to its konsole /Sessions/N number.
+
+        Both the yakuake terminal_id and the konsole session number are
+        monotonic counters bumped exactly once per terminal creation, so the
+        i-th smallest terminal_id always corresponds to the i-th smallest
+        konsole session number -- even after terminals are closed, which only
+        leaves matching gaps in both sequences. This is robust where the old
+        fixed `terminal_id + 1` offset drifted once any tab/terminal was
+        closed. Falls back to `terminal_id + 1` only if introspection fails or
+        the two sequences disagree in length (no reliable alignment).
+        """
+        if YakuakeDBus._konsole_session_map is not None and not refresh:
+            return YakuakeDBus._konsole_session_map
+        konsole_ids = self.available_konsole_session_ids()
+        terminal_ids = sorted(
+            int(t) for t in self.sessions.terminalIdList().split(",") if t != ""
+        )
+        if konsole_ids and len(konsole_ids) == len(terminal_ids):
+            mapping = dict(zip(terminal_ids, konsole_ids))
+        else:
+            logger.debug(
+                "Konsole/terminal id mismatch (terminals=%s, konsole=%s); "
+                "falling back to terminal_id+1" % (terminal_ids, konsole_ids)
+            )
+            mapping = {t: t + 1 for t in terminal_ids}
+        YakuakeDBus._konsole_session_map = mapping
+        return mapping
+
+    def konsole_session_id_for_terminal(self, terminal_id: int) -> int:
+        return self.konsole_session_map().get(terminal_id, terminal_id + 1)
+
 
 class KonsoleSession:
     def __init__(self, terminal_id):
-        self.konsole_session_id = terminal_id + 1
         self.terminal_id = terminal_id
+        self.konsole_session_id = YakuakeDBus().konsole_session_id_for_terminal(
+            terminal_id
+        )
         dbus_session = YakuakeDBus().session(self.konsole_session_id)
         self.foreground_pid = dbus_session.foregroundProcessId()
         self.session_pid = dbus_session.processId()
@@ -475,7 +530,7 @@ class Yaku:
             logger.setLevel(logging.INFO)
 
     def get_yakuake_pid(self):
-        subprocess.check_output(["pidof", "yakuake"])
+        return subprocess.check_output(["pidof", "yakuake"]).split()[0].decode("utf-8")
 
     def get_yakuake_children(self):
         yakuake_pid = self.get_yakuake_pid()
@@ -537,22 +592,32 @@ class Yaku:
             tabs_to_restore = self.tabs_stack.tabs_by_name
         shell_script_content = ""
         for tab in tabs_to_restore.values():
+            if "Shell" in tab.title or "Consola" in tab.title:
+                continue
             for terminal in tab.terminals.values():
-                if (
-                    terminal.last_command != "" or terminal.current_directory != ""
-                ) and ("Shell" not in tab.title and "Consola" not in tab.title):
-                    tab_title = tab.title
-                    if len(tab.terminals) > 1:
-                        tab_title += str(terminal.konsole_session_id)
-                    shell_script_content += TAB_SHELL_CODE % (
-                        tab_title,
-                        terminal.current_directory,
-                        terminal.last_command,
-                        tab_title,
-                    )
-        with open("./new_deplyment.sh", "w") as f:
+                directory = terminal.current_directory
+                if not directory:
+                    continue
+                tab_title = tab.title
+                if len(tab.terminals) > 1:
+                    tab_title += str(terminal.konsole_session_id)
+                shell_script_content += TAB_SHELL_CODE % (
+                    tab_title,
+                    directory,
+                    tab_title,
+                )
+        output_path = os.path.abspath("./new_deployment.sh")
+        with open(output_path, "w") as f:
             f.write(shell_script_content)
-        print("Script saved in ./new_deployment.sh")
+        os.chmod(output_path, 0o755)
+        if shell_script_content:
+            print("Script saved in %s" % output_path)
+        else:
+            print(
+                "No tabs to restore: script %s is empty.\n"
+                "Tabs whose title is still the default (\"Shell\"/\"Consola\") are skipped; "
+                "rename them with `yaku <name>` and try again." % output_path
+            )
 
     def rename_all_tabs(self, name=None, append=False):
         self.tabs_stack.rename_all_tabs(name, append)
