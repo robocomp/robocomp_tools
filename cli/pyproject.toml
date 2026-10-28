@@ -16,9 +16,9 @@ authors = [
 
 dependencies = [
     "PySide6>=6.9.0",
-    "zeroc-ice==3.7.10.1",
+    "zeroc-ice>=3.7.0",
     "toml==0.10.2",
-    "typer>=0.4.1",
+    "typer>=0.27.3",
     "docker>=7.1.0",
     "pyyaml>=6.0.2",
     "prompt_toolkit>=3.0.48",

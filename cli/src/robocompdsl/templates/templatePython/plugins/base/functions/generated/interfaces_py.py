@@ -7,7 +7,7 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
 
 SLICE_LOAD_STR = """\
-Ice.loadSlice("-I ./generated/ --all ./generated/${interface_name}.ice")
+Ice.loadSlice(["-I", slice_dir, ${slice_files}])
 """
 
 # TODO: Check if this can be reduced to an abstract class and some inheriting from that.
@@ -65,15 +65,18 @@ class src_interfaces_py(TemplateDict):
         import os
         if self.component.imports is not None:
             logger.debug(f"Loading slice files: {self.component.imports}")
+            slice_files = []
             for imp in sorted(self.component.imports):
                 file_name = os.path.basename(imp)
                 name = os.path.splitext(file_name)[0]
-                result += Template(SLICE_LOAD_STR).substitute(interface_name=name)
+                slice_files.append(f'os.path.join(slice_dir, "{name}.ice")')
                 logger.debug(f"Loading slice file: {file_name} ({name})")
                 # module = DSLFactory().from_file(file_name, includeDirectories=includeDirectories)
                 module = self.component.idsl_pool[name]
                 logger.debug(f"Module: {module}")
                 result += f"import {module['name']}\n"
+            # single call: Ice imports the included .ice modules itself; one call per file fails on include order
+            result = Template(SLICE_LOAD_STR).substitute(slice_files=", ".join(slice_files)) + result
 
         return result
 

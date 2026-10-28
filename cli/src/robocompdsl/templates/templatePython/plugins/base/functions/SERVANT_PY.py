@@ -2,7 +2,8 @@ import datetime
 from string import Template
 from robocompdsl.templates.common.templatedict import TemplateDict
 SLICE_LOAD_STR = """\
-Ice.loadSlice("-I ./generated/ --all ./generated/${interface_name}.ice")
+slice_dir = os.path.dirname(os.path.abspath(__file__))
+Ice.loadSlice(["-I", slice_dir, os.path.join(slice_dir, "${interface_name}.ice")])
 """
 
 
