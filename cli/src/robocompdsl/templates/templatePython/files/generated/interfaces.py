@@ -115,24 +115,32 @@ class Implements:
 
 class InterfaceManager:
     def __init__(self, configData):
+        props = Ice.createProperties()
+        props.setProperty(
+            "Ice.Warn.Connections",
+            str(configData["Ice"]["Warn"]["Connections"])
+        )
+        props.setProperty(
+            "Ice.Trace.Network",
+            str(configData["Ice"]["Trace"]["Network"])
+        )
+        props.setProperty(
+            "Ice.Trace.Protocol",
+            str(configData["Ice"]["Trace"]["Protocol"])
+        )
+        props.setProperty(
+            "Ice.MessageSizeMax",
+            str(configData["Ice"]["MessageSizeMax"])
+        )
+
+        init_data = Ice.InitializationData()
+        init_data.properties = props
         try:
             # Ice 3.8+
-            self.ice_connector = Ice.initialize([])
-            props = self.ice_connector.getProperties()
-        except (TypeError, ValueError):
+            self.ice_connector = Ice.initialize(initData=init_data)
+        except (TypeError, ValueError): 
             # Ice 3.7
-            init_data = Ice.InitializationData()
-            try:
-                init_data.properties = Ice.createProperties([])
-            except TypeError:
-                init_data.properties = Ice.createProperties()
             self.ice_connector = Ice.initialize(init_data)
-            props = self.ice_connector.getProperties()
-
-        props.setProperty("Ice.Warn.Connections", str(configData["Ice"]["Warn"]["Connections"]))
-        props.setProperty("Ice.Trace.Network", str(configData["Ice"]["Trace"]["Network"]))
-        props.setProperty("Ice.Trace.Protocol", str(configData["Ice"]["Trace"]["Protocol"]))
-        props.setProperty("Ice.MessageSizeMax", str(configData["Ice"]["MessageSizeMax"]))
         self.status = 0
 
         needs_rcnode = ${needs_rcnode}

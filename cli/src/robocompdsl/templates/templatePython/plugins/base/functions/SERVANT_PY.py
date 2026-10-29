@@ -8,7 +8,7 @@ try:
     Ice.loadSlice(["-I", slice_dir, os.path.join(slice_dir, "${interface_name}.ice")])
 except (TypeError):
     # Ice 3.7
-    Ice.loadSlice(f'-I {slice_dir} ${interface_name}.ice')
+    Ice.loadSlice(f'-I {slice_dir} {slice_dir}/${interface_name}.ice')
 """
 
 
