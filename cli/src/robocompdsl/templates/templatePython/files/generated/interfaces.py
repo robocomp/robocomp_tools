@@ -3,7 +3,9 @@ import Ice
 import IceStorm
 from rich.console import Console, Text
 console = Console()
+import os
 
+slice_dir = os.path.dirname(os.path.abspath(__file__))
 ${load_slice_and_create_imports}
 
 ${create_lists_classes}
@@ -58,8 +60,8 @@ class Requires:
             return True, proxy
         
         except Ice.Exception as e:
-            console.print_exception(e)
-            console.log(f'Cannot get {property_name} property.')
+            console.print_exception()
+            console.log(f'Cannot get {property_name} property: {e}')
             self.status = -1
             return False, None
 
@@ -102,25 +104,43 @@ class Implements:
     def create_adapter(self, property_name, interface_handler, endpoint_string):
         try:
             adapter = self.ice_connector.createObjectAdapterWithEndpoints(property_name, endpoint_string)
-            adapter.add(interface_handler, self.ice_connector.stringToIdentity(property_name.lower()))
+            adapter.add(interface_handler, Ice.stringToIdentity(property_name.lower()))
             adapter.activate()
             console.log(f"{property_name} adapter created in port {endpoint_string}")
-        except:
-            console.log(f"{Text('ERROR', style='red')} creating or activating adapter for{property_name}")
+        except Exception as e:
+            console.print_exception()
+            console.log(f"{Text('ERROR', style='red')} creating or activating adapter for {property_name}: {e}")
             self.status = -1
 
 
 class InterfaceManager:
     def __init__(self, configData):
+        props = Ice.createProperties()
+        props.setProperty(
+            "Ice.Warn.Connections",
+            str(configData["Ice"]["Warn"]["Connections"])
+        )
+        props.setProperty(
+            "Ice.Trace.Network",
+            str(configData["Ice"]["Trace"]["Network"])
+        )
+        props.setProperty(
+            "Ice.Trace.Protocol",
+            str(configData["Ice"]["Trace"]["Protocol"])
+        )
+        props.setProperty(
+            "Ice.MessageSizeMax",
+            str(configData["Ice"]["MessageSizeMax"])
+        )
 
         init_data = Ice.InitializationData()
-        init_data.properties = Ice.createProperties()
-        init_data.properties.setProperty("Ice.Warn.Connections", configData["Ice"]["Warn"]["Connections"])
-        init_data.properties.setProperty("Ice.Trace.Network", configData["Ice"]["Trace"]["Network"])
-        init_data.properties.setProperty("Ice.Trace.Protocol", configData["Ice"]["Trace"]["Protocol"])
-        init_data.properties.setProperty("Ice.MessageSizeMax", configData["Ice"]["MessageSizeMax"])
-        self.ice_connector = Ice.initialize(init_data)
-
+        init_data.properties = props
+        try:
+            # Ice 3.8+
+            self.ice_connector = Ice.initialize(initData=init_data)
+        except (TypeError, ValueError): 
+            # Ice 3.7
+            self.ice_connector = Ice.initialize(init_data)
         self.status = 0
 
         needs_rcnode = ${needs_rcnode}

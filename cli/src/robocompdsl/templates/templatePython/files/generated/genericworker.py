@@ -20,8 +20,13 @@
 
 import sys, Ice, os
 from PySide6 import QtWidgets, QtCore
-${import_dsr}
+try:
+    import setproctitle
+    setproctitle.setproctitle(os.path.basename(os.getcwd()))
+except:
+    pass
 
+${import_dsr}
 
 ${ui_import}
 

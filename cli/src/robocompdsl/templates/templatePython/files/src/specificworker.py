@@ -27,12 +27,6 @@ import interfaces as ifaces
 import os
 console = Console(highlight=False)
 
-try:
-    import setproctitle
-    setproctitle.setproctitle(os.path.basename(os.getcwd()))
-except:
-    pass
-
 ${dsr_import}
 
 class SpecificWorker(GenericWorker):
