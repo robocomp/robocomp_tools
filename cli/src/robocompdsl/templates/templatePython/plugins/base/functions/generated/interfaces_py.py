@@ -7,7 +7,12 @@ from robocompdsl.templates.common.templatedict import TemplateDict
 from robocompdsl.templates.templatePython.plugins.base.functions import function_utils as utils
 
 SLICE_LOAD_STR = """\
-Ice.loadSlice(["-I", slice_dir, ${slice_files}])
+try:
+    # Ice 3.8+
+    Ice.loadSlice(["-I", slice_dir, ${slice_files}])
+except (TypeError):
+    # Ice 3.7
+    Ice.loadSlice(f'-I {slice_dir} ${slice_files_old}')
 """
 
 # TODO: Check if this can be reduced to an abstract class and some inheriting from that.
@@ -76,7 +81,10 @@ class src_interfaces_py(TemplateDict):
                 logger.debug(f"Module: {module}")
                 result += f"import {module['name']}\n"
             # single call: Ice imports the included .ice modules itself; one call per file fails on include order
-            result = Template(SLICE_LOAD_STR).substitute(slice_files=", ".join(slice_files)) + result
+            result = Template(SLICE_LOAD_STR).substitute(
+                                slice_files=", ".join(slice_files),
+                                slice_files_old="{" + "} {".join(slice_files) + "}"
+                            ) + result
 
         return result
 

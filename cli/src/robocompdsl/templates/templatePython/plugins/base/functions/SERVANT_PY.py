@@ -3,7 +3,12 @@ from string import Template
 from robocompdsl.templates.common.templatedict import TemplateDict
 SLICE_LOAD_STR = """\
 slice_dir = os.path.dirname(os.path.abspath(__file__))
-Ice.loadSlice(["-I", slice_dir, os.path.join(slice_dir, "${interface_name}.ice")])
+try:
+    # Ice 3.8+
+    Ice.loadSlice(["-I", slice_dir, os.path.join(slice_dir, "${interface_name}.ice")])
+except (TypeError):
+    # Ice 3.7
+    Ice.loadSlice(f'-I {slice_dir} ${interface_name}.ice')
 """
 
 

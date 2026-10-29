@@ -29,8 +29,7 @@ if len(ROBOCOMP)<1:
     raise RuntimeError('ROBOCOMP environment variable not set! Exiting.')
 
 
-slice_dir = os.path.dirname(os.path.abspath(__file__))
-Ice.loadSlice(["-I", slice_dir, os.path.join(slice_dir, "${iface_name}.ice")])
+${slice_loading}
 
 
 from ${module_name} import *
